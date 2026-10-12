@@ -14,7 +14,7 @@ We help Saudi trucking companies earn more from the trucks they already have, by
 
 ## The problem
 
-Freight in Saudi Arabia flows unevenly. Trucks go full into Riyadh and often come back empty, and every empty kilometre costs fuel and driver time and earns nothing. Worldwide, about 29% of truck kilometres are empty. In our own realistic 40-truck test, a simple planner drives **47% of kilometres empty**. Dispatchers can't weigh every combination of trucks, loads, return trips and driver rest in their heads, especially when the plan changes every day.
+Freight in Saudi Arabia flows unevenly. Trucks go full into Riyadh and often come back empty, and every empty kilometre costs fuel and driver time and earns nothing. Worldwide, about 29% of truck kilometres are empty. In our 40-truck test, a simple planner drives 47% of kilometres empty. More than half of that comes from a modelling artefact: every truck is forced home at the end of each 48-hour plan. Without that, it is about **28% empty**, and roughly a quarter of the empty driving is repositioning between jobs, the gap backhaul loads can fill. Dispatchers can't weigh every combination of trucks, loads, return trips and driver rest in their heads, especially when the plan changes every day.
 
 ## What we promise
 
@@ -33,7 +33,7 @@ Freight in Saudi Arabia flows unevenly. Trucks go full into Riyadh and often com
 
 | Measure | Why |
 | --- | --- |
-| Empty km % | The core problem. Pilot baseline today: 47% |
+| Empty km % | The core problem. Pilot baseline today: 47% with forced returns, about 28% without |
 | Revenue per truck per day | What the owner pays for |
 | Recommendations the dispatcher accepts | If they don't use it, nothing else matters |
 | Planning time per day | The dispatcher's own win |
