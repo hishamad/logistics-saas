@@ -1,6 +1,6 @@
 # Product brief
 
-*Draft 1, 12 October 2026. Hisham + Claude. This page decides what we build; if a feature doesn't serve it, we don't build it yet.*
+*Draft 2, 12 October 2026. Hisham + Claude. This page decides what we build; if a feature doesn't serve it, we don't build it yet.*
 
 ## In one sentence
 
@@ -18,7 +18,8 @@ Freight in Saudi Arabia flows unevenly. Trucks go full into Riyadh and often com
 
 ## What we promise
 
-**More revenue per truck per week, with fewer empty kilometres, shown on the customer's own history before they pay.**
+1. **More revenue per truck per week, with fewer empty kilometres,** shown on the customer's own history before they pay.
+2. **One dispatcher can run 2–3× more trucks.** The carrier grows without hiring more planners. We frame this as making dispatchers more capable, not replacing them: they are our users, and they decide whether the system succeeds.
 
 ## How it works
 
@@ -36,10 +37,11 @@ Freight in Saudi Arabia flows unevenly. Trucks go full into Riyadh and often com
 | Revenue per truck per day | What the owner pays for |
 | Recommendations the dispatcher accepts | If they don't use it, nothing else matters |
 | Planning time per day | The dispatcher's own win |
+| Trucks per dispatcher | Planning capacity: the second promise |
 
 ## What we're not doing now
 
-A freight marketplace or brokerage, a driver mobile app, invoicing or a full TMS replacement, shared/partial loads (LTL), refrigerated or tanker rules, and automatic dispatch without a human approving it.
+A freight marketplace or brokerage, a driver mobile app, invoicing or a full TMS replacement, shared/partial loads (LTL), refrigerated or tanker rules, and *for now* automatic dispatch without a human approving it. Autopilot is earned in three levels: (1) the system suggests and the dispatcher approves everything; (2) decisions that follow approved rules go through automatically and the dispatcher sees only exceptions; (3) the system plans and re-plans by itself, and people handle breakdowns and judgement calls. Each level needs proof, such as 90%+ of suggestions accepted, plus live truck status.
 
 ## Riskiest assumptions (to test with real carriers, not code)
 
@@ -54,9 +56,22 @@ A freight marketplace or brokerage, a driver mobile app, invoicing or a full TMS
 2. It plans 100 trucks for a full week, with driver rest, in under a minute.
 3. **The first carrier shares data**, and we show them the replay.
 
+## Where this goes later
+
+Only after the core works on real data, in this order:
+
+1. **Compliance autopilot:** generate TGA trip documents (Logisti, Bayan) from the approved plan, and flag driver-hours, truck-age and licence problems before departure. *Rules and integration options must be verified first.*
+2. **Lane pricing:** which lanes make money once the empty return is counted, and what to quote for a new contract.
+3. **Driver messages over WhatsApp** in the driver's language, with one-tap status replies. This also supplies the live data autopilot needs.
+4. **Shared backhaul network:** match one carrier's empty truck with another carrier's load. *Decide first whether this crosses into the marketplace we said we don't want.*
+5. **Faster cash:** ZATCA e-invoices as soon as a load is delivered.
+
+Not planned: our own GPS/fleet tracking, a full TMS, generic AI chat.
+
 ## Open decisions (Hisham)
 
 - **Price:** per truck per month? (Hypothesis: SAR 400–800, roughly 10–20% of the value created.)
 - **First region:** Eastern Province (Dammam/Jubail → Riyadh) looks like the clearest empty-return story.
 - **Name:** "Madar" was a working name only.
 - **First conversations:** which carriers can you reach?
+- **Shared backhaul network:** acceptable, or too close to a marketplace?
