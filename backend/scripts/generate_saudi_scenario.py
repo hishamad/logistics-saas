@@ -31,7 +31,6 @@ from freight.domain.models import (
     Team,
     Window,
 )
-from freight.imports import template
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "saudi"
@@ -314,7 +313,7 @@ def main() -> None:
     snapshot_data = {
         "tenant_id": "demo",
         "scope_id": f"saudi-{args.name}",
-        "name": f"Saudi network · {args.trucks} trucks · {args.days} days · Synthetic",
+        "name": f"Saudi network - {args.trucks} trucks - {args.days} days - synthetic",
         "horizon": horizon.model_dump(mode="json"),
         "sites": [s.model_dump(mode="json") for s in sites],
         "resources": [r.model_dump(mode="json") for r in resources],
@@ -331,17 +330,11 @@ def main() -> None:
         json.dumps(snapshot_data, ensure_ascii=False, indent=1), encoding="utf-8"
     )
     try:
-        snapshot = Snapshot.model_validate(snapshot_data)
-        fits = "Yes. Validates against the current Snapshot model and can be loaded today."
+        Snapshot.model_validate(snapshot_data)
+        fits = "Yes. Validates against the current Snapshot model."
     except ValidationError as exc:
-        snapshot = None
         reasons = "; ".join(f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors()[:3])
-        fits = (
-            f"No. Exceeds the current MVP snapshot limits ({reasons}). Intended for the new engine."
-        )
-    if snapshot is not None:
-        for entity in ("jobs", "resources", "lanes"):
-            (out / f"{entity}.csv").write_text(template(snapshot, entity), encoding="utf-8")
+        fits = f"No. Exceeds the current snapshot limits ({reasons}). Intended for the new engine."
 
     # Summary: region imbalance, value and empty-return pressure.
     flows: defaultdict[str, Counter[str]] = defaultdict(Counter)
@@ -372,7 +365,7 @@ def main() -> None:
         f"| Offered spot/backhaul jobs | {by_state['offered']} (SAR {revenue['offered'] / 100:,.0f}) |",
         f"| Loaded km, all jobs | {loaded_km:,.0f} |",
         f"| Driver rest / workshop blocks | {'none' if args.no_rest_blocks else 'weekly 24 h rest per driver; ~5% tractors in workshop'} |",
-        f"| Loadable by current app | {fits} |",
+        f"| Fits current engine | {fits} |",
         "",
         "Confirmed loads by region (out = pickups, in = deliveries). A positive balance means "
         "trucks accumulate there and must leave empty or find backhauls:",

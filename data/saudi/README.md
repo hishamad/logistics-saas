@@ -7,7 +7,7 @@ Researched 12 October 2026. Real where sourced; every assumption is labelled. No
 | File | Content | Origin |
 | --- | --- | --- |
 | `sites.csv` | 28 freight nodes: ports, industrial cities, border crossings, major cities (EN/AR names, approximate coordinates) | Coordinates approximate (±few km); `snapped_road_m` is the OSRM snap distance (all < 3 km) |
-| `lanes.csv` | 756 directed lanes in the app's lane import format | Distance: [OSRM](https://project-osrm.org/) on OpenStreetMap roads (car profile). Truck duration = car duration × 1.3 (**assumption**) |
+| `lanes.csv` | 756 directed lanes (from, to, distance, duration, source) | Distance: [OSRM](https://project-osrm.org/) on OpenStreetMap roads (car profile). Truck duration = car duration × 1.3 (**assumption**) |
 
 Regenerate with `scripts/build_saudi_lanes.py` (see its docstring). Spot checks: Dammam port→Riyadh 431 km, Riyadh→Jeddah 945 km, Jeddah→Jazan 698 km, Riyadh→Tabuk 1,350 km.
 
@@ -15,11 +15,11 @@ The OSRM demo server is car-only and has no weight or height restrictions. Befor
 
 ## Scenarios
 
-`scenarios/<name>/` is created by `backend/scripts/generate_saudi_scenario.py`. Each scenario contains a full `snapshot.json` and its own README with region-imbalance statistics. When the scenario fits the app's current limits, it also contains import CSVs.
+`scenarios/<name>/` is created by `backend/scripts/generate_saudi_scenario.py`. Each scenario contains a full `snapshot.json` and its own README with region-imbalance statistics.
 
-| Scenario | Fleet | Horizon | Jobs | Current app |
+| Scenario | Fleet | Horizon | Jobs | Current engine |
 | --- | --- | --- | --- | --- |
-| `pilot` | 40 teams (Dammam 20, Riyadh 12, Jeddah 8) | 48 h | 56 confirmed, 14 offered | Loads today |
+| `pilot` | 40 teams (Dammam 20, Riyadh 12, Jeddah 8) | 48 h | 56 confirmed, 14 offered | Runs today |
 | `full` | 100 teams (Dammam 50, Riyadh 30, Jeddah 20) | 7 days | 490 confirmed, 122 offered spot/backhaul; weekly 24 h driver rest | Too large (60 teams / 200 jobs cap): target for the new engine |
 
 The scenarios use fictional customers. The lane weights reproduce "full into Riyadh, empty back": in the full scenario the East ships 143 more loads than it receives and Central receives 137 more. Rates are SAR 9/km head-haul, 5.5/km backhaul and 12/km short-haul, with a SAR 700 minimum. These are **assumptions** calibrated to the single Dammam→Riyadh data point below.

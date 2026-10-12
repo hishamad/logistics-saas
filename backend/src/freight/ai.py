@@ -4,6 +4,7 @@ import json
 from datetime import timedelta
 from time import perf_counter
 from typing import Any, Literal
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from openai import (
@@ -16,7 +17,6 @@ from openai import (
 )
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-from freight.db import new_id
 from freight.domain.models import Rule, Snapshot, Window
 from freight.settings import get_settings
 
@@ -97,7 +97,7 @@ def validate_interpretation(
             else None
         )
         rule = Rule(
-            id=new_id(),
+            id=str(uuid4()),
             kind=interpretation.kind,
             resource_id=interpretation.resource_id,
             team_id=interpretation.team_id,

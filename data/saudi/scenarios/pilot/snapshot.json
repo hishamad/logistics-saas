@@ -1,7 +1,7 @@
 {
  "tenant_id": "demo",
  "scope_id": "saudi-pilot",
- "name": "Saudi network · 40 trucks · 2 days · Synthetic",
+ "name": "Saudi network - 40 trucks - 2 days - synthetic",
  "horizon": {
   "start": "2026-10-18T03:00:00Z",
   "end": "2026-10-20T03:00:00Z"

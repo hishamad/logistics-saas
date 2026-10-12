@@ -7,17 +7,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
-.coverage
-htmlcov/
 .hypothesis/
-deploy/secrets/
-deploy/provisioning/
 *.egg-info/
-node_modules/
-.next/
-out/
-*.tsbuildinfo
 .runtime/
-playwright-report/
-test-results/
 *.log
