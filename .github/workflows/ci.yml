@@ -1,0 +1,73 @@
+name: Verify freight application
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: freight
+          POSTGRES_PASSWORD: freight_ci_only
+          POSTGRES_DB: freight
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U freight"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql+psycopg://freight:freight_ci_only@127.0.0.1:5432/freight
+      FREIGHT_TEST_DATABASE_URL: postgresql+psycopg://freight:freight_ci_only@127.0.0.1:5432/freight
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Python checks and PostgreSQL regressions
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv run ruff check src tests scripts migrations
+          uv run ruff format --check src tests scripts migrations
+          uv run mypy src
+          uv run pytest -q
+          uv run pip-audit
+          uv run python scripts/export_openapi.py
+          uv run alembic upgrade head
+      - name: Frontend contract, types and production build
+        working-directory: apps/web
+        run: |
+          npm ci
+          npm run api:generate
+          npm run typecheck
+          npm run format:check
+          npm audit --audit-level=high
+          npm run build
+          git diff --exit-code -- openapi.json lib/api-schema.ts
+          npx playwright install --with-deps chromium
+      - name: Real browser workflow
+        run: |
+          mkdir -p .runtime
+          (cd backend && uv run python -m uvicorn freight.api.app:app --host 127.0.0.1 --no-proxy-headers > ../.runtime/api.log 2>&1) &
+          (cd backend && uv run python -m freight.workers.runner > ../.runtime/worker.log 2>&1) &
+          (cd apps/web && npm run start > ../../.runtime/web.log 2>&1) &
+          for n in $(seq 1 30); do curl --fail --silent http://127.0.0.1:3000 > /dev/null && curl --fail --silent http://127.0.0.1:8000/health > /dev/null && break; sleep 1; done
+          cd apps/web && npm run test:e2e
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-failure
+          path: |
+            .runtime/*.log
+            apps/web/test-results
+      - name: Build deployable images
+        run: |
+          docker build -f backend/Dockerfile -t freight-api:ci .
+          docker build -f apps/web/Dockerfile -t freight-web:ci .

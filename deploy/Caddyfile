@@ -1,0 +1,18 @@
+{$PUBLIC_HOST} {
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options nosniff
+        Referrer-Policy no-referrer
+        -Server
+    }
+    request_body {
+        max_size 2100KB
+    }
+    @backend path /api/* /health
+    handle @backend {
+        reverse_proxy api:8000
+    }
+    handle {
+        reverse_proxy web:3000
+    }
+}

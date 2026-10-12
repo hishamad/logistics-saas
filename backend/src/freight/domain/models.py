@@ -1,0 +1,324 @@
+from __future__ import annotations
+
+import hashlib
+import json
+from datetime import UTC, datetime
+from decimal import Decimal
+from typing import Annotated, Literal, Self
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+Identifier = Annotated[str, Field(min_length=1, max_length=100, pattern=r"^[\w.-]+$")]
+Equipment = Literal["dry_van", "flatbed"]
+
+
+class Model(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+
+class Window(Model):
+    start: datetime
+    end: datetime
+
+    @field_validator("start", "end")
+    @classmethod
+    def timezone_required(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("An explicit timezone is required")
+        return value.astimezone(UTC)
+
+    @model_validator(mode="after")
+    def ordered(self) -> Self:
+        if self.end < self.start:
+            raise ValueError("Window end precedes its start")
+        return self
+
+
+class Site(Model):
+    id: Identifier
+    name: str = Field(min_length=1, max_length=150)
+    name_ar: str = Field(default="", max_length=150)
+
+
+class Resource(Model):
+    id: Identifier
+    name: str = Field(min_length=1, max_length=150)
+    kind: Literal["tractor", "trailer", "driver"]
+    site_id: Identifier
+    availability: Window
+    unavailable: tuple[Window, ...] = Field(default=(), max_length=100)
+    equipment: Equipment | None = None
+    capacity_kg: int | None = Field(default=None, gt=0, le=100_000)
+    confirmed_at: datetime
+
+    @field_validator("confirmed_at")
+    @classmethod
+    def aware_confirmation(cls, value: datetime) -> datetime:
+        return Window.timezone_required(value)
+
+    @model_validator(mode="after")
+    def trailer_details(self) -> Self:
+        if self.kind == "trailer" and (self.equipment is None or self.capacity_kg is None):
+            raise ValueError("Trailer equipment and capacity are required")
+        return self
+
+
+class Team(Model):
+    id: Identifier
+    name: str = Field(min_length=1, max_length=150)
+    tractor_id: Identifier
+    trailer_id: Identifier
+    driver_id: Identifier
+
+    @property
+    def resource_ids(self) -> tuple[str, str, str]:
+        return self.tractor_id, self.trailer_id, self.driver_id
+
+
+class Job(Model):
+    id: Identifier
+    reference: str = Field(min_length=1, max_length=100)
+    customer: str = Field(min_length=1, max_length=150)
+    pickup_site_id: Identifier
+    delivery_site_id: Identifier
+    pickup_window: Window
+    delivery_window: Window
+    delivery_window_kind: Literal["service_start", "completion"] = "completion"
+    loading_minutes: int = Field(default=30, ge=0, le=480)
+    unloading_minutes: int = Field(default=30, ge=0, le=480)
+    turnaround_minutes: int = Field(default=15, ge=0, le=480)
+    equipment: Equipment
+    weight_kg: int = Field(gt=0, le=100_000)
+    priority: int = Field(default=1, ge=1, le=3)
+    state: Literal["confirmed", "offered", "cancelled"] = "confirmed"
+    revenue_minor: int | None = Field(default=None, ge=0)
+
+
+class Lane(Model):
+    from_site_id: Identifier
+    to_site_id: Identifier
+    distance_m: int = Field(ge=0, le=10_000_000)
+    duration_minutes: int = Field(ge=0, le=10_000)
+    source: str = Field(default="synthetic", min_length=1, max_length=200)
+
+    @model_validator(mode="after")
+    def physical_movement(self) -> Self:
+        if self.from_site_id == self.to_site_id:
+            if self.distance_m or self.duration_minutes:
+                raise ValueError("A same-site lane must have zero distance and duration")
+        elif self.distance_m == 0 or self.duration_minutes == 0:
+            raise ValueError(
+                "Travel between distinct sites requires positive distance and duration"
+            )
+        return self
+
+
+class CostProfile(Model):
+    currency: Literal["SAR"] = "SAR"
+    distance_minor_per_km: Decimal | None = Field(default=None, ge=0, le=100_000, decimal_places=2)
+    duty_minor_per_hour: Decimal | None = Field(default=None, ge=0, le=100_000, decimal_places=2)
+    includes_fuel: Literal[True] = True
+    exclusions: tuple[str, ...] = ("Fixed overhead", "Taxes", "Unmodeled tolls")
+
+    @property
+    def complete(self) -> bool:
+        return self.distance_minor_per_km is not None and self.duty_minor_per_hour is not None
+
+
+class Rule(Model):
+    id: Identifier
+    kind: Literal[
+        "resource_unavailable", "required_end", "customer_eligibility", "preferred_assignment"
+    ]
+    resource_id: str | None = None
+    team_id: str | None = None
+    job_id: str | None = None
+    site_id: str | None = None
+    customer: str | None = None
+    window: Window | None = None
+    strength: Literal["hard", "soft"] = "hard"
+    penalty_minor: int = Field(default=0, ge=0, le=1_000_000)
+    source_text: str = Field(default="Manual rule", max_length=2000)
+
+    @model_validator(mode="after")
+    def required_fields(self) -> Self:
+        required = {
+            "resource_unavailable": ("resource_id", "window"),
+            "required_end": ("team_id", "site_id", "window"),
+            "customer_eligibility": ("team_id", "customer"),
+            "preferred_assignment": ("team_id", "job_id"),
+        }
+        for field in required[self.kind]:
+            if getattr(self, field) is None:
+                raise ValueError(f"{self.kind} requires {field}")
+        for field in ("resource_id", "team_id", "job_id", "site_id", "customer", "window"):
+            if field not in required[self.kind] and getattr(self, field) is not None:
+                raise ValueError(f"{self.kind} does not use {field}")
+        if self.kind != "preferred_assignment" and self.strength != "hard":
+            raise ValueError("This rule type must be hard")
+        if (
+            self.kind == "resource_unavailable"
+            and self.window
+            and self.window.start == self.window.end
+        ):
+            raise ValueError("Unavailability must have a positive duration")
+        return self
+
+
+class AssignmentLock(Model):
+    job_id: Identifier
+    team_id: Identifier
+    pickup_at: datetime | None = None
+
+    @field_validator("pickup_at")
+    @classmethod
+    def aware_time(cls, value: datetime | None) -> datetime | None:
+        return Window.timezone_required(value) if value else None
+
+
+class Snapshot(Model):
+    schema_version: Literal[1] = 1
+    tenant_id: Identifier
+    scope_id: Identifier
+    name: str = Field(min_length=1, max_length=150)
+    mode: Literal["demo", "shadow"] = "demo"
+    timezone: Literal["Asia/Riyadh"] = "Asia/Riyadh"
+    horizon: Window
+    sites: tuple[Site, ...] = Field(max_length=100)
+    resources: tuple[Resource, ...] = Field(max_length=300)
+    teams: tuple[Team, ...] = Field(max_length=60)
+    jobs: tuple[Job, ...] = Field(max_length=200)
+    lanes: tuple[Lane, ...] = Field(max_length=10_000)
+    rules: tuple[Rule, ...] = Field(default=(), max_length=500)
+    locks: tuple[AssignmentLock, ...] = Field(default=(), max_length=200)
+    costs: CostProfile = CostProfile()
+    return_to_start: bool = True
+    freshness_minutes: int = Field(default=24 * 60, ge=1)
+
+    @model_validator(mode="after")
+    def references(self) -> Self:
+        if not self.sites or not self.teams:
+            raise ValueError("At least one site and one team are required")
+        if not 0 < (self.horizon.end - self.horizon.start).total_seconds() <= 7 * 86400:
+            raise ValueError("The planning horizon must be positive and no longer than seven days")
+        if len(self.teams) > 60 or len(self.jobs) > 200:
+            raise ValueError("MVP limit: 60 teams and 200 jobs per snapshot")
+        for name in ("sites", "resources", "teams", "jobs", "rules"):
+            rows = getattr(self, name)
+            if len({row.id for row in rows}) != len(rows):
+                raise ValueError(f"Duplicate IDs in {name}")
+        sites = {site.id for site in self.sites}
+        resources = {resource.id: resource for resource in self.resources}
+        teams = {team.id for team in self.teams}
+        jobs = {job.id for job in self.jobs}
+        for resource in self.resources:
+            if resource.site_id not in sites:
+                raise ValueError(f"Unknown resource site: {resource.id}")
+        for team in self.teams:
+            for resource_id, kind in zip(
+                team.resource_ids, ("tractor", "trailer", "driver"), strict=True
+            ):
+                if resource_id not in resources or resources[resource_id].kind != kind:
+                    raise ValueError(f"Invalid {kind} in team {team.id}")
+            if len({resources[r].site_id for r in team.resource_ids}) != 1:
+                raise ValueError(f"Team {team.id} is not co-located")
+        for job in self.jobs:
+            if job.pickup_site_id not in sites or job.delivery_site_id not in sites:
+                raise ValueError(f"Unknown job site: {job.id}")
+        lane_keys = [(lane.from_site_id, lane.to_site_id) for lane in self.lanes]
+        if len(set(lane_keys)) != len(lane_keys):
+            raise ValueError("Duplicate directed lanes")
+        for lane in self.lanes:
+            if lane.from_site_id not in sites or lane.to_site_id not in sites:
+                raise ValueError("Unknown lane site")
+        for rule in self.rules:
+            if rule.customer is not None and rule.customer not in {j.customer for j in self.jobs}:
+                raise ValueError(f"Unknown customer in rule {rule.id}")
+            for field, allowed in (
+                ("resource_id", resources),
+                ("team_id", teams),
+                ("job_id", jobs),
+                ("site_id", sites),
+            ):
+                if getattr(rule, field) is not None and getattr(rule, field) not in allowed:
+                    raise ValueError(f"Unknown {field} in rule {rule.id}")
+        if len({lock.job_id for lock in self.locks}) != len(self.locks):
+            raise ValueError("Duplicate job locks")
+        for lock in self.locks:
+            if lock.job_id not in jobs or lock.team_id not in teams:
+                raise ValueError("Unknown lock reference")
+        return self
+
+    @property
+    def fingerprint(self) -> str:
+        canonical = json.dumps(self.model_dump(mode="json"), sort_keys=True, separators=(",", ":"))
+        return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+class Activity(Model):
+    team_id: Identifier
+    kind: Literal["empty", "loading", "loaded", "unloading", "turnaround", "waiting"]
+    from_site_id: Identifier
+    to_site_id: Identifier
+    start: datetime
+    end: datetime
+    job_id: str | None = None
+    distance_m: int = Field(default=0, ge=0)
+
+    @field_validator("start", "end")
+    @classmethod
+    def aware_time(cls, value: datetime) -> datetime:
+        return Window.timezone_required(value)
+
+
+class Assignment(Model):
+    job_id: Identifier
+    team_id: Identifier
+    pickup_at: datetime
+    delivery_at: datetime
+    released_at: datetime
+
+    @field_validator("pickup_at", "delivery_at", "released_at")
+    @classmethod
+    def aware_time(cls, value: datetime) -> datetime:
+        return Window.timezone_required(value)
+
+
+class Finding(Model):
+    code: str
+    message: str
+    entity_ids: tuple[str, ...] = ()
+
+
+class CostBreakdown(Model):
+    available: bool
+    distance_minor: int | None
+    duty_minor: int | None
+    total_minor: int | None
+    empty_distance_m: int
+    loaded_distance_m: int
+    duty_minutes: int
+    currency: Literal["SAR"] = "SAR"
+    exclusions: tuple[str, ...] = ()
+
+
+class Plan(Model):
+    snapshot_hash: str
+    method: Literal["baseline", "cp_sat", "manual"]
+    outcome: Literal["optimal", "feasible", "unknown", "proven_infeasible", "model_invalid"]
+    coverage: Literal["complete", "partial"]
+    assignments: tuple[Assignment, ...] = ()
+    activities: tuple[Activity, ...] = ()
+    unserved_job_ids: tuple[str, ...] = ()
+    findings: tuple[Finding, ...] = ()
+    costs: CostBreakdown | None = None
+    runtime_ms: int = 0
+    objective_penalty_minor: int = 0
+    diagnostic: bool = False
+    solver_version: str | None = None
+    objective_bound: float | None = None
+    model_stats: dict[str, int | float] = {}
+
+    @property
+    def valid(self) -> bool:
+        return not self.findings and self.outcome in ("feasible", "optimal")

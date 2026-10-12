@@ -1,0 +1,45 @@
+{
+  "fixture": "50 teams / 150 jobs / 48 hours \u00b7 Synthetic benchmark",
+  "snapshot_hash": "ee120a839aa79f0ecb3d3853c6b334dd55505f68c4088773a9ddcf71ccd0d208",
+  "platform": "Windows-11-10.0.22631-SP0",
+  "processor": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD",
+  "logical_cpus": 16,
+  "solver_threads": 1,
+  "solver_seed": 7,
+  "decision_horizon_hours": 48,
+  "lane_source": "Synthetic fixture only",
+  "results": {
+    "baseline": {
+      "outcome": "feasible",
+      "valid": true,
+      "coverage": "complete",
+      "served": 150,
+      "total_jobs": 150,
+      "wall_seconds": 16.538,
+      "validation_ms": 6.148,
+      "modeled_cost_minor": 4277042,
+      "findings": [],
+      "solver_version": null,
+      "model_stats": {}
+    },
+    "cp_sat": {
+      "outcome": "feasible",
+      "valid": true,
+      "coverage": "complete",
+      "served": 150,
+      "total_jobs": 150,
+      "wall_seconds": 30.468,
+      "validation_ms": 6.645,
+      "modeled_cost_minor": 4277042,
+      "findings": [],
+      "solver_version": "9.15.6755",
+      "model_stats": {
+        "variables": 265189,
+        "constraints": 292999,
+        "candidate_assignments": 4560,
+        "sequence_arcs": 246596,
+        "model_build_ms": 8779
+      }
+    }
+  }
+}
