@@ -19,7 +19,7 @@ backend/                 Python planning engine
   tests/                 engine tests
 data/saudi/              real road network (28 sites) + generated scenarios
 data/benchmarks/         public academic test problems
-docs/                    Saudi road freight guide, reference screenshots
+docs/                    product brief, Saudi road freight guide, reference screenshots
 scripts/                 builds the road network from OpenStreetMap
 ```
 
