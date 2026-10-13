@@ -15,6 +15,7 @@ backend/                 Python planning engine
     planning/engine.py   the planner: route simulator with driving-hours rules + ruin-and-recreate search
     planning/            older planners kept for comparison: greedy baseline, CP-SAT
     ai.py                turns Arabic/English dispatcher instructions into typed rules (parked)
+    board.py             plan board: renders a plan as a self-contained HTML timeline
     cli.py               command line: plan a scenario
   scripts/               scenario generator
   tests/                 engine tests
@@ -36,7 +37,7 @@ uv sync
 uv run freight plan ../data/saudi/scenarios/full/snapshot.json --seconds 60
 ```
 
-Add `--method baseline` to run the old greedy planner, or `--confirmed-only` to ignore offer loads.
+Add `--board ../boards/week.html` to also write the **plan board**: a single HTML file showing every truck's week on a timeline, with hover details, itineraries and unserved jobs. It opens in any browser without a server. Add `--method baseline` to run the old greedy planner, or `--confirmed-only` to ignore offer loads.
 
 ```bash
 uv run pytest

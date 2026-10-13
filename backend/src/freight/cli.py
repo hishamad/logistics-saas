@@ -7,39 +7,15 @@ uv run freight plan ../data/saudi/scenarios/pilot/snapshot.json --method baselin
 
 import argparse
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
-from freight.domain.models import Activity, Plan, Snapshot
+from freight.board import empty_breakdown, render_board
+from freight.domain.models import Plan, Snapshot
 from freight.fixtures import demo_snapshot
 from freight.planning.baseline import baseline_plan
 from freight.planning.engine import plan_lns
 from freight.planning.solver import solve_plan
-
-
-def empty_breakdown(plan: Plan) -> Counter[str]:
-    """Empty kilometres by reason: before the first job, between jobs, after the last."""
-    by_team: defaultdict[str, list[Activity]] = defaultdict(list)
-    for activity in plan.activities:
-        by_team[activity.team_id].append(activity)
-    reasons: Counter[str] = Counter()
-    for activities in by_team.values():
-        activities.sort(key=lambda a: a.start)
-        jobs_seen = 0
-        total_jobs = len({a.job_id for a in activities if a.job_id})
-        for activity in activities:
-            if activity.kind == "loading":
-                jobs_seen += 1
-            if activity.kind == "empty":
-                reason = (
-                    "to first pickup"
-                    if jobs_seen == 0
-                    else "after last job"
-                    if jobs_seen == total_jobs
-                    else "between jobs"
-                )
-                reasons[reason] += activity.distance_m
-    return reasons
 
 
 def summary(snapshot: Snapshot, plan: Plan) -> str:
@@ -99,6 +75,7 @@ def main() -> None:
         "--confirmed-only", action="store_true", help="Ignore offered loads (for comparisons)"
     )
     parser.add_argument("--json", type=Path, help="Also write the full plan to this file")
+    parser.add_argument("--board", type=Path, help="Also write an HTML plan board to this file")
     args = parser.parse_args()
     snapshot = (
         Snapshot.model_validate_json(args.scenario.read_text(encoding="utf-8"))
@@ -116,6 +93,9 @@ def main() -> None:
     else:
         plan = solve_plan(snapshot, seconds=args.seconds, diagnostic=args.diagnostic)
     print(summary(snapshot, plan))
+    if args.board:
+        args.board.write_text(render_board(snapshot, plan), encoding="utf-8")
+        print(f"Board      {args.board.resolve()}")
     if args.json:
         args.json.write_text(
             json.dumps(plan.model_dump(mode="json"), ensure_ascii=False, indent=1),

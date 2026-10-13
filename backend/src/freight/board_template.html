@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan board</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --raised: #ffffff;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --ring: rgba(11, 11, 11, 0.10);
+  --night: rgba(137, 135, 129, 0.08);
+  --loaded: #2a78d6;
+  --loaded-ink: #184f95;
+  --empty: #eb6834;
+  --handling: #1baf7a;
+  --waiting: #eda100;
+  --rest: #c3c2b7;
+  --good: #0ca30c;
+  --critical: #d03b3b;
+  --select: rgba(42, 120, 214, 0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --raised: #222221; --ink: #ffffff; --ink-2: #c3c2b7;
+    --muted: #898781; --grid: #2c2c2a; --axis: #383835; --ring: rgba(255, 255, 255, 0.10);
+    --night: rgba(255, 255, 255, 0.035); --loaded: #3987e5; --loaded-ink: #86b6ef;
+    --empty: #d95926; --handling: #199e70; --waiting: #c98500; --rest: #52514e;
+    --select: rgba(57, 135, 229, 0.16);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --raised: #222221; --ink: #ffffff; --ink-2: #c3c2b7;
+  --muted: #898781; --grid: #2c2c2a; --axis: #383835; --ring: rgba(255, 255, 255, 0.10);
+  --night: rgba(255, 255, 255, 0.035); --loaded: #3987e5; --loaded-ink: #86b6ef;
+  --empty: #d95926; --handling: #199e70; --waiting: #c98500; --rest: #52514e;
+  --select: rgba(57, 135, 229, 0.16);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page); color: var(--ink);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 1440px; margin: 0 auto; padding: 24px 16px 48px; }
+header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.meta { color: var(--ink-2); margin: 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid var(--ring); font-size: 12px; color: var(--ink); background: var(--raised); }
+.badge .dot { width: 8px; height: 8px; border-radius: 50%; }
+button, select, input[type="search"] {
+  font: inherit; color: var(--ink); background: var(--raised); border: 1px solid var(--ring);
+  border-radius: 8px; padding: 6px 10px;
+}
+button { cursor: pointer; }
+button[aria-pressed="true"] { background: var(--select); border-color: var(--loaded); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin: 20px 0; }
+.tile { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 14px 16px; }
+.tile .label { color: var(--ink-2); font-size: 13px; }
+.tile .value { font-size: 26px; font-weight: 600; margin-top: 2px; }
+.tile .value small { font-size: 15px; font-weight: 500; color: var(--ink-2); }
+.tile .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.panel { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--grid); }
+.controls .grow { flex: 1 1 180px; min-width: 0; }
+.controls input[type="search"] { width: 100%; }
+.controls label.check { display: inline-flex; gap: 6px; align-items: center; color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 10px 16px; color: var(--ink-2); font-size: 12px; border-bottom: 1px solid var(--grid); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.k0 { background: var(--loaded); } .k1 { background: var(--empty); } .k2 { background: var(--handling); }
+.k3 { background: var(--waiting); } .k4 { background: var(--rest); }
+.offer { background-image: repeating-linear-gradient(45deg, transparent 0 3px, var(--loaded-ink) 3px 4.5px); }
+.scroll { overflow-x: auto; position: relative; }
+.timeline { position: relative; }
+.axis { position: sticky; top: 0; z-index: 3; display: flex; background: var(--surface); border-bottom: 1px solid var(--axis); }
+.axis .corner, .row .who { width: 210px; flex: 0 0 210px; position: sticky; left: 0; z-index: 2; background: var(--surface); }
+.axis .corner { padding: 8px 16px; color: var(--muted); font-size: 12px; }
+.ticks { position: relative; height: 40px; flex: 1 0 auto; }
+.tick { position: absolute; top: 0; height: 100%; border-left: 1px solid var(--grid); padding-left: 6px; font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tick.day { border-left-color: var(--axis); color: var(--ink-2); font-weight: 600; }
+.tick .hour { position: absolute; bottom: 4px; left: 6px; font-weight: 400; color: var(--muted); }
+.group { padding: 10px 16px 4px; font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; position: sticky; left: 0; }
+.row { display: flex; align-items: stretch; height: 42px; border-bottom: 1px solid var(--grid); cursor: pointer; }
+.row:hover .who, .row:hover .lane { background-color: var(--select); }
+.row.selected .who, .row.selected .lane { background-color: var(--select); }
+.row .who { padding: 3px 16px; line-height: 1.3; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--grid); }
+.row .who b { font-weight: 600; font-size: 13px; }
+.row .who span { color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lane { position: relative; flex: 1 0 auto; }
+.night { position: absolute; top: 0; bottom: 0; background: var(--night); pointer-events: none; }
+.dayline { position: absolute; top: 0; bottom: 0; border-left: 1px solid var(--grid); pointer-events: none; }
+.horizon { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--axis); pointer-events: none; }
+.seg { position: absolute; top: 14px; height: 14px; border-radius: 3px; }
+.seg.k3, .seg.k4 { top: 17px; height: 8px; }
+.pause { position: absolute; top: 0; bottom: 0; background: var(--rest); }
+.hit { position: absolute; top: 4px; bottom: 4px; }
+.tooltip { position: fixed; z-index: 10; pointer-events: none; max-width: 320px; background: var(--raised); color: var(--ink);
+  border: 1px solid var(--ring); border-radius: 10px; padding: 10px 12px; font-size: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.14); display: none; }
+.tooltip b { font-size: 13px; }
+.tooltip .t2 { color: var(--ink-2); }
+.tooltip .ar { color: var(--muted); direction: rtl; unicode-bidi: plaintext; }
+.detail { margin-top: 16px; padding: 16px; }
+.detail .head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.stats { display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-2); font-size: 13px; margin: 6px 0 12px; }
+.stats b { color: var(--ink); }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td .key { margin-right: 6px; vertical-align: middle; }
+.empty-note { color: var(--muted); padding: 16px; }
+.section { margin-top: 16px; padding: 16px; }
+footer { color: var(--muted); font-size: 12px; margin-top: 20px; }
+.status { display: inline-flex; align-items: center; gap: 6px; }
+.status svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Plan board</h1>
+      <p class="meta" id="meta"></p>
+    </div>
+    <button id="theme" type="button" aria-label="Toggle light or dark theme">Theme</button>
+  </header>
+
+  <section class="tiles" id="tiles" aria-label="Key figures"></section>
+
+  <section class="panel" aria-label="Truck timeline">
+    <div class="controls">
+      <div class="grow"><input type="search" id="search" placeholder="Search truck, job reference, customer or site" aria-label="Search"></div>
+      <select id="depot" aria-label="Depot"></select>
+      <select id="sort" aria-label="Sort trucks">
+        <option value="depot">Sort: depot</option>
+        <option value="empty">Sort: most empty km</option>
+        <option value="revenue">Sort: most revenue</option>
+        <option value="idle">Sort: fewest jobs</option>
+      </select>
+      <label class="check"><input type="checkbox" id="offers"> With offer loads</label>
+      <button type="button" id="zoom-week" aria-pressed="true">Week</button>
+      <button type="button" id="zoom-detail" aria-pressed="false">Detail</button>
+    </div>
+    <div class="legend" aria-label="Legend">
+      <span><i class="key k0"></i>Loaded</span>
+      <span><i class="key k0 offer"></i>Loaded, offer load</span>
+      <span><i class="key k1"></i>Empty</span>
+      <span><i class="key k2"></i>Loading / unloading</span>
+      <span><i class="key k3"></i>Waiting</span>
+      <span><i class="key k4"></i>Rest / break / day off</span>
+      <span style="margin-left:auto">Shaded = night (18:00–06:00 Riyadh) · dashed line = end of planning window</span>
+    </div>
+    <div class="scroll" id="scroll"><div class="timeline" id="timeline"></div></div>
+  </section>
+
+  <section class="panel detail" id="detail" aria-live="polite">
+    <p class="empty-note" style="padding:0;margin:0">Click a truck to see its full itinerary.</p>
+  </section>
+
+  <section class="panel section" id="unserved-section"></section>
+
+  <footer id="footer"></footer>
+</main>
+<div class="tooltip" id="tooltip" role="tooltip"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const KIND_LABEL = ["Loaded", "Empty", "Handling", "Waiting", "Rest"];
+const ACT_LABEL = { loaded: "Loaded drive", empty: "Empty drive", loading: "Loading", unloading: "Unloading",
+  turnaround: "Turnaround", waiting: "Waiting", rest: "Rest" };
+const origin = new Date(DATA.origin).getTime();
+const RIYADH = 180; // minutes east of UTC; Saudi Arabia has no daylight saving
+const fmtDay = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", weekday: "short", day: "numeric", month: "short" });
+const fmtTime = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false });
+const at = m => new Date(origin + m * 60000);
+const when = m => fmtTime.format(at(m));
+const sar = v => v == null ? "—" : "SAR " + Math.round(v / 100).toLocaleString("en-US");
+const sarShort = v => {
+  if (v == null) return "—";
+  const s = v / 100;
+  return "SAR " + (Math.abs(s) >= 1e6 ? (s / 1e6).toFixed(2) + "M" : Math.abs(s) >= 1e4 ? Math.round(s / 1e3) + "K" : Math.round(s).toLocaleString("en-US"));
+};
+const num = v => Math.round(v).toLocaleString("en-US");
+const dur = m => { const h = Math.floor(m / 60), r = m % 60; return h ? `${h} h${r ? " " + r + " m" : ""}` : `${r} m`; };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const site = id => DATA.sites[id] ? DATA.sites[id][0] : id;
+const siteAr = id => DATA.sites[id] ? DATA.sites[id][1] : "";
+const ICON_OK = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="var(--good)"/><path d="M4.5 8.2l2.2 2.2 4.8-4.8" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_BAD = '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" fill="var(--critical)"/><path d="M8 4.5v4.5M8 11.3v.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
+// ---- Header, tiles, footer --------------------------------------------------
+const k = DATA.kpis;
+document.title = "Plan board · " + DATA.name;
+document.getElementById("meta").innerHTML =
+  `<span>${esc(DATA.name)}</span><span>·</span><span>${fmtDay.format(at(0))} – ${fmtDay.format(at(DATA.horizonEnd - 1))}</span>` +
+  `<span>·</span><span>Planned in ${k.runtime_s} s (${esc(DATA.method)})</span>` +
+  `<span class="badge status">${DATA.valid ? ICON_OK + "Passed independent validation" : ICON_BAD + "Validation findings: " + esc(DATA.findings.join(", "))}</span>`;
+
+const totalKm = k.loaded_km + k.empty_km;
+const reasons = Object.entries(DATA.emptyReasons).sort((a, b) => b[1] - a[1])
+  .map(([r, v]) => `${r.toLowerCase()} ${num(v)}`).join(" · ");
+const tiles = [
+  ["Confirmed jobs served", `${num(k.served)}<small> / ${num(k.confirmed)}</small>`, k.confirmed - k.served ? `${k.confirmed - k.served} unserved, listed below` : "All confirmed work covered"],
+  ["Offer loads accepted", `${num(k.accepted)}<small> / ${num(k.offered)}</small>`, k.offered ? "Taken only when they earn more than they cost" : "No offers in this scenario"],
+  ["Empty driving", `${totalKm ? Math.round(100 * k.empty_km / totalKm) : 0}<small>%</small>`, `${num(k.empty_km)} of ${num(totalKm)} km · ${reasons} km`],
+  ["Revenue per truck-day", k.revenue == null ? "—" : sarShort(k.revenue / k.trucks / k.days), `${k.trucks} trucks over ${Math.round(k.days * 10) / 10} days`],
+  ["Contribution", k.revenue == null || k.cost == null ? "—" : sarShort(k.revenue - k.cost), "Revenue minus modeled cost"],
+  ["Modeled cost", sarShort(k.cost), "Fuel, tyres and driver time; excludes overhead"],
+];
+document.getElementById("tiles").innerHTML = tiles.map(([label, value, sub]) =>
+  `<div class="tile"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${esc(sub)}</div></div>`).join("");
+document.getElementById("footer").textContent =
+  "Synthetic scenario on real Saudi roads. Costs are modeled, not invoiced. Every activity was checked by the independent validator.";
+
+// ---- Controls --------------------------------------------------------------
+const depots = [...new Set(DATA.teams.map(t => t.depot))];
+const depotSelect = document.getElementById("depot");
+depotSelect.innerHTML = `<option value="">All depots</option>` + depots.map(d => `<option value="${esc(d)}">${esc(site(d))}</option>`).join("");
+const state = { search: "", depot: "", sort: "depot", offers: false, zoom: "week", selected: null };
+document.getElementById("search").addEventListener("input", e => { state.search = e.target.value.trim().toLowerCase(); render(); });
+depotSelect.addEventListener("change", e => { state.depot = e.target.value; render(); });
+document.getElementById("sort").addEventListener("change", e => { state.sort = e.target.value; render(); });
+document.getElementById("offers").addEventListener("change", e => { state.offers = e.target.checked; render(); });
+for (const z of ["week", "detail"]) {
+  document.getElementById("zoom-" + z).addEventListener("click", () => {
+    state.zoom = z;
+    document.getElementById("zoom-week").setAttribute("aria-pressed", z === "week");
+    document.getElementById("zoom-detail").setAttribute("aria-pressed", z === "detail");
+    render();
+  });
+}
+document.getElementById("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+window.addEventListener("resize", () => { if (state.zoom === "week") render(); });
+
+function matches(team) {
+  if (state.depot && team.depot !== state.depot) return false;
+  if (state.offers && !team.stats.offers) return false;
+  if (!state.search) return true;
+  const hay = [team.name, team.id, site(team.depot)];
+  for (const a of team.acts) {
+    hay.push(site(a[4]), site(a[5]));
+    if (a[3]) { const j = DATA.jobs[a[3]]; hay.push(j.ref, j.customer); }
+  }
+  return hay.some(v => String(v).toLowerCase().includes(state.search));
+}
+
+// ---- Timeline --------------------------------------------------------------
+const START = 0, END = Math.ceil(DATA.end / 1440) * 1440;
+function render() {
+  const scroll = document.getElementById("scroll");
+  const laneWidth = state.zoom === "week" ? Math.max(640, scroll.clientWidth - 212) : (END - START) / 60 * 22;
+  const px = laneWidth / (END - START);
+  const x = m => (m - START) * px;
+  const teams = DATA.teams.filter(matches);
+  const sorters = {
+    depot: (a, b) => depots.indexOf(a.depot) - depots.indexOf(b.depot) || a.name.localeCompare(b.name, "en", { numeric: true }),
+    empty: (a, b) => b.stats.empty_km - a.stats.empty_km,
+    revenue: (a, b) => b.stats.revenue - a.stats.revenue,
+    idle: (a, b) => a.stats.jobs - b.stats.jobs,
+  };
+  teams.sort(sorters[state.sort]);
+
+  // Night bands and day lines are shared by every row.
+  let background = "";
+  for (let day = START - 1440; day < END + 1440; day += 1440) {
+    // Riyadh midnight in planning minutes.
+    const midnight = day - ((origin / 60000 + RIYADH + day) % 1440 + 1440) % 1440 + 0;
+    const nightStart = midnight - 360, nightEnd = midnight + 360;
+    const a = Math.max(START, nightStart), b = Math.min(END, nightEnd);
+    if (b > a) background += `<div class="night" style="left:${x(a)}px;width:${x(b) - x(a)}px"></div>`;
+    if (midnight > START && midnight < END) background += `<div class="dayline" style="left:${x(midnight)}px"></div>`;
+  }
+  background += `<div class="horizon" style="left:${x(DATA.horizonEnd)}px"></div>`;
+
+  let ticks = "";
+  // Keep hour labels at least 48px apart; at 24 h only the day labels remain.
+  const stepHours = [3, 6, 12, 24].find(h => px * 60 * h >= 48) || 24;
+  const firstMidnight = START - ((origin / 60000 + RIYADH + START) % 1440 + 1440) % 1440;
+  for (let m = firstMidnight; m < END; m += stepHours * 60) {
+    if (m < START) continue;
+    const isDay = ((m - firstMidnight) % 1440) === 0;
+    const hour = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Riyadh", hour: "2-digit", minute: "2-digit", hour12: false }).format(at(m));
+    const hourLabel = stepHours < 24 ? `<span class="hour">${hour}</span>` : "";
+    ticks += `<div class="tick${isDay ? " day" : ""}" style="left:${x(m)}px">${isDay ? fmtDay.format(at(m)) : ""}${hourLabel}</div>`;
+  }
+  if (firstMidnight < START && x(firstMidnight + 1440) - x(START) > 90) {
+    ticks = `<div class="tick day" style="left:0">${fmtDay.format(at(START))}</div>` + ticks;
+  }
+
+  let html = `<div class="axis"><div class="corner">${teams.length} of ${DATA.teams.length} trucks</div><div class="ticks" style="width:${laneWidth}px">${ticks}</div></div>`;
+  let group = null;
+  for (const team of teams) {
+    if (state.sort === "depot" && team.depot !== group) {
+      group = team.depot;
+      html += `<div class="group">${esc(site(group))}</div>`;
+    }
+    let segs = "";
+    for (const a of team.acts) {
+      const left = x(a[1]), width = Math.max(1.5, x(a[2]) - x(a[1]) - (x(a[2]) - x(a[1]) > 3 ? 1 : 0));
+      const offer = a[0] === 0 && a[3] && DATA.jobs[a[3]].offer ? " offer" : "";
+      let pauses = "";
+      for (const p of a[7]) pauses += `<i class="pause" style="left:${x(p[1]) - left}px;width:${Math.max(1, x(p[2]) - x(p[1]))}px"></i>`;
+      segs += `<div class="seg k${a[0]}${offer}" style="left:${left}px;width:${width}px">${pauses}</div>`;
+    }
+    const s = team.stats;
+    html += `<div class="row${state.selected === team.id ? " selected" : ""}" data-team="${esc(team.id)}">` +
+      `<div class="who"><b>${esc(team.name)}</b><span>${esc(site(team.depot))} · ${esc(team.equipment.replace("_", " "))} · ${s.jobs} job${s.jobs === 1 ? "" : "s"}${s.offers ? ` (${s.offers} offer)` : ""}</span></div>` +
+      `<div class="lane" style="width:${laneWidth}px">${background}${segs}</div></div>`;
+  }
+  if (!teams.length) html += `<p class="empty-note">No trucks match these filters.</p>`;
+  const timeline = document.getElementById("timeline");
+  timeline.innerHTML = html;
+  timeline.dataset.px = px;
+}
+
+// ---- Hover tooltip and selection (event delegation) -------------------------
+const tooltip = document.getElementById("tooltip");
+function activityAt(row, clientX) {
+  const team = DATA.teams.find(t => t.id === row.dataset.team);
+  const lane = row.querySelector(".lane");
+  const px = Number(document.getElementById("timeline").dataset.px);
+  const minute = (clientX - lane.getBoundingClientRect().left) / px + START;
+  const slack = 4 / px; // a few pixels of tolerance so thin marks are hoverable
+  let best = null, bestDist = Infinity;
+  for (const a of team.acts) {
+    const d = minute < a[1] ? a[1] - minute : minute > a[2] ? minute - a[2] : 0;
+    if (d < bestDist && d <= slack) { best = a; bestDist = d; }
+  }
+  return [team, best, minute];
+}
+function describe(team, a, minute) {
+  const kind = a[8];
+  const job = a[3] ? DATA.jobs[a[3]] : null;
+  let lines = [`<b>${ACT_LABEL[kind]}${job ? " · " + esc(job.ref) : ""}${job && job.offer ? " (offer load)" : ""}</b>`];
+  if (a[4] !== a[5]) {
+    lines.push(`<div>${esc(site(a[4]))} → ${esc(site(a[5]))}</div><div class="ar">${esc(siteAr(a[4]))} ← ${esc(siteAr(a[5]))}</div>`);
+  } else {
+    lines.push(`<div>At ${esc(site(a[4]))}</div><div class="ar">${esc(siteAr(a[4]))}</div>`);
+  }
+  lines.push(`<div class="t2">${when(a[1])} → ${when(a[2])} · ${dur(a[2] - a[1])}</div>`);
+  if (a[6]) lines.push(`<div class="t2">${num(a[6])} km</div>`);
+  const pause = a[7].find(p => minute >= p[1] && minute <= p[2]);
+  if (a[7].length) {
+    const rests = a[7].filter(p => p[0] === "rest").length, breaks = a[7].length - rests;
+    lines.push(`<div class="t2">On the road: ${[breaks && `${breaks} break${breaks > 1 ? "s" : ""}`, rests && `${rests} overnight rest${rests > 1 ? "s" : ""}`].filter(Boolean).join(", ")}${pause ? ` (now: ${pause[0]} until ${when(pause[2])})` : ""}</div>`);
+  }
+  if (job) lines.push(`<div class="t2">${esc(job.customer)} · ${job.tonnes} t ${esc(job.equipment.replace("_", " "))} · ${sar(job.revenue)}</div>`);
+  return lines.join("");
+}
+const timelineEl = document.getElementById("timeline");
+timelineEl.addEventListener("mousemove", e => {
+  const row = e.target.closest(".row");
+  if (!row || e.target.closest(".who")) { tooltip.style.display = "none"; return; }
+  const [team, a, minute] = activityAt(row, e.clientX);
+  if (!a) { tooltip.style.display = "none"; return; }
+  tooltip.innerHTML = describe(team, a, minute);
+  tooltip.style.display = "block";
+  const w = tooltip.offsetWidth, h = tooltip.offsetHeight;
+  let left = e.clientX + 14, top = e.clientY + 14;
+  if (left + w > innerWidth - 8) left = e.clientX - w - 14;
+  if (top + h > innerHeight - 8) top = e.clientY - h - 14;
+  tooltip.style.left = Math.max(8, left) + "px";
+  tooltip.style.top = Math.max(8, top) + "px";
+});
+timelineEl.addEventListener("mouseleave", () => { tooltip.style.display = "none"; });
+timelineEl.addEventListener("click", e => {
+  const row = e.target.closest(".row");
+  if (!row) return;
+  state.selected = row.dataset.team;
+  render();
+  showDetail(DATA.teams.find(t => t.id === state.selected));
+  document.getElementById("detail").scrollIntoView({ behavior: "smooth", block: "nearest" });
+});
+
+// ---- Itinerary (the table view) --------------------------------------------
+function showDetail(team) {
+  const s = team.stats;
+  const rows = team.acts.map(a => {
+    const job = a[3] ? DATA.jobs[a[3]] : null;
+    const where = a[4] === a[5] ? esc(site(a[4])) : `${esc(site(a[4]))} → ${esc(site(a[5]))}`;
+    const notes = [];
+    if (job) notes.push(`${esc(job.ref)}${job.offer ? " (offer)" : ""} · ${esc(job.customer)}`);
+    if (a[7].length) notes.push(a[7].map(p => `${p[0]} ${when(p[1])}–${when(p[2]).slice(-5)}`).join(", "));
+    return `<tr><td>${when(a[1])}</td><td>${when(a[2])}</td><td><i class="key k${a[0]}${a[0] === 0 && job && job.offer ? " offer" : ""}"></i>${ACT_LABEL[a[8]]}</td>` +
+      `<td>${where}</td><td class="num">${a[6] ? num(a[6]) : ""}</td><td>${notes.join("<br>")}</td></tr>`;
+  }).join("");
+  document.getElementById("detail").innerHTML =
+    `<div class="head"><h2>${esc(team.name)} · itinerary</h2><span class="t2" style="color:var(--muted)">Home depot: ${esc(site(team.depot))}</span></div>` +
+    `<div class="stats"><span><b>${s.jobs}</b> jobs${s.offers ? ` (${s.offers} offer loads)` : ""}</span><span><b>${num(s.loaded_km)}</b> km loaded</span>` +
+    `<span><b>${num(s.empty_km)}</b> km empty</span><span><b>${s.driving_h}</b> h driving</span><span><b>${sar(s.revenue)}</b> revenue</span></div>` +
+    (team.acts.length ? `<div class="table-wrap"><table><thead><tr><th>Start (Riyadh)</th><th>End</th><th>Activity</th><th>Where</th><th class="num">km</th><th>Job / notes</th></tr></thead><tbody>${rows}</tbody></table></div>`
+      : `<p class="empty-note">This truck has no work in the plan.</p>`);
+}
+
+// ---- Unserved jobs ---------------------------------------------------------
+const unserved = DATA.unserved.map(id => DATA.jobs[id]);
+document.getElementById("unserved-section").innerHTML = unserved.length
+  ? `<h2>Unserved confirmed jobs (${unserved.length})</h2><p class="meta" style="margin:4px 0 10px">No truck could fit these under the rules in time. They need a decision: subcontract, renegotiate the window, or add capacity.</p>` +
+    `<div class="table-wrap"><table><thead><tr><th>Job</th><th>Customer</th><th>Route</th><th>Load</th><th class="num">Revenue</th></tr></thead><tbody>` +
+    unserved.map(j => `<tr><td>${esc(j.ref)}</td><td>${esc(j.customer)}</td><td>${esc(site(j.from))} → ${esc(site(j.to))}</td><td>${j.tonnes} t ${esc(j.equipment.replace("_", " "))}</td><td class="num">${sar(j.revenue)}</td></tr>`).join("") +
+    `</tbody></table></div>`
+  : `<h2>Unserved confirmed jobs</h2><p class="meta" style="margin-top:4px">None. Every confirmed job has a truck.</p>`;
+
+render();
+</script>
+</body>
+</html>
