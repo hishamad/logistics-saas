@@ -11,7 +11,6 @@ checks the materialized plan; nothing here is trusted on its own.
 
 from __future__ import annotations
 
-import math
 import random
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -91,6 +90,7 @@ class Engine:
             (lane.from_site_id, lane.to_site_id): (lane.duration_minutes, lane.distance_m)
             for lane in snapshot.lanes
         }
+        self.lanes.update({(s.id, s.id): (0, 0) for s in snapshot.sites})
         rules = snapshot.driving_rules
         self.rules = rules
         self.max_cont = rules.max_continuous_driving_minutes if rules else FOREVER
@@ -171,7 +171,7 @@ class Engine:
         )
 
     def lane(self, a: str, b: str) -> tuple[int, int]:
-        return (0, 0) if a == b else self.lanes[a, b]
+        return self.lanes[a, b]
 
     def elapsed(self, drive: int) -> int:
         """Elapsed minutes for a fresh driver to cover ``drive`` minutes of driving."""
@@ -186,7 +186,10 @@ class Engine:
 
     @staticmethod
     def _block_after(info: TeamInfo, t: int) -> tuple[int, int, bool] | None:
-        return next((b for b in info.blocks if b[1] > t), None)
+        for block in info.blocks:
+            if block[1] > t:
+                return block
+        return None
 
     def _resets(self, s: State) -> None:
         if s.idle >= self.brk:
@@ -577,7 +580,9 @@ class Search:
         )
         return metres / 1000 * e.per_km + max(0, minutes) * e.per_minute
 
-    def best_insertion(self, job_id: str, noise: float = 0.0) -> tuple[float, str, int] | None:
+    def best_insertion(
+        self, job_id: str, noise: float = 0.0, blink: float = 0.0
+    ) -> tuple[float, str, int] | None:
         e, sol = self.e, self.solution
         job = e.jobs[job_id]
         pickup_open, pickup_close, _, _ = e.window[job_id]
@@ -616,6 +621,8 @@ class Search:
         for bound, team_id, position in options:
             if best is not None and bound >= best[0] * (1 + noise) + 1:
                 break
+            if blink and e.rng.random() < blink:
+                continue  # SISR "blink": occasionally skip a position to diversify
             info = e.teams[team_id]
             route = sol.routes[team_id]
             cost = e.run(info, sol.states[team_id][position], [job_id, *route[position:]])
@@ -657,14 +664,28 @@ class Search:
         assert computed is not None
         sol.states[team_id], sol.costs[team_id] = computed
 
-    def recreate(self, candidates: list[str], noise: float = 0.0, ejections: int = 10**6) -> None:
+    def recreate(
+        self,
+        candidates: list[str],
+        noise: float = 0.0,
+        ejections: int = 10**6,
+        order: str = "tight",
+        blink: float = 0.0,
+    ) -> None:
         e = self.e
         confirmed = [j for j in candidates if e.jobs[j].state == "confirmed"]
         offered = [j for j in candidates if e.jobs[j].state == "offered"]
-        confirmed.sort(key=lambda j: (j not in e.locks, e.window[j][1]))
+        if order == "random":
+            e.rng.shuffle(confirmed)
+        elif order == "long":
+            confirmed.sort(
+                key=lambda j: -e.lanes[e.jobs[j].pickup_site_id, e.jobs[j].delivery_site_id][0]
+            )
+        else:
+            confirmed.sort(key=lambda j: (j not in e.locks, e.window[j][1]))
         offered.sort(key=lambda j: -(e.jobs[j].revenue_minor or 0))
         for job_id in confirmed:
-            found = self.best_insertion(job_id, noise)
+            found = self.best_insertion(job_id, noise, blink)
             if found:
                 self.insert(job_id, found[1], found[2])
             elif ejections > 0:
@@ -721,25 +742,42 @@ class Search:
         self.insert(job_id, team_id, position)
         return True
 
-    def ruin(self) -> list[str]:
+    RUINS = ("related", "string", "routes", "random")
+
+    def ruin(self, operator: str) -> list[str]:
         e, sol = self.e, self.solution
         assigned = list(sol.where)
         if not assigned:
             return []
         size = e.rng.randint(2, max(3, min(30, len(assigned) // 6)))
-        pick = e.rng.random()
-        if pick < 0.45:
-            seed = e.jobs[e.rng.choice(assigned)]
-            open_minute = e.window[seed.id][0]
+        seed = e.jobs[e.rng.choice(assigned)]
+        open_minute = e.window[seed.id][0]
 
-            def related(j: str) -> float:
-                other = e.jobs[j]
-                metres = e.lane(seed.pickup_site_id, other.pickup_site_id)[1]
-                metres += e.lane(seed.delivery_site_id, other.delivery_site_id)[1]
-                return metres / 1000 + abs(e.window[j][0] - open_minute) / 6
+        def related(j: str) -> float:
+            other = e.jobs[j]
+            metres = e.lanes[seed.pickup_site_id, other.pickup_site_id][1]
+            metres += e.lanes[seed.delivery_site_id, other.delivery_site_id][1]
+            return metres / 1000 + abs(e.window[j][0] - open_minute) / 6
 
+        if operator == "related":
             return sorted(assigned, key=related)[:size]
-        if pick < 0.7:
+        if operator == "string":
+            # SISR: cut short strings of consecutive jobs out of routes near the seed.
+            closest: dict[str, tuple[float, int]] = {}
+            for team_id, route in sol.routes.items():
+                for index, j in enumerate(route):
+                    score = related(j)
+                    if team_id not in closest or score < closest[team_id][0]:
+                        closest[team_id] = (score, index)
+            nearest = sorted(closest.items(), key=lambda item: item[1][0])
+            removed: list[str] = []
+            for team_id, (_, index) in nearest[: e.rng.randint(1, 4)]:
+                route = sol.routes[team_id]
+                length = e.rng.randint(1, min(len(route), 4))
+                first = e.rng.randint(max(0, index - length + 1), min(index, len(route) - length))
+                removed += route[first : first + length]
+            return removed
+        if operator == "routes":
             busy = [t for t, r in sol.routes.items() if r]
             chosen = e.rng.sample(busy, min(len(busy), e.rng.randint(1, 3)))
             return [j for t in chosen for j in sol.routes[t]][: size * 2]
@@ -755,39 +793,58 @@ class Search:
         )
 
     def improve(self, deadline: float, offers: bool = True) -> dict[str, int]:
+        """Ruin and recreate with adaptive operator choice and record-to-record acceptance.
+
+        A candidate is accepted when it is within a shrinking threshold of the best
+        plan found (Santini, Ropke and Hvattum 2018 found this rule consistently strong).
+        """
         e = self.e
         current = self.objective()
         best, best_value = self.copy_solution(), current
         started = perf_counter()
         budget = max(1e-6, deadline - started)
-        temperature = 0.002 * abs(current - UNSERVED_PENALTY * self.unserved()) + 1
+        threshold0 = 0.005 * abs(current - UNSERVED_PENALTY * self.unserved()) + 1
+        weights = dict.fromkeys(self.RUINS, 1.0)
+        scores = dict.fromkeys(self.RUINS, 0.0)
+        uses = dict.fromkeys(self.RUINS, 0)
         stats = {"iterations": 0, "accepted": 0, "improved": 0}
         while perf_counter() < deadline:
             stats["iterations"] += 1
+            operator = e.rng.choices(self.RUINS, weights=[weights[o] for o in self.RUINS])[0]
+            uses[operator] += 1
             saved = self.copy_solution()
-            removed = self.ruin()
+            removed = self.ruin(operator)
             self.remove(removed)
             unserved = [j for j in self.confirmed if j not in self.solution.where]
+            retry = e.rng.sample(unserved, min(len(unserved), 5))
             spare = [j for j in self.offered if j not in self.solution.where]
             sample = e.rng.sample(spare, min(len(spare), len(removed) + 2)) if offers else []
             self.recreate(
-                list(dict.fromkeys([*removed, *unserved, *sample])),
-                noise=0.1 if e.rng.random() < 0.3 else 0.0,
+                list(dict.fromkeys([*removed, *retry, *sample])),
+                noise=0.1 if e.rng.random() < 0.2 else 0.0,
                 ejections=2,
+                order=e.rng.choice(("tight", "tight", "random", "long")),
+                blink=0.01,
             )
             value = self.objective()
-            progress = (perf_counter() - started) / budget
-            threshold = temperature * max(0.0, 1 - progress)
-            if value < current or (
-                threshold > 0 and e.rng.random() < math.exp(-(value - current) / threshold)
-            ):
+            threshold = threshold0 * max(0.0, 1 - (perf_counter() - started) / budget)
+            if value < best_value - 1e-6:
+                best, best_value = self.copy_solution(), value
+                current = value
+                stats["improved"] += 1
+                stats["accepted"] += 1
+                scores[operator] += 3
+            elif value < best_value + threshold:
+                scores[operator] += 2 if value < current else 1
                 current = value
                 stats["accepted"] += 1
-                if value < best_value - 1e-6:
-                    best, best_value = self.copy_solution(), value
-                    stats["improved"] += 1
             else:
                 self.solution = saved
+            if stats["iterations"] % 50 == 0:
+                for o in self.RUINS:
+                    if uses[o]:
+                        weights[o] = max(0.1, 0.8 * weights[o] + 0.2 * scores[o] / uses[o])
+                    scores[o], uses[o] = 0.0, 0
         self.solution = best
         return stats
 
