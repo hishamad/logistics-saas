@@ -37,7 +37,7 @@ uv sync
 uv run freight plan ../data/saudi/scenarios/full/snapshot.json --seconds 60
 ```
 
-Add `--board ../boards/week.html` to also write the **plan board**: a single HTML file showing every truck's week on a timeline, with hover details, itineraries and unserved jobs. It opens in any browser without a server. Add `--method baseline` to run the old greedy planner, or `--confirmed-only` to ignore offer loads.
+Add `--board ../boards/week.html` to also write the **plan board**: a single HTML file showing every truck's week on a timeline, with hover details, itineraries and unserved jobs. It opens in any browser without a server. Add `--method baseline` to run the old greedy planner, or `--confirmed-only` to ignore offer loads. `--lookahead` values where trucks end the plan (experimental; see the engine research for why it is not the default).
 
 ```bash
 uv run pytest

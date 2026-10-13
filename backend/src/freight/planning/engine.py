@@ -12,6 +12,7 @@ checks the materialized plan; nothing here is trusted on its own.
 from __future__ import annotations
 
 import random
+from collections import Counter
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from time import perf_counter
@@ -131,6 +132,8 @@ class Engine:
             for job in self.jobs.values()
         }
         self.elapsed_cache: dict[int, int] = {}
+        self.values = snapshot.end_values
+        self.max_gain = max((v for curve in self.values.values() for v in curve), default=0)
 
     # ----- static data -------------------------------------------------------------
 
@@ -163,7 +166,7 @@ class Engine:
             id=team.id,
             start=start,
             ready=ready,
-            home=resources[team.tractor_id].site_id,
+            home=self.snapshot.home_of(team),
             end_site=end_site,
             end_limit=end_limit,
             available_until=until,
@@ -497,9 +500,20 @@ class Engine:
     def cost(self, s: State) -> float:
         return s.dist / 1000 * self.per_km + s.duty * self.per_minute
 
+    def gain(self, site: str, n: int) -> int:
+        """Look-ahead value of the n-th truck ending at a site (n >= 1)."""
+        curve = self.values.get(site)
+        if not curve or n < 1:
+            return 0
+        return curve[min(n, len(curve)) - 1]
+
+    def worth(self, site: str, n: int) -> int:
+        return sum(self.gain(site, k) for k in range(1, n + 1))
+
     def run(
         self, info: TeamInfo, state: State, jobs: list[str], rec: Recorder | None = None
-    ) -> float | None:
+    ) -> tuple[float, str] | None:
+        """Cost of finishing the route from ``state``, and where the team ends."""
         s = state.copy()
         try:
             for job_id in jobs:
@@ -507,9 +521,9 @@ class Engine:
             self._finish(info, s, rec)
         except Infeasible:
             return None
-        return self.cost(s)
+        return self.cost(s), s.loc
 
-    def prefixes(self, info: TeamInfo, route: list[str]) -> tuple[list[State], float] | None:
+    def prefixes(self, info: TeamInfo, route: list[str]) -> tuple[list[State], float, str] | None:
         s = State(t=info.ready, loc=info.start)
         states = [s.copy()]
         try:
@@ -520,7 +534,7 @@ class Engine:
             self._finish(info, end, None)
         except Infeasible:
             return None
-        return states, self.cost(end)
+        return states, self.cost(end), end.loc
 
 
 @dataclass
@@ -529,6 +543,7 @@ class Solution:
     states: dict[str, list[State]]
     costs: dict[str, float]
     where: dict[str, str]  # job -> team
+    ends: dict[str, str]  # team -> where it ends
 
 
 class Search:
@@ -536,13 +551,17 @@ class Search:
         self.e = engine
         self.confirmed = [j for j, job in engine.jobs.items() if job.state == "confirmed"]
         self.offered = [j for j, job in engine.jobs.items() if job.state == "offered"]
-        self.solution = Solution({}, {}, {}, {})
+        self.solution = Solution({}, {}, {}, {}, {})
+        self.free = [t for t, info in engine.teams.items() if info.end_site is None]
         for team_id, info in engine.teams.items():
             computed = engine.prefixes(info, [])
-            states, cost = computed if computed else ([State(t=info.ready, loc=info.start)], 0.0)
+            states, cost, end = (
+                computed if computed else ([State(t=info.ready, loc=info.start)], 0.0, info.start)
+            )
             self.solution.routes[team_id] = []
             self.solution.states[team_id] = states
             self.solution.costs[team_id] = cost
+            self.solution.ends[team_id] = end
 
     def objective(self, sol: Solution | None = None) -> float:
         sol = sol or self.solution
@@ -553,7 +572,23 @@ class Search:
         total -= sum(
             e.jobs[j].revenue_minor or 0 for j in sol.where if e.jobs[j].state == "offered"
         )
-        return total
+        return total - self.end_worth(sol)
+
+    def end_worth(self, sol: Solution | None = None) -> int:
+        """Look-ahead credit for where free-ending teams finish, with diminishing returns."""
+        if not self.e.values:
+            return 0
+        sol = sol or self.solution
+        counts = Counter(sol.ends[t] for t in self.free)
+        return sum(self.e.worth(site, n) for site, n in counts.items())
+
+    def _shift(self, team_id: str, end: str, counts: Counter[str]) -> float:
+        """Change in look-ahead credit (as cost) if this team ends at ``end`` instead."""
+        e = self.e
+        old = self.solution.ends[team_id]
+        if not e.values or old == end or e.teams[team_id].end_site is not None:
+            return 0.0
+        return e.gain(old, counts[old]) - e.gain(end, counts[end] + 1)
 
     def _bound(self, team_id: str, position: int, job: Job) -> float:
         """Cheap, approximate lower bound on the extra cost of an insertion."""
@@ -615,8 +650,11 @@ class Search:
                     if reach > e.window[following.id][1]:
                         continue
                 bound = self._bound(team_id, position, job) + e.penalties.get((job_id, team_id), 0)
+                if position == len(route):
+                    bound -= e.max_gain  # a new last job may move the truck somewhere valuable
                 options.append((bound, team_id, position))
         options.sort()
+        counts = Counter(sol.ends[t] for t in self.free) if e.values else Counter()
         best: tuple[float, str, int] | None = None
         for bound, team_id, position in options:
             if best is not None and bound >= best[0] * (1 + noise) + 1:
@@ -625,10 +663,16 @@ class Search:
                 continue  # SISR "blink": occasionally skip a position to diversify
             info = e.teams[team_id]
             route = sol.routes[team_id]
-            cost = e.run(info, sol.states[team_id][position], [job_id, *route[position:]])
-            if cost is None:
+            result = e.run(info, sol.states[team_id][position], [job_id, *route[position:]])
+            if result is None:
                 continue
-            delta = cost - sol.costs[team_id] + e.penalties.get((job_id, team_id), 0)
+            cost, end = result
+            delta = (
+                cost
+                - sol.costs[team_id]
+                + e.penalties.get((job_id, team_id), 0)
+                + self._shift(team_id, end, counts)
+            )
             if noise:
                 delta += abs(delta) * noise * (2 * e.rng.random() - 1)
             if best is None or delta < best[0]:
@@ -662,7 +706,7 @@ class Search:
                 sol.where.pop(route.pop(), None)
                 computed = self.e.prefixes(self.e.teams[team_id], route)
         assert computed is not None
-        sol.states[team_id], sol.costs[team_id] = computed
+        sol.states[team_id], sol.costs[team_id], sol.ends[team_id] = computed
 
     def recreate(
         self,
@@ -719,16 +763,16 @@ class Search:
                 computed = e.prefixes(info, route)
                 if computed is None:
                     continue
-                states, _ = computed
+                states = computed[0]
                 for position in range(len(route) + 1):
                     state = states[position]
                     if state.t + e.lane(state.loc, job.pickup_site_id)[0] > pickup_close:
                         break
-                    cost = e.run(info, state, [job_id, *route[position:]])
-                    if cost is None:
+                    result = e.run(info, state, [job_id, *route[position:]])
+                    if result is None:
                         continue
                     loss = (
-                        cost
+                        result[0]
                         - sol.costs[team_id]
                         + (e.jobs[offer].revenue_minor or 0)
                         + e.penalties.get((job_id, team_id), 0)
@@ -790,6 +834,7 @@ class Search:
             dict(sol.states),
             dict(sol.costs),
             dict(sol.where),
+            dict(sol.ends),
         )
 
     def improve(self, deadline: float, offers: bool = True) -> dict[str, int]:
@@ -852,7 +897,22 @@ class Search:
         return sum(1 for j in self.confirmed if j not in self.solution.where)
 
 
-def plan_lns(snapshot: Snapshot, *, seconds: float = 30, seed: int = 7) -> Plan:
+def routes_of(plan: Plan) -> dict[str, list[str]]:
+    """Each team's jobs in pickup order, to continue searching from an earlier plan."""
+    routes: dict[str, list[str]] = {}
+    for a in sorted(plan.assignments, key=lambda a: a.pickup_at):
+        routes.setdefault(a.team_id, []).append(a.job_id)
+    return routes
+
+
+def plan_lns(
+    snapshot: Snapshot,
+    *,
+    seconds: float = 30,
+    seed: int = 7,
+    initial: dict[str, list[str]] | None = None,
+) -> Plan:
+    """Plan with ruin-and-recreate; ``initial`` continues from an earlier plan's routes."""
     started = perf_counter()
     problems = input_findings(snapshot)
     confirmed = tuple(j.id for j in snapshot.jobs if j.state == "confirmed")
@@ -867,18 +927,31 @@ def plan_lns(snapshot: Snapshot, *, seconds: float = 30, seed: int = 7) -> Plan:
         )
     engine = Engine(snapshot, seed)
     search = Search(engine)
-    order = sorted(search.confirmed, key=lambda j: (j not in engine.locks, engine.window[j][0]))
-    search.recreate(order)
+    if initial:
+        for team_id, route in initial.items():
+            if team_id in search.solution.routes:
+                search.solution.routes[team_id] = [j for j in route if j in engine.jobs]
+                for job_id in search.solution.routes[team_id]:
+                    search.solution.where[job_id] = team_id
+                search._refresh(team_id)
+        search.recreate([j for j in search.confirmed if j not in search.solution.where])
+    else:
+        order = sorted(search.confirmed, key=lambda j: (j not in engine.locks, engine.window[j][0]))
+        search.recreate(order)
     construction_ms = round((perf_counter() - started) * 1000)
     construction_value = search.objective()
-    # Phase 1 plans confirmed work alone, so optional loads can never take its place.
-    # Phase 2 fills the remaining capacity with offers that earn more than they cost.
-    phase_one = started + seconds * (0.6 if search.offered else 1.0)
-    stats = search.improve(phase_one, offers=False)
-    if search.offered:
-        search.recreate(search.offered)
-        second = search.improve(started + seconds)
-        stats = {k: stats[k] + second[k] for k in stats}
+    if initial:
+        # The earlier plan already separated confirmed work from offers.
+        stats = search.improve(started + seconds)
+    else:
+        # Phase 1 plans confirmed work alone, so optional loads can never take its place.
+        # Phase 2 fills the remaining capacity with offers that earn more than they cost.
+        phase_one = started + seconds * (0.6 if search.offered else 1.0)
+        stats = search.improve(phase_one, offers=False)
+        if search.offered:
+            search.recreate(search.offered)
+            second = search.improve(started + seconds)
+            stats = {k: stats[k] + second[k] for k in stats}
     plan = materialize(engine, search.solution)
     plan = plan.model_copy(
         update={
@@ -887,6 +960,7 @@ def plan_lns(snapshot: Snapshot, *, seconds: float = 30, seed: int = 7) -> Plan:
                 "construction_ms": construction_ms,
                 "construction_objective": round(construction_value),
                 "final_objective": round(search.objective()),
+                "end_value": search.end_worth(),
                 **stats,
             },
         }
@@ -905,9 +979,12 @@ def materialize(engine: Engine, solution: Solution) -> Plan:
     for team_id, route in solution.routes.items():
         info = engine.teams[team_id]
         recorder = Recorder(team_id, [], [])
-        cost = engine.run(info, State(t=info.ready, loc=info.start), route, recorder)
-        if cost is None:
-            raise RuntimeError(f"Route for {team_id} no longer simulates")
+        if engine.run(info, State(t=info.ready, loc=info.start), route, recorder) is None:
+            if route:
+                raise RuntimeError(f"Route for {team_id} no longer simulates")
+            # Even an idle team cannot meet its rules (e.g. it is too far from home for its
+            # next day off). Record no work; the validator reports the problem plainly.
+            recorder = Recorder(team_id, [], [])
         for kind, a, b, start, end, job_id, distance, pauses in recorder.activities:
             activities.append(
                 Activity(

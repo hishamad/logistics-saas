@@ -85,7 +85,7 @@ def board_data(snapshot: Snapshot, plan: Plan) -> dict[str, object]:
             for a in activities
             if a.kind in ("loaded", "empty")
         )
-        depot = resources[team.tractor_id].site_id
+        depot = snapshot.home_of(team)
         teams.append(
             {
                 "id": team.id,

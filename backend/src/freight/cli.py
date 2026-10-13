@@ -15,6 +15,7 @@ from freight.domain.models import Plan, Snapshot
 from freight.fixtures import demo_snapshot
 from freight.planning.baseline import baseline_plan
 from freight.planning.engine import plan_lns
+from freight.planning.lookahead import plan_with_lookahead
 from freight.planning.solver import solve_plan
 
 
@@ -50,6 +51,11 @@ def summary(snapshot: Snapshot, plan: Plan) -> str:
                 f"{(costs.revenue_minor - costs.total_minor) / 100:,.0f} | "
                 f"SAR {per_truck_day:,.0f} per truck-day"
             )
+    if snapshot.end_values and plan.model_stats.get("end_value") is not None:
+        lines.append(
+            f"Look-ahead SAR {int(plan.model_stats['end_value']) / 100:,.0f} credited for where "
+            "trucks end (planning value, not cash)"
+        )
     if plan.method == "lns" and plan.model_stats:
         stats = plan.model_stats
         lines.append(
@@ -74,6 +80,11 @@ def main() -> None:
     parser.add_argument(
         "--confirmed-only", action="store_true", help="Ignore offered loads (for comparisons)"
     )
+    parser.add_argument(
+        "--lookahead",
+        action="store_true",
+        help="Value where trucks end the plan using a model of the following days",
+    )
     parser.add_argument("--json", type=Path, help="Also write the full plan to this file")
     parser.add_argument("--board", type=Path, help="Also write an HTML plan board to this file")
     args = parser.parse_args()
@@ -86,7 +97,9 @@ def main() -> None:
         snapshot = snapshot.model_copy(
             update={"jobs": tuple(j for j in snapshot.jobs if j.state == "confirmed")}
         )
-    if args.method == "lns":
+    if args.method == "lns" and args.lookahead:
+        snapshot, plan = plan_with_lookahead(snapshot, seconds=args.seconds, seed=args.seed)
+    elif args.method == "lns":
         plan = plan_lns(snapshot, seconds=args.seconds, seed=args.seed)
     elif args.method == "baseline":
         plan = baseline_plan(snapshot, seconds=args.seconds)

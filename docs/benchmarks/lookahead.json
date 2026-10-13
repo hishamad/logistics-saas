@@ -1,0 +1,46 @@
+{
+ "myopic": {
+  "week1": {
+   "valid": true,
+   "served": 460,
+   "confirmed": 490,
+   "offers": 57,
+   "contribution_sar": 1311441,
+   "empty_km": 90623
+  },
+  "week2_mean": 1211244,
+  "week2_sd": 48613,
+  "week2_runs": [
+   1174803,
+   1175725,
+   1163310,
+   1154180,
+   1238485,
+   1260299,
+   1271168,
+   1251984
+  ]
+ },
+ "lookahead": {
+  "week1": {
+   "valid": true,
+   "served": 456,
+   "confirmed": 490,
+   "offers": 64,
+   "contribution_sar": 1308330,
+   "empty_km": 93970
+  },
+  "week2_mean": 1202715,
+  "week2_sd": 46264,
+  "week2_runs": [
+   1166249,
+   1167391,
+   1140425,
+   1168722,
+   1256214,
+   1237023,
+   1250210,
+   1235489
+  ]
+ }
+}

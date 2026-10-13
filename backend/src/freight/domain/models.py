@@ -69,6 +69,8 @@ class Team(Model):
     tractor_id: Identifier
     trailer_id: Identifier
     driver_id: Identifier
+    # Home depot when the team is currently elsewhere; defaults to the tractor's site.
+    home_site_id: Identifier | None = None
 
     @property
     def resource_ids(self) -> tuple[str, str, str]:
@@ -248,6 +250,9 @@ class Snapshot(Model):
     # Calendar exceptions (weekly rest, workshop) must be spent at the home depot.
     rest_at_home: bool = False
     driving_rules: DrivingRules | None = None
+    # Value (minor units) of the 1st, 2nd, ... truck ending the plan at a site, from a
+    # look-ahead model; the last value repeats. Planning credit only, never cash.
+    end_values: dict[str, tuple[int, ...]] = {}
     freshness_minutes: int = Field(default=24 * 60, ge=1)
 
     @model_validator(mode="after")
@@ -278,6 +283,11 @@ class Snapshot(Model):
         for job in self.jobs:
             if job.pickup_site_id not in sites or job.delivery_site_id not in sites:
                 raise ValueError(f"Unknown job site: {job.id}")
+        for team in self.teams:
+            if team.home_site_id is not None and team.home_site_id not in sites:
+                raise ValueError(f"Unknown home site for team {team.id}")
+        if set(self.end_values) - sites:
+            raise ValueError("End values refer to unknown sites")
         lane_keys = [(lane.from_site_id, lane.to_site_id) for lane in self.lanes]
         if len(set(lane_keys)) != len(lane_keys):
             raise ValueError("Duplicate directed lanes")
@@ -301,6 +311,11 @@ class Snapshot(Model):
             if lock.job_id not in jobs or lock.team_id not in teams:
                 raise ValueError("Unknown lock reference")
         return self
+
+    def home_of(self, team: Team) -> str:
+        if team.home_site_id is not None:
+            return team.home_site_id
+        return next(r.site_id for r in self.resources if r.id == team.tractor_id)
 
     @property
     def fingerprint(self) -> str:

@@ -42,7 +42,7 @@ class Context:
             for r in self.snapshot.rules
             if r.kind == "required_end" and r.team_id == team.id and r.window
         ]
-        site = resources[team.tractor_id].site_id if self.snapshot.return_to_start else None
+        site = self.snapshot.home_of(team) if self.snapshot.return_to_start else None
         if rules:
             site = rules[0].site_id
             end = min(end, *(minute_down(r.window.end, origin) for r in rules if r.window))

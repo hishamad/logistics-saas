@@ -287,7 +287,7 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
                     team_id,
                 )
             location, previous_end = activity.to_site_id, activity.end
-        if snapshot.return_to_start and location != resources[teams[team_id].tractor_id].site_id:
+        if snapshot.return_to_start and location != snapshot.home_of(teams[team_id]):
             # A required-end rule explicitly replaces the default terminal site.
             if not any(r.kind == "required_end" and r.team_id == team_id for r in snapshot.rules):
                 fail("terminal_location", "The plan omits the required return movement.", team_id)
@@ -299,7 +299,7 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
                 fail(code, message, team_id)
         if not snapshot.rest_at_home:
             continue
-        home = resources[member_team.tractor_id].site_id
+        home = snapshot.home_of(member_team)
         for resource_id in member_team.resource_ids:
             for window in resources[resource_id].unavailable:
                 covering = next((a for a in route if a.start <= window.start < a.end), None)

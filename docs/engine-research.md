@@ -94,7 +94,25 @@ Original plan:
 - **Smarter rest placement:** when a route fails on time, try taking the daily rest *earlier*, e.g. during a long wait at a port. This is the core lesson from the hours-of-service literature, and it will rescue jobs we currently call impossible.
 - **Not now:** switching to PyVRP as our core. Its open-source edition lacks hours-of-service breaks and days off at home, which are central for us. We copy its architecture, not its code.
 
-### Step C — Look ahead: the "Fleetline-beater" (≈ 3–4 weeks)
+### Step C — Look ahead: the "Fleetline-beater" (≈ 3–4 weeks) — **built 13 Oct; no measurable gain yet**
+
+What exists (opt-in with `freight plan --lookahead`, **not the default**):
+- `planning/lookahead.py`: a time-expanded network model of the 72 h after the plan, with expected loads per lane from the job pattern, drive times with rest, and prices and costs. It produces a **value curve per site** (the 1st, 2nd, ... truck ending there), so crowding lowers value. It solves in about 0.05 s.
+- The engine credits where free-ending trucks finish, with diminishing returns per site. Insertions and offer decisions include that credit, so an offer that strands a truck can be declined (tested).
+- Plans are made in two passes: plan, read the end positions, value them, then continue from the first plan with the values.
+- `scripts/rolling.py`: a two-week test. Week 2 has new jobs and starts from where week 1 left the trucks, and is averaged over 8 search runs ([results](benchmarks/lookahead.md)).
+
+What we measured:
+- **No detectable two-week gain.** Two independent averaged runs gave +SAR 15k and −SAR 8.5k against a ±SAR 24k standard error. The two policies end the week with almost the same truck positions.
+- **A small, consistent cost:** look-ahead serves 3–4 fewer confirmed jobs in week 1.
+- **Side finding:** the search varies by about ±3% between runs on the full week, so any single-run comparison of 1–2% is weak evidence. Use several seeds.
+
+Why, and what would change it:
+1. With **weekly** plans the end of the plan matters little. Look-ahead pays in **daily rolling re-planning** (plan 48 h, commit day 1, re-plan tomorrow), which is how dispatchers actually work. Re-test inside Step D's rolling simulation.
+2. The value model **ignores days off at home**, so it overvalues remote sites. Add home-time to the model before relying on it.
+3. Real demand history (not a repeated synthetic week) is needed for a credible forecast.
+
+Original plan:
 - **Value of a truck at a place and time:** estimate, by simulating future weeks, how much a truck in Riyadh on Thursday evening is worth compared with one in Dammam. Add that value at the end of the plan, so the engine stops stranding trucks and naturally prefers repositioning towards freight.
 - **Opportunity-cost load acceptance:** an offer load is worth taking only if its revenue beats both its cost *and* what the truck loses by not being somewhere better. The value estimates from the first point give this almost for free.
 - **Sampled future demand:** add likely backhauls (from history, or for now from our generator's lane weights) as uncertain jobs, plan several scenarios, and keep the near-term decisions most scenarios agree on.
