@@ -42,6 +42,8 @@ class State:
     started: bool = False  # nothing is recorded before the team's first activity
     dist: int = 0  # metres
     duty: int = 0  # paid minutes
+    room: int = FOREVER  # how much later everything so far could have happened
+    frozen: bool = False  # an exception was met; the day so far can no longer slide
 
     def copy(self) -> State:
         return State(
@@ -54,6 +56,8 @@ class State:
             self.started,
             self.dist,
             self.duty,
+            self.room,
+            self.frozen,
         )
 
 
@@ -211,12 +215,57 @@ class Engine:
             if block and block[0] <= s.t:
                 if block[2] and s.loc != info.home:
                     raise Infeasible
+                s.frozen = s.frozen or s.started
                 self._idle(s, min(block[1], until) - s.t, "rest", rec)
                 continue
             end = min(until, block[0] if block else FOREVER)
             length = end - s.t
             kind = "rest" if rest or (self.rules and length >= self.rest) else "waiting"
+            if kind == "waiting" and s.started:
+                length -= self._slide(s, length, rec)
             self._idle(s, length, kind, rec)
+
+    def _slide(self, s: State, wait: int, rec: Recorder | None) -> int:
+        """Turn paid waiting into unpaid time at the depot by leaving later.
+
+        Shifting everything done so far later keeps every duration (so driving-hours
+        state is unchanged) and is allowed while each earlier deadline still holds.
+        The part of the wait a driver needs as a legal break or rest is kept.
+        """
+        if s.frozen or s.room <= 0:
+            return 0
+        shift = min(wait, s.room)
+        if self.rules is not None:
+            total = s.idle + wait
+            if total >= self.rest:
+                shift = min(shift, total - self.rest)
+            elif total >= self.brk:
+                shift = min(shift, total - self.brk)
+        if shift <= 0:
+            return 0
+        s.room -= shift
+        s.t += shift  # the day so far now ends later; the remaining wait is shorter
+        if s.span is not None:
+            s.span += shift
+        if rec is not None:
+            rec.activities[:] = [
+                (
+                    k,
+                    a,
+                    b,
+                    start + shift,
+                    end + shift,
+                    job,
+                    dist,
+                    [(pk, ps + shift, pe + shift) for pk, ps, pe in pauses],
+                )
+                for k, a, b, start, end, job, dist, pauses in rec.activities
+            ]
+            rec.assignments[:] = [
+                (job, pickup + shift, delivered + shift, released + shift)
+                for job, pickup, delivered, released in rec.assignments
+            ]
+        return shift
 
     def _work(
         self,
@@ -288,6 +337,7 @@ class Engine:
             if block and block[0] <= s.t:
                 if block[2] or kind == "loaded" and not moving:
                     raise Infeasible
+                s.frozen = True
                 if moving:
                     pauses.append(("rest", s.t, block[1]))
                     s.idle += block[1] - s.t
@@ -397,6 +447,7 @@ class Engine:
         loading = self._work(info, s, "loading", job.loading_minutes, job.id, rec, then_drive=True)
         if loading > pickup_close or (locked and locked[1] is not None and loading != locked[1]):
             raise Infeasible
+        s.room = min(s.room, 0 if locked and locked[1] is not None else pickup_close - loading)
         self._drive(info, s, job.delivery_site_id, "loaded", job.id, rec)
         if s.t > delivery_close:
             raise Infeasible
@@ -406,6 +457,7 @@ class Engine:
         )
         if unloading > delivery_close:
             raise Infeasible
+        s.room = min(s.room, delivery_close - unloading)
         if rec is not None:
             rec.activities.append(
                 ("turnaround", s.loc, s.loc, s.t, s.t + job.turnaround_minutes, job.id, 0, [])
@@ -415,12 +467,13 @@ class Engine:
         if s.t > info.available_until:
             raise Infeasible
         if rec is not None:
-            delivered = (
-                unloading
-                if job.delivery_window_kind == "service_start"
-                else unloading + job.unloading_minutes
-            )
-            rec.assignments.append((job.id, loading, delivered, s.t))
+            # Read times back from the recorded activities: a later slide may have moved them.
+            starts = {
+                k: (start, end) for k, _, _, start, end, j, _, _ in rec.activities if j == job.id
+            }
+            loaded_at, (unload_start, unload_end) = starts["loading"][0], starts["unloading"]
+            delivered = unload_start if job.delivery_window_kind == "service_start" else unload_end
+            rec.assignments.append((job.id, loaded_at, delivered, s.t))
 
     def _finish(self, info: TeamInfo, s: State, rec: Recorder | None) -> None:
         if info.end_site is not None:

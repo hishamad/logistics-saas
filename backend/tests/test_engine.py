@@ -216,3 +216,15 @@ def test_validator_rejects_a_day_off_spent_away_from_home():
     )
     codes = {f.code for f in validate_plan(snapshot, stranded).findings}
     assert "rest_away_from_home" in codes
+
+
+def test_truck_leaves_later_instead_of_waiting_on_paid_time():
+    # Pickup is open 1-10 h, the drive is 2 h, but delivery only opens at 12 h:
+    # the cheapest plan loads late, not early followed by a long paid wait.
+    snapshot = two_site_snapshot([job("late", "a", "b", (1, 10), (12, 20))], return_to_start=False)
+    plan = plan_lns(snapshot, seconds=1)
+    assert plan.valid, plan.findings
+    assert not [a for a in plan.activities if a.kind == "waiting"]
+    assignment = plan.assignments[0]
+    loading = next(a for a in plan.activities if a.kind == "loading")
+    assert assignment.pickup_at == loading.start >= hours(9)
