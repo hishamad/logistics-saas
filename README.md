@@ -12,7 +12,8 @@ backend/                 Python planning engine
     domain/              data model: sites, trucks, drivers, teams, jobs, plans
     validation/          independent checker: is a plan physically possible?
     costing/             modeled cost of a plan (fuel, distance, driver time)
-    planning/            planners: greedy baseline + CP-SAT optimizer (to be replaced)
+    planning/engine.py   the planner: route simulator with driving-hours rules + ruin-and-recreate search
+    planning/            older planners kept for comparison: greedy baseline, CP-SAT
     ai.py                turns Arabic/English dispatcher instructions into typed rules (parked)
     cli.py               command line: plan a scenario
   scripts/               scenario generator
@@ -32,11 +33,33 @@ uv sync
 ```
 
 ```bash
-uv run freight plan ../data/saudi/scenarios/pilot/snapshot.json
+uv run freight plan ../data/saudi/scenarios/full/snapshot.json --seconds 60
 ```
+
+Add `--method baseline` to run the old greedy planner, or `--confirmed-only` to ignore offer loads.
 
 ```bash
 uv run pytest
 ```
 
-Current result on the pilot scenario (40 trucks, 48 h): 55 of 56 jobs served, **47% of kilometres driven empty**, SAR 81,529 modeled cost. This is the number to beat.
+## Results so far (13 Oct 2026, synthetic scenarios, one laptop)
+
+**Pilot:** 40 trucks, 48 h, classic rules (every truck returns to its depot), 30 s.
+
+| | Old greedy | New engine |
+| --- | --- | --- |
+| Confirmed jobs served | 55/56 | 55/56 |
+| Modeled cost, confirmed only | SAR 81,682 | **SAR 78,605 (−3.8%)** |
+| Empty km, confirmed only | 22,401 | 20,964 |
+| Contribution with offer loads | SAR 129,661 (can't use offers) | **SAR 162,167 (+25%)** |
+
+**Full week:** 100 trucks, 7 days, realistic rules (driving hours, weekly day off at home, trucks end where they are), 60 s.
+
+| | Old greedy | New engine |
+| --- | --- | --- |
+| Confirmed jobs served | 19/490 | **463/490** |
+| Offer loads accepted | — | 49/122 |
+| Empty km | — | 31% |
+| Revenue per truck-day | — | SAR 2,631 |
+
+The roughly 25 unserved jobs in the full week look like a capacity limit of the scenario, not of the search: a 3-minute run serves 468, almost the same as after 60 s. Every plan passes the independent validator. All numbers come from synthetic demand on real roads; none of them are customer results.

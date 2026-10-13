@@ -17,10 +17,10 @@ The OSRM demo server is car-only and has no weight or height restrictions. Befor
 
 `scenarios/<name>/` is created by `backend/scripts/generate_saudi_scenario.py`. Each scenario contains a full `snapshot.json` and its own README with region-imbalance statistics.
 
-| Scenario | Fleet | Horizon | Jobs | Current engine |
+| Scenario | Fleet | Horizon | Jobs | Rules |
 | --- | --- | --- | --- | --- |
-| `pilot` | 40 teams (Dammam 20, Riyadh 12, Jeddah 8) | 48 h | 56 confirmed, 14 offered | Runs today |
-| `full` | 100 teams (Dammam 50, Riyadh 30, Jeddah 20) | 7 days | 490 confirmed, 122 offered spot/backhaul; weekly 24 h driver rest | Too large (60 teams / 200 jobs cap): target for the new engine |
+| `pilot` | 40 teams (Dammam 20, Riyadh 12, Jeddah 8) | 48 h | 56 confirmed, 14 offered | Classic: every truck returns to its depot; no driving-hours rules |
+| `full` | 100 teams (Dammam 50, Riyadh 30, Jeddah 20) | 7 days | 490 confirmed, 122 offered spot/backhaul; weekly 24 h driver rest | Realistic: driving hours, days off at home, trucks end where they are |
 
 The scenarios use fictional customers. The lane weights reproduce "full into Riyadh, empty back": in the full scenario the East ships 143 more loads than it receives and Central receives 137 more. Rates are SAR 9/km head-haul, 5.5/km backhaul and 12/km short-haul, with a SAR 700 minimum. These are **assumptions** calibrated to the single Dammam→Riyadh data point below.
 

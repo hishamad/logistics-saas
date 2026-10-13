@@ -5574,8 +5574,8 @@
     "end": "2026-10-18T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T07:00:00Z",
-    "end": "2026-10-19T19:00:00Z"
+    "start": "2026-10-19T09:00:00Z",
+    "end": "2026-10-19T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -5598,8 +5598,8 @@
     "end": "2026-10-18T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T12:00:00Z",
-    "end": "2026-10-19T00:00:00Z"
+    "start": "2026-10-18T13:00:00Z",
+    "end": "2026-10-19T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -5646,8 +5646,8 @@
     "end": "2026-10-18T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T14:00:00Z",
-    "end": "2026-10-19T02:00:00Z"
+    "start": "2026-10-18T15:00:00Z",
+    "end": "2026-10-19T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -5670,8 +5670,8 @@
     "end": "2026-10-18T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T14:00:00Z",
-    "end": "2026-10-19T02:00:00Z"
+    "start": "2026-10-18T15:00:00Z",
+    "end": "2026-10-19T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -5718,8 +5718,8 @@
     "end": "2026-10-18T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T13:00:00Z",
-    "end": "2026-10-19T01:00:00Z"
+    "start": "2026-10-18T14:00:00Z",
+    "end": "2026-10-19T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -5742,8 +5742,8 @@
     "end": "2026-10-18T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T14:00:00Z",
-    "end": "2026-10-19T02:00:00Z"
+    "start": "2026-10-18T15:00:00Z",
+    "end": "2026-10-19T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -5766,8 +5766,8 @@
     "end": "2026-10-18T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T09:00:00Z",
-    "end": "2026-10-19T21:00:00Z"
+    "start": "2026-10-19T11:00:00Z",
+    "end": "2026-10-19T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -5814,8 +5814,8 @@
     "end": "2026-10-18T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T14:00:00Z",
-    "end": "2026-10-19T14:00:00Z"
+    "start": "2026-10-18T15:00:00Z",
+    "end": "2026-10-19T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -5838,8 +5838,8 @@
     "end": "2026-10-18T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T09:00:00Z",
-    "end": "2026-10-20T09:00:00Z"
+    "start": "2026-10-19T10:00:00Z",
+    "end": "2026-10-20T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -5862,8 +5862,8 @@
     "end": "2026-10-18T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T15:00:00Z",
-    "end": "2026-10-19T03:00:00Z"
+    "start": "2026-10-18T16:00:00Z",
+    "end": "2026-10-19T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -5910,8 +5910,8 @@
     "end": "2026-10-18T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T08:00:00Z",
-    "end": "2026-10-20T08:00:00Z"
+    "start": "2026-10-19T09:00:00Z",
+    "end": "2026-10-20T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -5934,8 +5934,8 @@
     "end": "2026-10-18T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T07:00:00Z",
-    "end": "2026-10-19T19:00:00Z"
+    "start": "2026-10-19T09:00:00Z",
+    "end": "2026-10-19T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -5982,8 +5982,8 @@
     "end": "2026-10-18T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T13:00:00Z",
-    "end": "2026-10-19T13:00:00Z"
+    "start": "2026-10-18T14:00:00Z",
+    "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6006,8 +6006,8 @@
     "end": "2026-10-18T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T13:00:00Z",
-    "end": "2026-10-19T13:00:00Z"
+    "start": "2026-10-18T14:00:00Z",
+    "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6030,8 +6030,8 @@
     "end": "2026-10-18T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T16:00:00Z",
-    "end": "2026-10-19T16:00:00Z"
+    "start": "2026-10-18T17:00:00Z",
+    "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6054,8 +6054,8 @@
     "end": "2026-10-18T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T15:00:00Z",
-    "end": "2026-10-19T15:00:00Z"
+    "start": "2026-10-18T16:00:00Z",
+    "end": "2026-10-19T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -6078,8 +6078,8 @@
     "end": "2026-10-18T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T10:00:00Z",
-    "end": "2026-10-20T10:00:00Z"
+    "start": "2026-10-19T12:00:00Z",
+    "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -6102,8 +6102,8 @@
     "end": "2026-10-18T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T16:00:00Z",
-    "end": "2026-10-19T04:00:00Z"
+    "start": "2026-10-18T17:00:00Z",
+    "end": "2026-10-19T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -6126,8 +6126,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T11:00:00Z",
-    "end": "2026-10-20T11:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -6222,8 +6222,8 @@
     "end": "2026-10-18T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T16:00:00Z",
-    "end": "2026-10-19T04:00:00Z"
+    "start": "2026-10-18T17:00:00Z",
+    "end": "2026-10-19T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -6270,8 +6270,8 @@
     "end": "2026-10-18T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T13:00:00Z",
-    "end": "2026-10-20T13:00:00Z"
+    "start": "2026-10-19T15:00:00Z",
+    "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -6294,8 +6294,8 @@
     "end": "2026-10-18T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T15:00:00Z",
-    "end": "2026-10-19T03:00:00Z"
+    "start": "2026-10-18T16:00:00Z",
+    "end": "2026-10-19T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -6318,8 +6318,8 @@
     "end": "2026-10-18T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T17:00:00Z",
-    "end": "2026-10-19T05:00:00Z"
+    "start": "2026-10-18T18:00:00Z",
+    "end": "2026-10-19T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -6342,8 +6342,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T17:00:00Z",
-    "end": "2026-10-19T17:00:00Z"
+    "start": "2026-10-18T18:00:00Z",
+    "end": "2026-10-19T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -6366,8 +6366,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T16:00:00Z",
-    "end": "2026-10-19T04:00:00Z"
+    "start": "2026-10-18T17:00:00Z",
+    "end": "2026-10-19T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6390,8 +6390,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T19:00:00Z",
-    "end": "2026-10-19T19:00:00Z"
+    "start": "2026-10-18T20:00:00Z",
+    "end": "2026-10-19T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -6414,8 +6414,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T07:00:00Z",
-    "end": "2026-10-20T07:00:00Z"
+    "start": "2026-10-19T08:00:00Z",
+    "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6462,8 +6462,8 @@
     "end": "2026-10-18T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T07:00:00Z",
-    "end": "2026-10-20T07:00:00Z"
+    "start": "2026-10-19T08:00:00Z",
+    "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6534,8 +6534,8 @@
     "end": "2026-10-18T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T16:00:00Z",
-    "end": "2026-10-19T04:00:00Z"
+    "start": "2026-10-18T17:00:00Z",
+    "end": "2026-10-19T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -6558,8 +6558,8 @@
     "end": "2026-10-18T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T14:00:00Z",
-    "end": "2026-10-20T02:00:00Z"
+    "start": "2026-10-19T15:00:00Z",
+    "end": "2026-10-20T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6630,8 +6630,8 @@
     "end": "2026-10-18T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T13:00:00Z",
-    "end": "2026-10-20T13:00:00Z"
+    "start": "2026-10-19T14:00:00Z",
+    "end": "2026-10-20T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -6702,8 +6702,8 @@
     "end": "2026-10-18T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T18:00:00Z",
-    "end": "2026-10-19T06:00:00Z"
+    "start": "2026-10-18T19:00:00Z",
+    "end": "2026-10-19T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -6750,8 +6750,8 @@
     "end": "2026-10-18T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T22:00:00Z",
-    "end": "2026-10-19T10:00:00Z"
+    "start": "2026-10-18T23:00:00Z",
+    "end": "2026-10-19T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -6798,8 +6798,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T15:00:00Z",
-    "end": "2026-10-20T03:00:00Z"
+    "start": "2026-10-19T16:00:00Z",
+    "end": "2026-10-20T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -6846,8 +6846,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T11:00:00Z",
-    "end": "2026-10-20T11:00:00Z"
+    "start": "2026-10-19T12:00:00Z",
+    "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -6870,8 +6870,8 @@
     "end": "2026-10-18T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T19:00:00Z",
-    "end": "2026-10-19T19:00:00Z"
+    "start": "2026-10-18T20:00:00Z",
+    "end": "2026-10-19T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -6942,8 +6942,8 @@
     "end": "2026-10-18T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T19:00:00Z",
-    "end": "2026-10-19T07:00:00Z"
+    "start": "2026-10-18T20:00:00Z",
+    "end": "2026-10-19T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -7014,8 +7014,8 @@
     "end": "2026-10-18T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T15:00:00Z",
-    "end": "2026-10-20T03:00:00Z"
+    "start": "2026-10-19T17:00:00Z",
+    "end": "2026-10-20T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -7038,8 +7038,8 @@
     "end": "2026-10-18T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T23:00:00Z",
-    "end": "2026-10-19T11:00:00Z"
+    "start": "2026-10-19T00:00:00Z",
+    "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -7062,8 +7062,8 @@
     "end": "2026-10-18T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T16:00:00Z",
-    "end": "2026-10-20T16:00:00Z"
+    "start": "2026-10-19T18:00:00Z",
+    "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -7110,8 +7110,8 @@
     "end": "2026-10-18T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T00:00:00Z",
-    "end": "2026-10-19T12:00:00Z"
+    "start": "2026-10-19T01:00:00Z",
+    "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -7182,8 +7182,8 @@
     "end": "2026-10-18T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T19:00:00Z",
-    "end": "2026-10-20T19:00:00Z"
+    "start": "2026-10-19T20:00:00Z",
+    "end": "2026-10-20T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -7206,8 +7206,8 @@
     "end": "2026-10-18T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-18T23:00:00Z",
-    "end": "2026-10-19T11:00:00Z"
+    "start": "2026-10-19T00:00:00Z",
+    "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7254,8 +7254,8 @@
     "end": "2026-10-18T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T01:00:00Z",
-    "end": "2026-10-21T01:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -7278,8 +7278,8 @@
     "end": "2026-10-18T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T01:00:00Z",
-    "end": "2026-10-19T13:00:00Z"
+    "start": "2026-10-19T02:00:00Z",
+    "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -7350,8 +7350,8 @@
     "end": "2026-10-19T00:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T02:00:00Z",
-    "end": "2026-10-20T14:00:00Z"
+    "start": "2026-10-20T04:00:00Z",
+    "end": "2026-10-20T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -7374,8 +7374,8 @@
     "end": "2026-10-19T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T07:00:00Z",
-    "end": "2026-10-20T19:00:00Z"
+    "start": "2026-10-20T08:00:00Z",
+    "end": "2026-10-20T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -7398,8 +7398,8 @@
     "end": "2026-10-19T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T00:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -7422,8 +7422,8 @@
     "end": "2026-10-19T06:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T11:00:00Z",
-    "end": "2026-10-19T23:00:00Z"
+    "start": "2026-10-19T12:00:00Z",
+    "end": "2026-10-20T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -7446,8 +7446,8 @@
     "end": "2026-10-19T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T02:00:00Z",
-    "end": "2026-10-21T02:00:00Z"
+    "start": "2026-10-20T03:00:00Z",
+    "end": "2026-10-21T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7470,8 +7470,8 @@
     "end": "2026-10-19T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T07:00:00Z",
-    "end": "2026-10-21T07:00:00Z"
+    "start": "2026-10-20T08:00:00Z",
+    "end": "2026-10-21T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -7494,8 +7494,8 @@
     "end": "2026-10-19T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T12:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -7518,8 +7518,8 @@
     "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T00:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -7566,8 +7566,8 @@
     "end": "2026-10-19T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T00:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7590,8 +7590,8 @@
     "end": "2026-10-19T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T13:00:00Z",
-    "end": "2026-10-20T13:00:00Z"
+    "start": "2026-10-19T14:00:00Z",
+    "end": "2026-10-20T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -7614,8 +7614,8 @@
     "end": "2026-10-19T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T12:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -7662,8 +7662,8 @@
     "end": "2026-10-19T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T00:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -7710,8 +7710,8 @@
     "end": "2026-10-19T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T00:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7734,8 +7734,8 @@
     "end": "2026-10-19T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T07:00:00Z",
-    "end": "2026-10-21T07:00:00Z"
+    "start": "2026-10-20T09:00:00Z",
+    "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -7782,8 +7782,8 @@
     "end": "2026-10-19T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-21T11:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7806,8 +7806,8 @@
     "end": "2026-10-19T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T12:00:00Z",
-    "end": "2026-10-20T00:00:00Z"
+    "start": "2026-10-19T13:00:00Z",
+    "end": "2026-10-20T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7830,8 +7830,8 @@
     "end": "2026-10-19T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T13:00:00Z",
-    "end": "2026-10-20T13:00:00Z"
+    "start": "2026-10-19T14:00:00Z",
+    "end": "2026-10-20T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7878,8 +7878,8 @@
     "end": "2026-10-19T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T14:00:00Z",
-    "end": "2026-10-20T14:00:00Z"
+    "start": "2026-10-19T15:00:00Z",
+    "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -7926,8 +7926,8 @@
     "end": "2026-10-19T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T13:00:00Z",
-    "end": "2026-10-20T01:00:00Z"
+    "start": "2026-10-19T14:00:00Z",
+    "end": "2026-10-20T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -7950,8 +7950,8 @@
     "end": "2026-10-19T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T15:00:00Z",
-    "end": "2026-10-20T03:00:00Z"
+    "start": "2026-10-19T16:00:00Z",
+    "end": "2026-10-20T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -8022,8 +8022,8 @@
     "end": "2026-10-19T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-21T10:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -8046,8 +8046,8 @@
     "end": "2026-10-19T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T15:00:00Z",
-    "end": "2026-10-20T15:00:00Z"
+    "start": "2026-10-19T16:00:00Z",
+    "end": "2026-10-20T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -8094,8 +8094,8 @@
     "end": "2026-10-19T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-20T22:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8118,8 +8118,8 @@
     "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T15:00:00Z",
-    "end": "2026-10-20T03:00:00Z"
+    "start": "2026-10-19T16:00:00Z",
+    "end": "2026-10-20T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8166,8 +8166,8 @@
     "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T13:00:00Z",
-    "end": "2026-10-21T01:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -8214,8 +8214,8 @@
     "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T07:00:00Z",
-    "end": "2026-10-20T19:00:00Z"
+    "start": "2026-10-20T08:00:00Z",
+    "end": "2026-10-20T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -8262,8 +8262,8 @@
     "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T17:00:00Z",
-    "end": "2026-10-20T17:00:00Z"
+    "start": "2026-10-19T18:00:00Z",
+    "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -8286,8 +8286,8 @@
     "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T17:00:00Z",
-    "end": "2026-10-20T17:00:00Z"
+    "start": "2026-10-19T18:00:00Z",
+    "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -8310,8 +8310,8 @@
     "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T12:00:00Z",
-    "end": "2026-10-21T00:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -8334,8 +8334,8 @@
     "end": "2026-10-19T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T16:00:00Z",
-    "end": "2026-10-20T16:00:00Z"
+    "start": "2026-10-19T17:00:00Z",
+    "end": "2026-10-20T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -8358,8 +8358,8 @@
     "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T16:00:00Z",
-    "end": "2026-10-20T16:00:00Z"
+    "start": "2026-10-19T17:00:00Z",
+    "end": "2026-10-20T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -8382,8 +8382,8 @@
     "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T16:00:00Z",
-    "end": "2026-10-20T16:00:00Z"
+    "start": "2026-10-19T17:00:00Z",
+    "end": "2026-10-20T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -8406,8 +8406,8 @@
     "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T16:00:00Z",
-    "end": "2026-10-20T04:00:00Z"
+    "start": "2026-10-19T17:00:00Z",
+    "end": "2026-10-20T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8430,8 +8430,8 @@
     "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T12:00:00Z",
-    "end": "2026-10-21T12:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -8454,8 +8454,8 @@
     "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T17:00:00Z",
-    "end": "2026-10-20T17:00:00Z"
+    "start": "2026-10-19T18:00:00Z",
+    "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -8478,8 +8478,8 @@
     "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T08:00:00Z",
-    "end": "2026-10-20T20:00:00Z"
+    "start": "2026-10-20T09:00:00Z",
+    "end": "2026-10-20T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8502,8 +8502,8 @@
     "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T18:00:00Z",
-    "end": "2026-10-20T06:00:00Z"
+    "start": "2026-10-19T19:00:00Z",
+    "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -8550,8 +8550,8 @@
     "end": "2026-10-19T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T08:00:00Z",
-    "end": "2026-10-20T20:00:00Z"
+    "start": "2026-10-20T09:00:00Z",
+    "end": "2026-10-20T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -8574,8 +8574,8 @@
     "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T07:00:00Z",
-    "end": "2026-10-21T07:00:00Z"
+    "start": "2026-10-20T08:00:00Z",
+    "end": "2026-10-21T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8598,8 +8598,8 @@
     "end": "2026-10-19T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T17:00:00Z",
-    "end": "2026-10-20T17:00:00Z"
+    "start": "2026-10-19T18:00:00Z",
+    "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -8622,8 +8622,8 @@
     "end": "2026-10-19T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T13:00:00Z",
-    "end": "2026-10-21T13:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8694,8 +8694,8 @@
     "end": "2026-10-19T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T14:00:00Z",
-    "end": "2026-10-21T02:00:00Z"
+    "start": "2026-10-20T15:00:00Z",
+    "end": "2026-10-21T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -8718,8 +8718,8 @@
     "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T18:00:00Z",
-    "end": "2026-10-20T18:00:00Z"
+    "start": "2026-10-19T19:00:00Z",
+    "end": "2026-10-20T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -8742,8 +8742,8 @@
     "end": "2026-10-19T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T19:00:00Z",
-    "end": "2026-10-20T07:00:00Z"
+    "start": "2026-10-19T20:00:00Z",
+    "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -8814,8 +8814,8 @@
     "end": "2026-10-19T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T13:00:00Z",
-    "end": "2026-10-21T01:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -8910,8 +8910,8 @@
     "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-20T22:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -8934,8 +8934,8 @@
     "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-20T22:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -8958,8 +8958,8 @@
     "end": "2026-10-19T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T19:00:00Z",
-    "end": "2026-10-20T07:00:00Z"
+    "start": "2026-10-19T20:00:00Z",
+    "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -8982,8 +8982,8 @@
     "end": "2026-10-19T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T18:00:00Z",
-    "end": "2026-10-20T06:00:00Z"
+    "start": "2026-10-19T19:00:00Z",
+    "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9006,8 +9006,8 @@
     "end": "2026-10-19T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T17:00:00Z",
-    "end": "2026-10-21T17:00:00Z"
+    "start": "2026-10-20T18:00:00Z",
+    "end": "2026-10-21T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -9054,8 +9054,8 @@
     "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T19:00:00Z",
-    "end": "2026-10-20T07:00:00Z"
+    "start": "2026-10-19T20:00:00Z",
+    "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -9078,8 +9078,8 @@
     "end": "2026-10-19T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-21T11:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9102,8 +9102,8 @@
     "end": "2026-10-19T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T17:00:00Z",
-    "end": "2026-10-21T17:00:00Z"
+    "start": "2026-10-20T18:00:00Z",
+    "end": "2026-10-21T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -9126,8 +9126,8 @@
     "end": "2026-10-19T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T18:00:00Z",
-    "end": "2026-10-20T06:00:00Z"
+    "start": "2026-10-19T19:00:00Z",
+    "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9174,8 +9174,8 @@
     "end": "2026-10-19T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T20:00:00Z",
-    "end": "2026-10-20T20:00:00Z"
+    "start": "2026-10-19T21:00:00Z",
+    "end": "2026-10-20T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -9198,8 +9198,8 @@
     "end": "2026-10-19T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T23:00:00Z",
-    "end": "2026-10-20T23:00:00Z"
+    "start": "2026-10-20T00:00:00Z",
+    "end": "2026-10-21T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -9246,8 +9246,8 @@
     "end": "2026-10-19T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T21:00:00Z",
-    "end": "2026-10-20T09:00:00Z"
+    "start": "2026-10-19T22:00:00Z",
+    "end": "2026-10-20T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -9270,8 +9270,8 @@
     "end": "2026-10-19T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T21:00:00Z",
-    "end": "2026-10-20T09:00:00Z"
+    "start": "2026-10-19T22:00:00Z",
+    "end": "2026-10-20T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -9318,8 +9318,8 @@
     "end": "2026-10-19T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T00:00:00Z",
-    "end": "2026-10-20T12:00:00Z"
+    "start": "2026-10-20T01:00:00Z",
+    "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -9342,8 +9342,8 @@
     "end": "2026-10-19T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T18:00:00Z",
-    "end": "2026-10-21T18:00:00Z"
+    "start": "2026-10-20T19:00:00Z",
+    "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9390,8 +9390,8 @@
     "end": "2026-10-19T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T19:00:00Z",
-    "end": "2026-10-21T19:00:00Z"
+    "start": "2026-10-20T21:00:00Z",
+    "end": "2026-10-21T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -9462,8 +9462,8 @@
     "end": "2026-10-19T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-19T23:00:00Z",
-    "end": "2026-10-20T11:00:00Z"
+    "start": "2026-10-20T00:00:00Z",
+    "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9510,8 +9510,8 @@
     "end": "2026-10-19T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T16:00:00Z",
-    "end": "2026-10-21T16:00:00Z"
+    "start": "2026-10-20T17:00:00Z",
+    "end": "2026-10-21T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9630,8 +9630,8 @@
     "end": "2026-10-19T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T01:00:00Z",
-    "end": "2026-10-20T13:00:00Z"
+    "start": "2026-10-20T02:00:00Z",
+    "end": "2026-10-20T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -9654,8 +9654,8 @@
     "end": "2026-10-19T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T01:00:00Z",
-    "end": "2026-10-20T13:00:00Z"
+    "start": "2026-10-20T02:00:00Z",
+    "end": "2026-10-20T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -9678,8 +9678,8 @@
     "end": "2026-10-20T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-21T10:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -9702,8 +9702,8 @@
     "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-21T11:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -9726,8 +9726,8 @@
     "end": "2026-10-20T06:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-20T22:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -9750,8 +9750,8 @@
     "end": "2026-10-20T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-20T23:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -9774,8 +9774,8 @@
     "end": "2026-10-20T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T12:00:00Z",
-    "end": "2026-10-21T00:00:00Z"
+    "start": "2026-10-20T13:00:00Z",
+    "end": "2026-10-21T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -9822,8 +9822,8 @@
     "end": "2026-10-20T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T07:00:00Z",
-    "end": "2026-10-21T19:00:00Z"
+    "start": "2026-10-21T08:00:00Z",
+    "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -9894,8 +9894,8 @@
     "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-20T23:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -9918,8 +9918,8 @@
     "end": "2026-10-20T06:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T06:00:00Z",
-    "end": "2026-10-21T18:00:00Z"
+    "start": "2026-10-21T08:00:00Z",
+    "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -9966,8 +9966,8 @@
     "end": "2026-10-20T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T06:00:00Z",
-    "end": "2026-10-22T06:00:00Z"
+    "start": "2026-10-21T07:00:00Z",
+    "end": "2026-10-22T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -9990,8 +9990,8 @@
     "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-21T11:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -10014,8 +10014,8 @@
     "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T13:00:00Z",
-    "end": "2026-10-21T13:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -10062,8 +10062,8 @@
     "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T09:00:00Z",
-    "end": "2026-10-22T09:00:00Z"
+    "start": "2026-10-21T11:00:00Z",
+    "end": "2026-10-22T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -10086,8 +10086,8 @@
     "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T12:00:00Z",
-    "end": "2026-10-21T00:00:00Z"
+    "start": "2026-10-20T13:00:00Z",
+    "end": "2026-10-21T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -10110,8 +10110,8 @@
     "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T12:00:00Z",
-    "end": "2026-10-21T00:00:00Z"
+    "start": "2026-10-20T13:00:00Z",
+    "end": "2026-10-21T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10158,8 +10158,8 @@
     "end": "2026-10-20T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T10:00:00Z",
-    "end": "2026-10-21T10:00:00Z"
+    "start": "2026-10-20T11:00:00Z",
+    "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10182,8 +10182,8 @@
     "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T11:00:00Z",
-    "end": "2026-10-20T23:00:00Z"
+    "start": "2026-10-20T12:00:00Z",
+    "end": "2026-10-21T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10206,8 +10206,8 @@
     "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T13:00:00Z",
-    "end": "2026-10-21T13:00:00Z"
+    "start": "2026-10-20T14:00:00Z",
+    "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -10254,8 +10254,8 @@
     "end": "2026-10-20T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T04:00:00Z",
-    "end": "2026-10-22T04:00:00Z"
+    "start": "2026-10-21T05:00:00Z",
+    "end": "2026-10-22T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -10470,8 +10470,8 @@
     "end": "2026-10-20T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T12:00:00Z",
-    "end": "2026-10-21T00:00:00Z"
+    "start": "2026-10-20T13:00:00Z",
+    "end": "2026-10-21T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -10542,8 +10542,8 @@
     "end": "2026-10-20T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T10:00:00Z",
-    "end": "2026-10-22T10:00:00Z"
+    "start": "2026-10-21T12:00:00Z",
+    "end": "2026-10-22T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -10590,8 +10590,8 @@
     "end": "2026-10-20T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T08:00:00Z",
-    "end": "2026-10-21T20:00:00Z"
+    "start": "2026-10-21T10:00:00Z",
+    "end": "2026-10-21T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10662,8 +10662,8 @@
     "end": "2026-10-20T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T11:00:00Z",
-    "end": "2026-10-22T11:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -10686,8 +10686,8 @@
     "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T15:00:00Z",
-    "end": "2026-10-21T15:00:00Z"
+    "start": "2026-10-20T16:00:00Z",
+    "end": "2026-10-21T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10710,8 +10710,8 @@
     "end": "2026-10-20T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T05:00:00Z",
-    "end": "2026-10-21T17:00:00Z"
+    "start": "2026-10-21T06:00:00Z",
+    "end": "2026-10-21T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10734,8 +10734,8 @@
     "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T15:00:00Z",
-    "end": "2026-10-21T15:00:00Z"
+    "start": "2026-10-20T16:00:00Z",
+    "end": "2026-10-21T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10758,8 +10758,8 @@
     "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T07:00:00Z",
-    "end": "2026-10-21T19:00:00Z"
+    "start": "2026-10-21T08:00:00Z",
+    "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10830,8 +10830,8 @@
     "end": "2026-10-20T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T18:00:00Z",
-    "end": "2026-10-21T18:00:00Z"
+    "start": "2026-10-20T19:00:00Z",
+    "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -10854,8 +10854,8 @@
     "end": "2026-10-20T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T10:00:00Z",
-    "end": "2026-10-22T10:00:00Z"
+    "start": "2026-10-21T12:00:00Z",
+    "end": "2026-10-22T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -10902,8 +10902,8 @@
     "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T17:00:00Z",
-    "end": "2026-10-21T05:00:00Z"
+    "start": "2026-10-20T18:00:00Z",
+    "end": "2026-10-21T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -10950,8 +10950,8 @@
     "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T13:00:00Z",
-    "end": "2026-10-22T13:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -11046,8 +11046,8 @@
     "end": "2026-10-20T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T00:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -11070,8 +11070,8 @@
     "end": "2026-10-20T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T17:00:00Z",
-    "end": "2026-10-21T05:00:00Z"
+    "start": "2026-10-20T18:00:00Z",
+    "end": "2026-10-21T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -11118,8 +11118,8 @@
     "end": "2026-10-20T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T15:00:00Z",
-    "end": "2026-10-22T03:00:00Z"
+    "start": "2026-10-21T17:00:00Z",
+    "end": "2026-10-22T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -11142,8 +11142,8 @@
     "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T20:00:00Z",
-    "end": "2026-10-21T20:00:00Z"
+    "start": "2026-10-20T21:00:00Z",
+    "end": "2026-10-21T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -11166,8 +11166,8 @@
     "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T18:00:00Z",
-    "end": "2026-10-21T06:00:00Z"
+    "start": "2026-10-20T19:00:00Z",
+    "end": "2026-10-21T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -11214,8 +11214,8 @@
     "end": "2026-10-20T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T15:00:00Z",
-    "end": "2026-10-22T03:00:00Z"
+    "start": "2026-10-21T17:00:00Z",
+    "end": "2026-10-22T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -11238,8 +11238,8 @@
     "end": "2026-10-20T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T14:00:00Z",
-    "end": "2026-10-22T02:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -11262,8 +11262,8 @@
     "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T00:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -11286,8 +11286,8 @@
     "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T19:00:00Z",
-    "end": "2026-10-21T19:00:00Z"
+    "start": "2026-10-20T20:00:00Z",
+    "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -11334,8 +11334,8 @@
     "end": "2026-10-20T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T20:00:00Z",
-    "end": "2026-10-21T20:00:00Z"
+    "start": "2026-10-20T21:00:00Z",
+    "end": "2026-10-21T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -11358,8 +11358,8 @@
     "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T19:00:00Z",
-    "end": "2026-10-21T19:00:00Z"
+    "start": "2026-10-20T20:00:00Z",
+    "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -11454,8 +11454,8 @@
     "end": "2026-10-20T20:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T00:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -11502,8 +11502,8 @@
     "end": "2026-10-20T20:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T20:00:00Z",
-    "end": "2026-10-21T08:00:00Z"
+    "start": "2026-10-20T21:00:00Z",
+    "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -11526,8 +11526,8 @@
     "end": "2026-10-20T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T16:00:00Z",
-    "end": "2026-10-22T04:00:00Z"
+    "start": "2026-10-21T17:00:00Z",
+    "end": "2026-10-22T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -11550,8 +11550,8 @@
     "end": "2026-10-20T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T12:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -11574,8 +11574,8 @@
     "end": "2026-10-20T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T16:00:00Z",
-    "end": "2026-10-22T16:00:00Z"
+    "start": "2026-10-21T18:00:00Z",
+    "end": "2026-10-22T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -11622,8 +11622,8 @@
     "end": "2026-10-20T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T20:00:00Z",
-    "end": "2026-10-21T08:00:00Z"
+    "start": "2026-10-20T21:00:00Z",
+    "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -11646,8 +11646,8 @@
     "end": "2026-10-20T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T21:00:00Z",
-    "end": "2026-10-21T09:00:00Z"
+    "start": "2026-10-20T22:00:00Z",
+    "end": "2026-10-21T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -11718,8 +11718,8 @@
     "end": "2026-10-20T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T23:00:00Z",
-    "end": "2026-10-21T23:00:00Z"
+    "start": "2026-10-21T00:00:00Z",
+    "end": "2026-10-22T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -11742,8 +11742,8 @@
     "end": "2026-10-20T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T23:00:00Z",
-    "end": "2026-10-21T23:00:00Z"
+    "start": "2026-10-21T00:00:00Z",
+    "end": "2026-10-22T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -11766,8 +11766,8 @@
     "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T19:00:00Z",
-    "end": "2026-10-22T07:00:00Z"
+    "start": "2026-10-21T21:00:00Z",
+    "end": "2026-10-22T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -11814,8 +11814,8 @@
     "end": "2026-10-20T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T00:00:00Z",
-    "end": "2026-10-22T00:00:00Z"
+    "start": "2026-10-21T01:00:00Z",
+    "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -11862,8 +11862,8 @@
     "end": "2026-10-20T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-20T21:00:00Z",
-    "end": "2026-10-21T09:00:00Z"
+    "start": "2026-10-20T22:00:00Z",
+    "end": "2026-10-21T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -11934,8 +11934,8 @@
     "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T00:00:00Z",
-    "end": "2026-10-21T12:00:00Z"
+    "start": "2026-10-21T01:00:00Z",
+    "end": "2026-10-21T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -11958,8 +11958,8 @@
     "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T01:00:00Z",
-    "end": "2026-10-22T01:00:00Z"
+    "start": "2026-10-21T02:00:00Z",
+    "end": "2026-10-22T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -11982,8 +11982,8 @@
     "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T01:00:00Z",
-    "end": "2026-10-22T01:00:00Z"
+    "start": "2026-10-21T02:00:00Z",
+    "end": "2026-10-22T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12006,8 +12006,8 @@
     "end": "2026-10-20T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T01:00:00Z",
-    "end": "2026-10-22T01:00:00Z"
+    "start": "2026-10-21T02:00:00Z",
+    "end": "2026-10-22T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -12030,8 +12030,8 @@
     "end": "2026-10-21T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T10:00:00Z",
-    "end": "2026-10-21T22:00:00Z"
+    "start": "2026-10-21T11:00:00Z",
+    "end": "2026-10-21T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12054,8 +12054,8 @@
     "end": "2026-10-21T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T12:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -12078,8 +12078,8 @@
     "end": "2026-10-21T06:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T09:00:00Z",
-    "end": "2026-10-22T09:00:00Z"
+    "start": "2026-10-21T10:00:00Z",
+    "end": "2026-10-22T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12102,8 +12102,8 @@
     "end": "2026-10-21T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T11:00:00Z",
-    "end": "2026-10-21T23:00:00Z"
+    "start": "2026-10-21T12:00:00Z",
+    "end": "2026-10-22T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12126,8 +12126,8 @@
     "end": "2026-10-21T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T11:00:00Z",
-    "end": "2026-10-21T23:00:00Z"
+    "start": "2026-10-21T12:00:00Z",
+    "end": "2026-10-22T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -12150,8 +12150,8 @@
     "end": "2026-10-21T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T12:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -12198,8 +12198,8 @@
     "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T12:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -12222,8 +12222,8 @@
     "end": "2026-10-21T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T13:00:00Z",
-    "end": "2026-10-22T13:00:00Z"
+    "start": "2026-10-21T14:00:00Z",
+    "end": "2026-10-22T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -12270,8 +12270,8 @@
     "end": "2026-10-21T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T10:00:00Z",
-    "end": "2026-10-22T22:00:00Z"
+    "start": "2026-10-22T12:00:00Z",
+    "end": "2026-10-23T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12294,8 +12294,8 @@
     "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T15:00:00Z",
-    "end": "2026-10-22T15:00:00Z"
+    "start": "2026-10-21T16:00:00Z",
+    "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -12318,8 +12318,8 @@
     "end": "2026-10-21T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T14:00:00Z",
-    "end": "2026-10-22T14:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -12390,8 +12390,8 @@
     "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T12:00:00Z",
-    "end": "2026-10-22T12:00:00Z"
+    "start": "2026-10-21T13:00:00Z",
+    "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12414,8 +12414,8 @@
     "end": "2026-10-21T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T14:00:00Z",
-    "end": "2026-10-22T14:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12462,8 +12462,8 @@
     "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T08:00:00Z",
-    "end": "2026-10-23T08:00:00Z"
+    "start": "2026-10-22T09:00:00Z",
+    "end": "2026-10-23T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -12486,8 +12486,8 @@
     "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T03:00:00Z",
-    "end": "2026-10-22T15:00:00Z"
+    "start": "2026-10-22T04:00:00Z",
+    "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12510,8 +12510,8 @@
     "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T11:00:00Z",
-    "end": "2026-10-23T11:00:00Z"
+    "start": "2026-10-22T13:00:00Z",
+    "end": "2026-10-23T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12558,8 +12558,8 @@
     "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T14:00:00Z"
+    "start": "2026-10-23T03:00:00Z",
+    "end": "2026-10-24T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12606,8 +12606,8 @@
     "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T05:00:00Z",
-    "end": "2026-10-23T05:00:00Z"
+    "start": "2026-10-22T06:00:00Z",
+    "end": "2026-10-23T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12678,8 +12678,8 @@
     "end": "2026-10-21T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T09:00:00Z",
-    "end": "2026-10-23T09:00:00Z"
+    "start": "2026-10-22T10:00:00Z",
+    "end": "2026-10-23T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -12750,8 +12750,8 @@
     "end": "2026-10-21T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T14:00:00Z",
-    "end": "2026-10-22T02:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -12798,8 +12798,8 @@
     "end": "2026-10-21T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T13:00:00Z",
-    "end": "2026-10-22T13:00:00Z"
+    "start": "2026-10-21T14:00:00Z",
+    "end": "2026-10-22T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12822,8 +12822,8 @@
     "end": "2026-10-21T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T15:00:00Z",
-    "end": "2026-10-22T15:00:00Z"
+    "start": "2026-10-21T16:00:00Z",
+    "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -12846,8 +12846,8 @@
     "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T14:00:00Z",
-    "end": "2026-10-22T14:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12870,8 +12870,8 @@
     "end": "2026-10-21T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T09:00:00Z",
-    "end": "2026-10-23T09:00:00Z"
+    "start": "2026-10-22T11:00:00Z",
+    "end": "2026-10-23T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12894,8 +12894,8 @@
     "end": "2026-10-21T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T14:00:00Z",
-    "end": "2026-10-22T14:00:00Z"
+    "start": "2026-10-21T15:00:00Z",
+    "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -12942,8 +12942,8 @@
     "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T16:00:00Z",
-    "end": "2026-10-22T04:00:00Z"
+    "start": "2026-10-21T17:00:00Z",
+    "end": "2026-10-22T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -13014,8 +13014,8 @@
     "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T11:00:00Z",
-    "end": "2026-10-22T23:00:00Z"
+    "start": "2026-10-22T12:00:00Z",
+    "end": "2026-10-23T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13038,8 +13038,8 @@
     "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T16:00:00Z",
-    "end": "2026-10-22T16:00:00Z"
+    "start": "2026-10-21T17:00:00Z",
+    "end": "2026-10-22T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -13062,8 +13062,8 @@
     "end": "2026-10-21T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T02:00:00Z"
+    "start": "2026-10-22T16:00:00Z",
+    "end": "2026-10-23T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -13086,8 +13086,8 @@
     "end": "2026-10-21T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T17:00:00Z",
-    "end": "2026-10-22T17:00:00Z"
+    "start": "2026-10-21T18:00:00Z",
+    "end": "2026-10-22T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -13182,8 +13182,8 @@
     "end": "2026-10-21T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T17:00:00Z",
-    "end": "2026-10-22T05:00:00Z"
+    "start": "2026-10-21T18:00:00Z",
+    "end": "2026-10-22T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -13230,8 +13230,8 @@
     "end": "2026-10-21T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T18:00:00Z",
-    "end": "2026-10-22T18:00:00Z"
+    "start": "2026-10-21T19:00:00Z",
+    "end": "2026-10-22T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -13278,8 +13278,8 @@
     "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T19:00:00Z",
-    "end": "2026-10-22T19:00:00Z"
+    "start": "2026-10-21T20:00:00Z",
+    "end": "2026-10-22T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -13350,8 +13350,8 @@
     "end": "2026-10-21T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T19:00:00Z",
-    "end": "2026-10-22T19:00:00Z"
+    "start": "2026-10-21T20:00:00Z",
+    "end": "2026-10-22T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -13398,8 +13398,8 @@
     "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T10:00:00Z",
-    "end": "2026-10-22T22:00:00Z"
+    "start": "2026-10-22T11:00:00Z",
+    "end": "2026-10-22T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -13470,8 +13470,8 @@
     "end": "2026-10-21T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T02:00:00Z"
+    "start": "2026-10-22T15:00:00Z",
+    "end": "2026-10-23T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13518,8 +13518,8 @@
     "end": "2026-10-21T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T22:00:00Z",
-    "end": "2026-10-22T22:00:00Z"
+    "start": "2026-10-21T23:00:00Z",
+    "end": "2026-10-22T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -13542,8 +13542,8 @@
     "end": "2026-10-21T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T20:00:00Z",
-    "end": "2026-10-23T08:00:00Z"
+    "start": "2026-10-23T08:00:00Z",
+    "end": "2026-10-23T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -13566,8 +13566,8 @@
     "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T21:00:00Z",
-    "end": "2026-10-22T09:00:00Z"
+    "start": "2026-10-21T22:00:00Z",
+    "end": "2026-10-22T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -13614,8 +13614,8 @@
     "end": "2026-10-21T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T10:00:00Z",
-    "end": "2026-10-22T22:00:00Z"
+    "start": "2026-10-22T11:00:00Z",
+    "end": "2026-10-22T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13662,8 +13662,8 @@
     "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T20:00:00Z",
-    "end": "2026-10-22T20:00:00Z"
+    "start": "2026-10-21T21:00:00Z",
+    "end": "2026-10-22T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13686,8 +13686,8 @@
     "end": "2026-10-21T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T12:00:00Z",
-    "end": "2026-10-23T00:00:00Z"
+    "start": "2026-10-22T13:00:00Z",
+    "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13734,8 +13734,8 @@
     "end": "2026-10-21T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T22:00:00Z",
-    "end": "2026-10-22T10:00:00Z"
+    "start": "2026-10-21T23:00:00Z",
+    "end": "2026-10-22T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -13758,8 +13758,8 @@
     "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T16:00:00Z",
-    "end": "2026-10-23T04:00:00Z"
+    "start": "2026-10-22T17:00:00Z",
+    "end": "2026-10-23T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13806,8 +13806,8 @@
     "end": "2026-10-21T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T00:00:00Z",
-    "end": "2026-10-23T00:00:00Z"
+    "start": "2026-10-22T01:00:00Z",
+    "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -13830,8 +13830,8 @@
     "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T19:00:00Z",
-    "end": "2026-10-23T07:00:00Z"
+    "start": "2026-10-22T20:00:00Z",
+    "end": "2026-10-23T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -13878,8 +13878,8 @@
     "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T19:00:00Z",
-    "end": "2026-10-23T07:00:00Z"
+    "start": "2026-10-22T20:00:00Z",
+    "end": "2026-10-23T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -13902,8 +13902,8 @@
     "end": "2026-10-21T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T21:00:00Z",
-    "end": "2026-10-22T21:00:00Z"
+    "start": "2026-10-21T22:00:00Z",
+    "end": "2026-10-22T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -13926,8 +13926,8 @@
     "end": "2026-10-21T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-21T22:00:00Z",
-    "end": "2026-10-22T10:00:00Z"
+    "start": "2026-10-21T23:00:00Z",
+    "end": "2026-10-22T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -13974,8 +13974,8 @@
     "end": "2026-10-21T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T23:00:00Z",
-    "end": "2026-10-23T23:00:00Z"
+    "start": "2026-10-23T12:00:00Z",
+    "end": "2026-10-24T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14046,8 +14046,8 @@
     "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T02:00:00Z",
-    "end": "2026-10-23T02:00:00Z"
+    "start": "2026-10-22T03:00:00Z",
+    "end": "2026-10-23T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14118,8 +14118,8 @@
     "end": "2026-10-21T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T01:00:00Z",
-    "end": "2026-10-24T01:00:00Z"
+    "start": "2026-10-23T14:00:00Z",
+    "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14142,8 +14142,8 @@
     "end": "2026-10-21T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T03:00:00Z",
-    "end": "2026-10-22T15:00:00Z"
+    "start": "2026-10-22T04:00:00Z",
+    "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14190,8 +14190,8 @@
     "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T02:00:00Z",
-    "end": "2026-10-23T02:00:00Z"
+    "start": "2026-10-22T03:00:00Z",
+    "end": "2026-10-23T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -14214,8 +14214,8 @@
     "end": "2026-10-22T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T21:00:00Z",
-    "end": "2026-10-23T09:00:00Z"
+    "start": "2026-10-22T23:00:00Z",
+    "end": "2026-10-23T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14238,8 +14238,8 @@
     "end": "2026-10-21T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T02:00:00Z",
-    "end": "2026-10-22T14:00:00Z"
+    "start": "2026-10-22T03:00:00Z",
+    "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14286,8 +14286,8 @@
     "end": "2026-10-21T20:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T21:00:00Z",
-    "end": "2026-10-23T21:00:00Z"
+    "start": "2026-10-22T22:00:00Z",
+    "end": "2026-10-23T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14310,8 +14310,8 @@
     "end": "2026-10-22T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T02:00:00Z",
-    "end": "2026-10-23T14:00:00Z"
+    "start": "2026-10-23T03:00:00Z",
+    "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14334,8 +14334,8 @@
     "end": "2026-10-22T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T08:00:00Z",
-    "end": "2026-10-23T20:00:00Z"
+    "start": "2026-10-23T09:00:00Z",
+    "end": "2026-10-23T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14358,8 +14358,8 @@
     "end": "2026-10-22T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T11:00:00Z",
-    "end": "2026-10-22T23:00:00Z"
+    "start": "2026-10-22T12:00:00Z",
+    "end": "2026-10-23T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -14406,8 +14406,8 @@
     "end": "2026-10-22T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T13:00:00Z",
-    "end": "2026-10-23T13:00:00Z"
+    "start": "2026-10-22T14:00:00Z",
+    "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14430,8 +14430,8 @@
     "end": "2026-10-22T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T13:00:00Z",
-    "end": "2026-10-23T13:00:00Z"
+    "start": "2026-10-22T14:00:00Z",
+    "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14454,8 +14454,8 @@
     "end": "2026-10-22T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T12:00:00Z",
-    "end": "2026-10-23T00:00:00Z"
+    "start": "2026-10-22T13:00:00Z",
+    "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -14478,8 +14478,8 @@
     "end": "2026-10-22T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T12:00:00Z",
-    "end": "2026-10-23T00:00:00Z"
+    "start": "2026-10-22T13:00:00Z",
+    "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14502,8 +14502,8 @@
     "end": "2026-10-22T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T02:00:00Z",
-    "end": "2026-10-23T14:00:00Z"
+    "start": "2026-10-23T03:00:00Z",
+    "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14550,8 +14550,8 @@
     "end": "2026-10-22T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T14:00:00Z"
+    "start": "2026-10-22T15:00:00Z",
+    "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14598,8 +14598,8 @@
     "end": "2026-10-22T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T15:00:00Z",
-    "end": "2026-10-23T15:00:00Z"
+    "start": "2026-10-22T16:00:00Z",
+    "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -14622,8 +14622,8 @@
     "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T04:00:00Z",
-    "end": "2026-10-24T04:00:00Z"
+    "start": "2026-10-23T05:00:00Z",
+    "end": "2026-10-24T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -14646,8 +14646,8 @@
     "end": "2026-10-22T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T13:00:00Z",
-    "end": "2026-10-24T01:00:00Z"
+    "start": "2026-10-24T02:00:00Z",
+    "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14718,8 +14718,8 @@
     "end": "2026-10-22T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T12:00:00Z",
-    "end": "2026-10-23T00:00:00Z"
+    "start": "2026-10-22T13:00:00Z",
+    "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14742,8 +14742,8 @@
     "end": "2026-10-22T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T02:00:00Z"
+    "start": "2026-10-22T15:00:00Z",
+    "end": "2026-10-23T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14766,8 +14766,8 @@
     "end": "2026-10-22T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T15:00:00Z",
-    "end": "2026-10-23T15:00:00Z"
+    "start": "2026-10-22T16:00:00Z",
+    "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -14814,8 +14814,8 @@
     "end": "2026-10-22T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T14:00:00Z",
-    "end": "2026-10-24T02:00:00Z"
+    "start": "2026-10-24T03:00:00Z",
+    "end": "2026-10-24T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14862,8 +14862,8 @@
     "end": "2026-10-22T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T02:00:00Z"
+    "start": "2026-10-22T15:00:00Z",
+    "end": "2026-10-23T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -14886,8 +14886,8 @@
     "end": "2026-10-22T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T15:00:00Z",
-    "end": "2026-10-23T15:00:00Z"
+    "start": "2026-10-22T16:00:00Z",
+    "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -14910,8 +14910,8 @@
     "end": "2026-10-22T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T16:00:00Z",
-    "end": "2026-10-23T16:00:00Z"
+    "start": "2026-10-22T17:00:00Z",
+    "end": "2026-10-23T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -14958,8 +14958,8 @@
     "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T16:00:00Z",
-    "end": "2026-10-23T16:00:00Z"
+    "start": "2026-10-22T17:00:00Z",
+    "end": "2026-10-23T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -15006,8 +15006,8 @@
     "end": "2026-10-22T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T15:00:00Z",
-    "end": "2026-10-23T03:00:00Z"
+    "start": "2026-10-22T16:00:00Z",
+    "end": "2026-10-23T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -15030,8 +15030,8 @@
     "end": "2026-10-22T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T14:00:00Z",
-    "end": "2026-10-23T14:00:00Z"
+    "start": "2026-10-22T15:00:00Z",
+    "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -15054,8 +15054,8 @@
     "end": "2026-10-22T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T08:00:00Z",
-    "end": "2026-10-24T08:00:00Z"
+    "start": "2026-10-23T09:00:00Z",
+    "end": "2026-10-24T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -15222,8 +15222,8 @@
     "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T17:00:00Z",
-    "end": "2026-10-23T05:00:00Z"
+    "start": "2026-10-22T18:00:00Z",
+    "end": "2026-10-23T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -15318,8 +15318,8 @@
     "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T15:00:00Z",
-    "end": "2026-10-23T03:00:00Z"
+    "start": "2026-10-22T16:00:00Z",
+    "end": "2026-10-23T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -15342,8 +15342,8 @@
     "end": "2026-10-22T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T18:00:00Z",
-    "end": "2026-10-23T18:00:00Z"
+    "start": "2026-10-22T19:00:00Z",
+    "end": "2026-10-23T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -15366,8 +15366,8 @@
     "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T14:00:00Z",
-    "end": "2026-10-24T02:00:00Z"
+    "start": "2026-10-23T15:00:00Z",
+    "end": "2026-10-24T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -15486,8 +15486,8 @@
     "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T18:00:00Z",
-    "end": "2026-10-23T06:00:00Z"
+    "start": "2026-10-22T19:00:00Z",
+    "end": "2026-10-23T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -15534,8 +15534,8 @@
     "end": "2026-10-22T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T20:00:00Z",
-    "end": "2026-10-23T20:00:00Z"
+    "start": "2026-10-22T21:00:00Z",
+    "end": "2026-10-23T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -15558,8 +15558,8 @@
     "end": "2026-10-22T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T03:00:00Z"
+    "start": "2026-10-23T17:00:00Z",
+    "end": "2026-10-24T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -15606,8 +15606,8 @@
     "end": "2026-10-22T20:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T20:00:00Z",
-    "end": "2026-10-23T20:00:00Z"
+    "start": "2026-10-22T21:00:00Z",
+    "end": "2026-10-23T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -15630,8 +15630,8 @@
     "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T20:00:00Z",
-    "end": "2026-10-24T08:00:00Z"
+    "start": "2026-10-24T09:00:00Z",
+    "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -15678,8 +15678,8 @@
     "end": "2026-10-22T20:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T21:00:00Z",
-    "end": "2026-10-23T21:00:00Z"
+    "start": "2026-10-22T22:00:00Z",
+    "end": "2026-10-23T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -15750,8 +15750,8 @@
     "end": "2026-10-22T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T16:00:00Z",
-    "end": "2026-10-24T04:00:00Z"
+    "start": "2026-10-23T17:00:00Z",
+    "end": "2026-10-24T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -15774,8 +15774,8 @@
     "end": "2026-10-22T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T20:00:00Z",
-    "end": "2026-10-23T08:00:00Z"
+    "start": "2026-10-22T21:00:00Z",
+    "end": "2026-10-23T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -15822,8 +15822,8 @@
     "end": "2026-10-22T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T20:00:00Z",
-    "end": "2026-10-23T08:00:00Z"
+    "start": "2026-10-22T21:00:00Z",
+    "end": "2026-10-23T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -15870,8 +15870,8 @@
     "end": "2026-10-22T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T12:00:00Z",
-    "end": "2026-10-24T12:00:00Z"
+    "start": "2026-10-23T13:00:00Z",
+    "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -15894,8 +15894,8 @@
     "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T12:00:00Z",
-    "end": "2026-10-24T00:00:00Z"
+    "start": "2026-10-23T13:00:00Z",
+    "end": "2026-10-24T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -15966,8 +15966,8 @@
     "end": "2026-10-22T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T21:00:00Z",
-    "end": "2026-10-24T21:00:00Z"
+    "start": "2026-10-24T10:00:00Z",
+    "end": "2026-10-25T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -16014,8 +16014,8 @@
     "end": "2026-10-22T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T15:00:00Z"
+    "start": "2026-10-23T17:00:00Z",
+    "end": "2026-10-24T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -16110,8 +16110,8 @@
     "end": "2026-10-22T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T23:00:00Z",
-    "end": "2026-10-23T23:00:00Z"
+    "start": "2026-10-23T00:00:00Z",
+    "end": "2026-10-24T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -16134,8 +16134,8 @@
     "end": "2026-10-22T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T16:00:00Z",
-    "end": "2026-10-24T16:00:00Z"
+    "start": "2026-10-23T17:00:00Z",
+    "end": "2026-10-24T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -16182,8 +16182,8 @@
     "end": "2026-10-22T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-22T22:00:00Z",
-    "end": "2026-10-23T22:00:00Z"
+    "start": "2026-10-22T23:00:00Z",
+    "end": "2026-10-23T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -16230,8 +16230,8 @@
     "end": "2026-10-22T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T18:00:00Z",
-    "end": "2026-10-24T06:00:00Z"
+    "start": "2026-10-23T19:00:00Z",
+    "end": "2026-10-24T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -16302,8 +16302,8 @@
     "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T21:00:00Z",
-    "end": "2026-10-24T21:00:00Z"
+    "start": "2026-10-23T22:00:00Z",
+    "end": "2026-10-24T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -16374,8 +16374,8 @@
     "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T20:00:00Z",
-    "end": "2026-10-24T20:00:00Z"
+    "start": "2026-10-23T22:00:00Z",
+    "end": "2026-10-24T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -16398,8 +16398,8 @@
     "end": "2026-10-23T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T02:00:00Z",
-    "end": "2026-10-24T02:00:00Z"
+    "start": "2026-10-23T03:00:00Z",
+    "end": "2026-10-24T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -16542,8 +16542,8 @@
     "end": "2026-10-23T06:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T09:00:00Z",
-    "end": "2026-10-24T09:00:00Z"
+    "start": "2026-10-23T10:00:00Z",
+    "end": "2026-10-24T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -16566,8 +16566,8 @@
     "end": "2026-10-23T06:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T02:00:00Z",
-    "end": "2026-10-24T14:00:00Z"
+    "start": "2026-10-24T03:00:00Z",
+    "end": "2026-10-24T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -16638,8 +16638,8 @@
     "end": "2026-10-23T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T03:00:00Z"
+    "start": "2026-10-23T16:00:00Z",
+    "end": "2026-10-24T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -16686,8 +16686,8 @@
     "end": "2026-10-23T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T12:00:00Z",
-    "end": "2026-10-24T12:00:00Z"
+    "start": "2026-10-23T13:00:00Z",
+    "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -16710,8 +16710,8 @@
     "end": "2026-10-23T07:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T11:00:00Z",
-    "end": "2026-10-24T11:00:00Z"
+    "start": "2026-10-23T12:00:00Z",
+    "end": "2026-10-24T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -16734,8 +16734,8 @@
     "end": "2026-10-23T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T14:00:00Z",
-    "end": "2026-10-24T02:00:00Z"
+    "start": "2026-10-23T15:00:00Z",
+    "end": "2026-10-24T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -16758,8 +16758,8 @@
     "end": "2026-10-23T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T13:00:00Z",
-    "end": "2026-10-24T13:00:00Z"
+    "start": "2026-10-23T14:00:00Z",
+    "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -16782,8 +16782,8 @@
     "end": "2026-10-23T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T03:00:00Z"
+    "start": "2026-10-23T16:00:00Z",
+    "end": "2026-10-24T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -16806,8 +16806,8 @@
     "end": "2026-10-23T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T15:00:00Z"
+    "start": "2026-10-23T16:00:00Z",
+    "end": "2026-10-24T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -16830,8 +16830,8 @@
     "end": "2026-10-23T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T13:00:00Z",
-    "end": "2026-10-24T13:00:00Z"
+    "start": "2026-10-23T14:00:00Z",
+    "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -16854,8 +16854,8 @@
     "end": "2026-10-23T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T14:00:00Z",
-    "end": "2026-10-24T02:00:00Z"
+    "start": "2026-10-23T15:00:00Z",
+    "end": "2026-10-24T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -16878,8 +16878,8 @@
     "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T10:00:00Z",
-    "end": "2026-10-25T10:00:00Z"
+    "start": "2026-10-24T12:00:00Z",
+    "end": "2026-10-25T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -16902,8 +16902,8 @@
     "end": "2026-10-23T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T10:00:00Z",
-    "end": "2026-10-24T22:00:00Z"
+    "start": "2026-10-24T11:00:00Z",
+    "end": "2026-10-24T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -16926,8 +16926,8 @@
     "end": "2026-10-23T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T16:00:00Z",
-    "end": "2026-10-24T04:00:00Z"
+    "start": "2026-10-23T17:00:00Z",
+    "end": "2026-10-24T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -16998,8 +16998,8 @@
     "end": "2026-10-23T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T03:00:00Z"
+    "start": "2026-10-23T16:00:00Z",
+    "end": "2026-10-24T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -17022,8 +17022,8 @@
     "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T11:00:00Z",
-    "end": "2026-10-25T11:00:00Z"
+    "start": "2026-10-24T12:00:00Z",
+    "end": "2026-10-25T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -17094,8 +17094,8 @@
     "end": "2026-10-23T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T15:00:00Z",
-    "end": "2026-10-24T15:00:00Z"
+    "start": "2026-10-23T16:00:00Z",
+    "end": "2026-10-24T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -17118,8 +17118,8 @@
     "end": "2026-10-23T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T10:00:00Z",
-    "end": "2026-10-24T22:00:00Z"
+    "start": "2026-10-24T11:00:00Z",
+    "end": "2026-10-24T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -17142,8 +17142,8 @@
     "end": "2026-10-23T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T17:00:00Z",
-    "end": "2026-10-24T17:00:00Z"
+    "start": "2026-10-23T18:00:00Z",
+    "end": "2026-10-24T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17166,8 +17166,8 @@
     "end": "2026-10-23T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T10:00:00Z",
-    "end": "2026-10-25T10:00:00Z"
+    "start": "2026-10-24T11:00:00Z",
+    "end": "2026-10-25T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -17286,8 +17286,8 @@
     "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T17:00:00Z",
-    "end": "2026-10-24T17:00:00Z"
+    "start": "2026-10-23T18:00:00Z",
+    "end": "2026-10-24T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -17334,8 +17334,8 @@
     "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T17:00:00Z",
-    "end": "2026-10-24T05:00:00Z"
+    "start": "2026-10-23T18:00:00Z",
+    "end": "2026-10-24T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -17430,8 +17430,8 @@
     "end": "2026-10-23T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T16:00:00Z",
-    "end": "2026-10-24T04:00:00Z"
+    "start": "2026-10-23T17:00:00Z",
+    "end": "2026-10-24T05:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -17454,8 +17454,8 @@
     "end": "2026-10-23T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T12:00:00Z",
-    "end": "2026-10-25T00:00:00Z"
+    "start": "2026-10-24T13:00:00Z",
+    "end": "2026-10-25T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -17478,8 +17478,8 @@
     "end": "2026-10-23T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T12:00:00Z",
-    "end": "2026-10-25T00:00:00Z"
+    "start": "2026-10-24T13:00:00Z",
+    "end": "2026-10-25T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -17502,8 +17502,8 @@
     "end": "2026-10-23T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T17:00:00Z",
-    "end": "2026-10-24T17:00:00Z"
+    "start": "2026-10-23T18:00:00Z",
+    "end": "2026-10-24T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17550,8 +17550,8 @@
     "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T14:00:00Z",
-    "end": "2026-10-25T02:00:00Z"
+    "start": "2026-10-24T16:00:00Z",
+    "end": "2026-10-25T04:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -17574,8 +17574,8 @@
     "end": "2026-10-23T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T19:00:00Z",
-    "end": "2026-10-24T19:00:00Z"
+    "start": "2026-10-23T20:00:00Z",
+    "end": "2026-10-24T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -17598,8 +17598,8 @@
     "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T09:00:00Z",
-    "end": "2026-10-24T21:00:00Z"
+    "start": "2026-10-24T10:00:00Z",
+    "end": "2026-10-24T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -17646,8 +17646,8 @@
     "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T18:00:00Z",
-    "end": "2026-10-24T06:00:00Z"
+    "start": "2026-10-23T19:00:00Z",
+    "end": "2026-10-24T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17670,8 +17670,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T20:00:00Z",
-    "end": "2026-10-24T08:00:00Z"
+    "start": "2026-10-23T21:00:00Z",
+    "end": "2026-10-24T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -17694,8 +17694,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T14:00:00Z",
-    "end": "2026-10-25T14:00:00Z"
+    "start": "2026-10-24T16:00:00Z",
+    "end": "2026-10-25T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -17718,8 +17718,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T14:00:00Z",
-    "end": "2026-10-25T02:00:00Z"
+    "start": "2026-10-24T15:00:00Z",
+    "end": "2026-10-25T03:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -17742,8 +17742,8 @@
     "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T19:00:00Z",
-    "end": "2026-10-24T19:00:00Z"
+    "start": "2026-10-23T20:00:00Z",
+    "end": "2026-10-24T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17766,8 +17766,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T18:00:00Z",
-    "end": "2026-10-24T18:00:00Z"
+    "start": "2026-10-23T19:00:00Z",
+    "end": "2026-10-24T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -17790,8 +17790,8 @@
     "end": "2026-10-23T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T10:00:00Z",
-    "end": "2026-10-25T10:00:00Z"
+    "start": "2026-10-24T11:00:00Z",
+    "end": "2026-10-25T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -17814,8 +17814,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T14:00:00Z",
-    "end": "2026-10-25T14:00:00Z"
+    "start": "2026-10-24T16:00:00Z",
+    "end": "2026-10-25T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17838,8 +17838,8 @@
     "end": "2026-10-23T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T15:00:00Z",
-    "end": "2026-10-25T15:00:00Z"
+    "start": "2026-10-24T17:00:00Z",
+    "end": "2026-10-25T17:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17862,8 +17862,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T20:00:00Z",
-    "end": "2026-10-24T20:00:00Z"
+    "start": "2026-10-23T21:00:00Z",
+    "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -17910,8 +17910,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T16:00:00Z",
-    "end": "2026-10-25T16:00:00Z"
+    "start": "2026-10-24T18:00:00Z",
+    "end": "2026-10-25T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -17934,8 +17934,8 @@
     "end": "2026-10-23T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T22:00:00Z",
-    "end": "2026-10-24T22:00:00Z"
+    "start": "2026-10-23T23:00:00Z",
+    "end": "2026-10-24T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -17958,8 +17958,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T19:00:00Z",
-    "end": "2026-10-24T19:00:00Z"
+    "start": "2026-10-23T20:00:00Z",
+    "end": "2026-10-24T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -18030,8 +18030,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T20:00:00Z",
-    "end": "2026-10-24T20:00:00Z"
+    "start": "2026-10-23T21:00:00Z",
+    "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -18054,8 +18054,8 @@
     "end": "2026-10-23T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T20:00:00Z",
-    "end": "2026-10-24T20:00:00Z"
+    "start": "2026-10-23T21:00:00Z",
+    "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -18102,8 +18102,8 @@
     "end": "2026-10-23T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T22:00:00Z",
-    "end": "2026-10-24T22:00:00Z"
+    "start": "2026-10-23T23:00:00Z",
+    "end": "2026-10-24T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -18126,8 +18126,8 @@
     "end": "2026-10-23T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T16:00:00Z",
-    "end": "2026-10-25T04:00:00Z"
+    "start": "2026-10-24T18:00:00Z",
+    "end": "2026-10-25T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -18222,8 +18222,8 @@
     "end": "2026-10-23T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T19:00:00Z",
-    "end": "2026-10-24T19:00:00Z"
+    "start": "2026-10-23T20:00:00Z",
+    "end": "2026-10-24T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -18270,8 +18270,8 @@
     "end": "2026-10-23T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-23T21:00:00Z",
-    "end": "2026-10-24T21:00:00Z"
+    "start": "2026-10-23T22:00:00Z",
+    "end": "2026-10-24T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -18294,8 +18294,8 @@
     "end": "2026-10-23T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T00:00:00Z",
-    "end": "2026-10-24T12:00:00Z"
+    "start": "2026-10-24T01:00:00Z",
+    "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -18318,8 +18318,8 @@
     "end": "2026-10-23T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T00:00:00Z",
-    "end": "2026-10-24T12:00:00Z"
+    "start": "2026-10-24T01:00:00Z",
+    "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -18342,8 +18342,8 @@
     "end": "2026-10-23T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T14:00:00Z",
-    "end": "2026-10-25T14:00:00Z"
+    "start": "2026-10-24T15:00:00Z",
+    "end": "2026-10-25T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -18366,8 +18366,8 @@
     "end": "2026-10-23T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T18:00:00Z",
-    "end": "2026-10-25T18:00:00Z"
+    "start": "2026-10-24T20:00:00Z",
+    "end": "2026-10-25T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -18390,8 +18390,8 @@
     "end": "2026-10-23T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T00:00:00Z",
-    "end": "2026-10-25T00:00:00Z"
+    "start": "2026-10-24T01:00:00Z",
+    "end": "2026-10-25T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -18510,8 +18510,8 @@
     "end": "2026-10-24T01:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T02:00:00Z",
-    "end": "2026-10-24T14:00:00Z"
+    "start": "2026-10-24T03:00:00Z",
+    "end": "2026-10-24T15:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -18558,8 +18558,8 @@
     "end": "2026-10-23T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T00:00:00Z",
-    "end": "2026-10-24T12:00:00Z"
+    "start": "2026-10-24T01:00:00Z",
+    "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -18582,8 +18582,8 @@
     "end": "2026-10-23T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T00:00:00Z",
-    "end": "2026-10-25T00:00:00Z"
+    "start": "2026-10-24T01:00:00Z",
+    "end": "2026-10-25T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -18654,8 +18654,8 @@
     "end": "2026-10-24T09:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T13:00:00Z",
-    "end": "2026-10-25T13:00:00Z"
+    "start": "2026-10-24T14:00:00Z",
+    "end": "2026-10-25T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -18702,8 +18702,8 @@
     "end": "2026-10-24T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T07:00:00Z",
-    "end": "2026-10-26T07:00:00Z"
+    "start": "2026-10-25T09:00:00Z",
+    "end": "2026-10-26T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -18750,8 +18750,8 @@
     "end": "2026-10-24T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T13:00:00Z",
-    "end": "2026-10-25T01:00:00Z"
+    "start": "2026-10-24T14:00:00Z",
+    "end": "2026-10-25T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -18774,8 +18774,8 @@
     "end": "2026-10-24T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T10:00:00Z",
-    "end": "2026-10-26T10:00:00Z"
+    "start": "2026-10-25T11:00:00Z",
+    "end": "2026-10-26T11:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -18846,8 +18846,8 @@
     "end": "2026-10-24T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T13:00:00Z",
-    "end": "2026-10-25T01:00:00Z"
+    "start": "2026-10-24T14:00:00Z",
+    "end": "2026-10-25T02:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -18894,8 +18894,8 @@
     "end": "2026-10-24T08:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T08:00:00Z",
-    "end": "2026-10-26T08:00:00Z"
+    "start": "2026-10-25T10:00:00Z",
+    "end": "2026-10-26T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -18918,8 +18918,8 @@
     "end": "2026-10-24T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T13:00:00Z",
-    "end": "2026-10-25T13:00:00Z"
+    "start": "2026-10-24T14:00:00Z",
+    "end": "2026-10-25T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -18942,8 +18942,8 @@
     "end": "2026-10-24T11:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T08:00:00Z",
-    "end": "2026-10-25T20:00:00Z"
+    "start": "2026-10-25T09:00:00Z",
+    "end": "2026-10-25T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19014,8 +19014,8 @@
     "end": "2026-10-24T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T15:00:00Z",
-    "end": "2026-10-25T15:00:00Z"
+    "start": "2026-10-24T16:00:00Z",
+    "end": "2026-10-25T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 180,
@@ -19062,8 +19062,8 @@
     "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T10:00:00Z",
-    "end": "2026-10-26T10:00:00Z"
+    "start": "2026-10-25T12:00:00Z",
+    "end": "2026-10-26T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -19086,8 +19086,8 @@
     "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T12:00:00Z",
-    "end": "2026-10-26T00:00:00Z"
+    "start": "2026-10-25T13:00:00Z",
+    "end": "2026-10-26T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -19110,8 +19110,8 @@
     "end": "2026-10-24T13:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T15:00:00Z",
-    "end": "2026-10-25T15:00:00Z"
+    "start": "2026-10-24T16:00:00Z",
+    "end": "2026-10-25T16:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -19134,8 +19134,8 @@
     "end": "2026-10-24T10:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T11:00:00Z",
-    "end": "2026-10-25T23:00:00Z"
+    "start": "2026-10-25T13:00:00Z",
+    "end": "2026-10-26T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19182,8 +19182,8 @@
     "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T07:00:00Z",
-    "end": "2026-10-25T19:00:00Z"
+    "start": "2026-10-25T08:00:00Z",
+    "end": "2026-10-25T20:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -19278,8 +19278,8 @@
     "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T17:00:00Z",
-    "end": "2026-10-25T17:00:00Z"
+    "start": "2026-10-24T18:00:00Z",
+    "end": "2026-10-25T18:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -19302,8 +19302,8 @@
     "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T10:00:00Z",
-    "end": "2026-10-26T10:00:00Z"
+    "start": "2026-10-25T12:00:00Z",
+    "end": "2026-10-26T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19326,8 +19326,8 @@
     "end": "2026-10-24T12:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T08:00:00Z",
-    "end": "2026-10-26T08:00:00Z"
+    "start": "2026-10-25T09:00:00Z",
+    "end": "2026-10-26T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -19350,8 +19350,8 @@
     "end": "2026-10-24T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T18:00:00Z",
-    "end": "2026-10-25T06:00:00Z"
+    "start": "2026-10-24T19:00:00Z",
+    "end": "2026-10-25T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -19446,8 +19446,8 @@
     "end": "2026-10-24T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T17:00:00Z",
-    "end": "2026-10-26T05:00:00Z"
+    "start": "2026-10-25T18:00:00Z",
+    "end": "2026-10-26T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19494,8 +19494,8 @@
     "end": "2026-10-24T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T18:00:00Z",
-    "end": "2026-10-25T06:00:00Z"
+    "start": "2026-10-24T19:00:00Z",
+    "end": "2026-10-25T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -19566,8 +19566,8 @@
     "end": "2026-10-24T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T18:00:00Z",
-    "end": "2026-10-25T06:00:00Z"
+    "start": "2026-10-24T19:00:00Z",
+    "end": "2026-10-25T07:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19614,8 +19614,8 @@
     "end": "2026-10-24T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T20:00:00Z",
-    "end": "2026-10-25T08:00:00Z"
+    "start": "2026-10-24T21:00:00Z",
+    "end": "2026-10-25T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19638,8 +19638,8 @@
     "end": "2026-10-24T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T21:00:00Z",
-    "end": "2026-10-25T21:00:00Z"
+    "start": "2026-10-24T22:00:00Z",
+    "end": "2026-10-25T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19662,8 +19662,8 @@
     "end": "2026-10-24T14:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T18:00:00Z",
-    "end": "2026-10-26T18:00:00Z"
+    "start": "2026-10-25T19:00:00Z",
+    "end": "2026-10-26T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -19686,8 +19686,8 @@
     "end": "2026-10-24T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T17:00:00Z",
-    "end": "2026-10-25T05:00:00Z"
+    "start": "2026-10-24T18:00:00Z",
+    "end": "2026-10-25T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19734,8 +19734,8 @@
     "end": "2026-10-24T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T11:00:00Z",
-    "end": "2026-10-26T11:00:00Z"
+    "start": "2026-10-25T12:00:00Z",
+    "end": "2026-10-26T12:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -19782,8 +19782,8 @@
     "end": "2026-10-24T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T20:00:00Z",
-    "end": "2026-10-25T08:00:00Z"
+    "start": "2026-10-24T21:00:00Z",
+    "end": "2026-10-25T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -19806,8 +19806,8 @@
     "end": "2026-10-24T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T19:00:00Z",
-    "end": "2026-10-25T07:00:00Z"
+    "start": "2026-10-24T20:00:00Z",
+    "end": "2026-10-25T08:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19830,8 +19830,8 @@
     "end": "2026-10-24T15:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T16:00:00Z",
-    "end": "2026-10-26T04:00:00Z"
+    "start": "2026-10-25T18:00:00Z",
+    "end": "2026-10-26T06:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19854,8 +19854,8 @@
     "end": "2026-10-24T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T12:00:00Z",
-    "end": "2026-10-26T00:00:00Z"
+    "start": "2026-10-25T13:00:00Z",
+    "end": "2026-10-26T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -19878,8 +19878,8 @@
     "end": "2026-10-24T17:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T12:00:00Z",
-    "end": "2026-10-26T00:00:00Z"
+    "start": "2026-10-25T13:00:00Z",
+    "end": "2026-10-26T01:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19902,8 +19902,8 @@
     "end": "2026-10-24T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T20:00:00Z",
-    "end": "2026-10-25T20:00:00Z"
+    "start": "2026-10-24T21:00:00Z",
+    "end": "2026-10-25T21:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 90,
@@ -19926,8 +19926,8 @@
     "end": "2026-10-24T16:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T21:00:00Z",
-    "end": "2026-10-25T09:00:00Z"
+    "start": "2026-10-24T22:00:00Z",
+    "end": "2026-10-25T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19950,8 +19950,8 @@
     "end": "2026-10-24T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T19:00:00Z",
-    "end": "2026-10-26T07:00:00Z"
+    "start": "2026-10-25T21:00:00Z",
+    "end": "2026-10-26T09:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -19974,8 +19974,8 @@
     "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T21:00:00Z",
-    "end": "2026-10-25T09:00:00Z"
+    "start": "2026-10-24T22:00:00Z",
+    "end": "2026-10-25T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -19998,8 +19998,8 @@
     "end": "2026-10-24T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T21:00:00Z",
-    "end": "2026-10-25T09:00:00Z"
+    "start": "2026-10-24T22:00:00Z",
+    "end": "2026-10-25T10:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -20046,8 +20046,8 @@
     "end": "2026-10-24T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T00:00:00Z",
-    "end": "2026-10-25T12:00:00Z"
+    "start": "2026-10-25T01:00:00Z",
+    "end": "2026-10-25T13:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -20094,8 +20094,8 @@
     "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T22:00:00Z",
-    "end": "2026-10-25T22:00:00Z"
+    "start": "2026-10-24T23:00:00Z",
+    "end": "2026-10-25T23:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -20142,8 +20142,8 @@
     "end": "2026-10-24T21:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T01:00:00Z",
-    "end": "2026-10-25T13:00:00Z"
+    "start": "2026-10-25T02:00:00Z",
+    "end": "2026-10-25T14:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 150,
@@ -20190,8 +20190,8 @@
     "end": "2026-10-24T18:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-24T23:00:00Z",
-    "end": "2026-10-25T23:00:00Z"
+    "start": "2026-10-25T00:00:00Z",
+    "end": "2026-10-26T00:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 75,
@@ -20214,8 +20214,8 @@
     "end": "2026-10-24T19:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T17:00:00Z",
-    "end": "2026-10-26T17:00:00Z"
+    "start": "2026-10-25T19:00:00Z",
+    "end": "2026-10-26T19:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 60,
@@ -20238,8 +20238,8 @@
     "end": "2026-10-24T23:00:00Z"
    },
    "delivery_window": {
-    "start": "2026-10-25T20:00:00Z",
-    "end": "2026-10-26T20:00:00Z"
+    "start": "2026-10-25T22:00:00Z",
+    "end": "2026-10-26T22:00:00Z"
    },
    "delivery_window_kind": "completion",
    "loading_minutes": 120,
@@ -25558,5 +25558,14 @@
    "Tolls",
    "Taxes"
   ]
+ },
+ "return_to_start": false,
+ "rest_at_home": true,
+ "driving_rules": {
+  "max_continuous_driving_minutes": 270,
+  "break_minutes": 45,
+  "max_daily_driving_minutes": 540,
+  "daily_rest_minutes": 660,
+  "max_duty_span_minutes": 900
  }
 }

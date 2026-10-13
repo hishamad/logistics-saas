@@ -1,0 +1,851 @@
+"""Ruin-and-recreate planner for fixed full-truckload teams.
+
+A route simulator walks each team through its jobs minute by minute. It adds
+breaks and daily rest (when the snapshot has driving rules), works around
+calendar exceptions, and drives home before an exception that must be spent at
+home. A greedy insertion builds the first plan; large-neighbourhood search then
+repeatedly removes and reinserts jobs and keeps improvements. Offered jobs are
+kept only when their revenue exceeds the extra cost. The independent validator
+checks the materialized plan; nothing here is trusted on its own.
+"""
+
+from __future__ import annotations
+
+import math
+import random
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from time import perf_counter
+from typing import Literal, cast
+
+from freight.domain.models import Activity, Assignment, Job, Pause, Plan, Snapshot
+from freight.domain.time import minute_down, minute_up
+from freight.planning.context import Context
+from freight.validation.validator import input_findings, validate_plan
+
+UNSERVED_PENALTY = 10_000_000  # search-only cost (minor units) of leaving confirmed work unserved
+FOREVER = 10**9
+
+
+class Infeasible(Exception):
+    """The route cannot be executed under the snapshot's rules."""
+
+
+@dataclass(slots=True)
+class State:
+    t: int  # minutes since the horizon start
+    loc: str
+    cont: int = 0  # driving since the last break
+    day: int = 0  # driving since the last daily rest
+    span: int | None = None  # start of the current working day
+    idle: int = FOREVER  # contiguous non-work minutes so far
+    started: bool = False  # nothing is recorded before the team's first activity
+    dist: int = 0  # metres
+    duty: int = 0  # paid minutes
+
+    def copy(self) -> State:
+        return State(
+            self.t,
+            self.loc,
+            self.cont,
+            self.day,
+            self.span,
+            self.idle,
+            self.started,
+            self.dist,
+            self.duty,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class TeamInfo:
+    id: str
+    start: str
+    ready: int
+    home: str
+    end_site: str | None
+    end_limit: int
+    available_until: int
+    blocks: tuple[tuple[int, int, bool], ...]  # (start, end, must be spent at home)
+
+
+@dataclass
+class Recorder:
+    team_id: str
+    activities: list[tuple[str, str, str, int, int, str | None, int, list[tuple[str, int, int]]]]
+    assignments: list[tuple[str, int, int, int]]
+
+
+class Engine:
+    def __init__(self, snapshot: Snapshot, seed: int = 7) -> None:
+        self.snapshot = snapshot
+        self.rng = random.Random(seed)
+        self.context = Context(snapshot)
+        origin = self.origin = snapshot.horizon.start
+        self.horizon_end = minute_down(snapshot.horizon.end, origin)
+        self.lanes = {
+            (lane.from_site_id, lane.to_site_id): (lane.duration_minutes, lane.distance_m)
+            for lane in snapshot.lanes
+        }
+        rules = snapshot.driving_rules
+        self.rules = rules
+        self.max_cont = rules.max_continuous_driving_minutes if rules else FOREVER
+        self.max_day = rules.max_daily_driving_minutes if rules else FOREVER
+        self.max_span = rules.max_duty_span_minutes if rules else FOREVER
+        self.brk = rules.break_minutes if rules else FOREVER
+        self.rest = rules.daily_rest_minutes if rules else FOREVER
+        costs = snapshot.costs
+        self.per_km = float(costs.distance_minor_per_km or 100)
+        self.per_minute = float(costs.duty_minor_per_hour or 60) / 60
+        self.jobs = {j.id: j for j in snapshot.jobs if j.state in ("confirmed", "offered")}
+        self.window: dict[str, tuple[int, int, int, int]] = {}
+        for job in self.jobs.values():
+            offset = job.unloading_minutes if job.delivery_window_kind == "completion" else 0
+            self.window[job.id] = (
+                minute_up(job.pickup_window.start, origin),
+                min(minute_down(job.pickup_window.end, origin), self.horizon_end - 1),
+                minute_up(job.delivery_window.start, origin) - offset,
+                minute_down(job.delivery_window.end, origin) - offset,
+            )
+        self.locks = {
+            lock.job_id: (
+                lock.team_id,
+                minute_up(lock.pickup_at, origin) if lock.pickup_at else None,
+            )
+            for lock in snapshot.locks
+        }
+        self.penalties: dict[tuple[str, str], int] = {}
+        for rule in snapshot.rules:
+            if rule.kind == "preferred_assignment" and rule.strength == "soft":
+                for team in snapshot.teams:
+                    if team.id != rule.team_id and rule.job_id:
+                        key = (rule.job_id, team.id)
+                        self.penalties[key] = self.penalties.get(key, 0) + rule.penalty_minor
+        self.teams = {team.id: self._team_info(team.id) for team in snapshot.teams}
+        self.eligible = {
+            job.id: [t.id for t in snapshot.teams if self.context.eligible(job, t)]
+            for job in self.jobs.values()
+        }
+        self.elapsed_cache: dict[int, int] = {}
+
+    # ----- static data -------------------------------------------------------------
+
+    def _team_info(self, team_id: str) -> TeamInfo:
+        team = next(t for t in self.snapshot.teams if t.id == team_id)
+        resources = self.context.resources
+        start, ready = self.context.team_start(team)
+        end_site, end_limit = self.context.team_end(team)
+        origin = self.origin
+        calendar = [
+            (minute_down(w.start, origin), minute_up(w.end, origin), self.snapshot.rest_at_home)
+            for r in team.resource_ids
+            for w in resources[r].unavailable
+            if w.start < w.end
+        ]
+        approved = [
+            (minute_down(r.window.start, origin), minute_up(r.window.end, origin), False)
+            for r in self.snapshot.rules
+            if r.kind == "resource_unavailable" and r.resource_id in team.resource_ids and r.window
+        ]
+        merged: list[list[int | bool]] = []
+        for s, e, home in sorted(calendar + approved):
+            if merged and s <= int(merged[-1][1]):
+                merged[-1][1] = max(int(merged[-1][1]), e)
+                merged[-1][2] = bool(merged[-1][2]) or home
+            else:
+                merged.append([s, e, home])
+        until = min(minute_down(resources[r].availability.end, origin) for r in team.resource_ids)
+        return TeamInfo(
+            id=team.id,
+            start=start,
+            ready=ready,
+            home=resources[team.tractor_id].site_id,
+            end_site=end_site,
+            end_limit=end_limit,
+            available_until=until,
+            blocks=tuple((int(s), int(e), bool(h)) for s, e, h in merged),
+        )
+
+    def lane(self, a: str, b: str) -> tuple[int, int]:
+        return (0, 0) if a == b else self.lanes[a, b]
+
+    def elapsed(self, drive: int) -> int:
+        """Elapsed minutes for a fresh driver to cover ``drive`` minutes of driving."""
+        if self.rules is None:
+            return drive
+        cached = self.elapsed_cache.get(drive)
+        if cached is None:
+            cached = self.elapsed_cache[drive] = self.rules.elapsed(drive)
+        return cached
+
+    # ----- route simulation --------------------------------------------------------
+
+    @staticmethod
+    def _block_after(info: TeamInfo, t: int) -> tuple[int, int, bool] | None:
+        return next((b for b in info.blocks if b[1] > t), None)
+
+    def _resets(self, s: State) -> None:
+        if s.idle >= self.brk:
+            s.cont = 0
+        if s.idle >= self.rest:
+            s.day, s.span = 0, None
+
+    def _idle(self, s: State, minutes: int, kind: str, rec: Recorder | None) -> None:
+        if minutes <= 0:
+            return
+        if not s.started:
+            s.t += minutes
+            return
+        if rec is not None:
+            rec.activities.append((kind, s.loc, s.loc, s.t, s.t + minutes, None, 0, []))
+        s.t += minutes
+        s.idle += minutes
+        if kind == "waiting":
+            s.duty += minutes
+
+    def _wait_until(
+        self, info: TeamInfo, s: State, until: int, rec: Recorder | None, rest: bool = False
+    ) -> None:
+        while s.t < until:
+            block = self._block_after(info, s.t)
+            if block and block[0] <= s.t:
+                if block[2] and s.loc != info.home:
+                    raise Infeasible
+                self._idle(s, min(block[1], until) - s.t, "rest", rec)
+                continue
+            end = min(until, block[0] if block else FOREVER)
+            length = end - s.t
+            kind = "rest" if rest or (self.rules and length >= self.rest) else "waiting"
+            self._idle(s, length, kind, rec)
+
+    def _work(
+        self,
+        info: TeamInfo,
+        s: State,
+        kind: str,
+        minutes: int,
+        job_id: str,
+        rec: Recorder | None,
+        follow: int = 0,
+        then_drive: bool = False,
+    ) -> int:
+        """Start stationary work once no exception or hours limit is in the way."""
+        total = minutes + follow + (1 if then_drive else 0)
+        for _ in range(12):
+            block = self._block_after(info, s.t)
+            if block and block[0] < s.t + total:
+                if block[2] and s.loc != info.home:
+                    raise Infeasible
+                self._wait_until(info, s, block[1], rec)
+                continue
+            if self.rules is not None:
+                idle = s.idle
+                cont = 0 if idle >= self.brk else s.cont
+                rested = idle >= self.rest
+                day = 0 if rested else s.day
+                span = None if rested else s.span
+                if (span is not None and s.t + total - span > self.max_span) or (
+                    then_drive and day >= self.max_day
+                ):
+                    self._wait_until(info, s, s.t + self.rest, rec, rest=True)
+                    continue
+                if then_drive and cont >= self.max_cont:
+                    self._wait_until(info, s, s.t + self.brk, rec)
+                    continue
+            break
+        else:
+            raise Infeasible
+        self._resets(s)
+        start = s.t
+        s.idle, s.started = 0, True
+        if s.span is None:
+            s.span = start
+        if rec is not None:
+            rec.activities.append((kind, s.loc, s.loc, start, start + minutes, job_id, 0, []))
+        s.t += minutes
+        s.duty += minutes
+        return start
+
+    def _drive(
+        self,
+        info: TeamInfo,
+        s: State,
+        dest: str,
+        kind: str,
+        job_id: str | None,
+        rec: Recorder | None,
+    ) -> None:
+        duration, distance = self.lane(s.loc, dest)
+        if duration == 0:
+            if kind == "loaded" and rec is not None:
+                rec.activities.append((kind, s.loc, dest, s.t, s.t, job_id, 0, []))
+            s.loc = dest
+            return
+        pauses: list[tuple[str, int, int]] = []
+        remaining, start, moving = duration, s.t, False
+        while remaining > 0:
+            block = self._block_after(info, s.t)
+            if block and block[0] <= s.t:
+                if block[2] or kind == "loaded" and not moving:
+                    raise Infeasible
+                if moving:
+                    pauses.append(("rest", s.t, block[1]))
+                    s.idle += block[1] - s.t
+                    s.t = block[1]
+                else:
+                    self._wait_until(info, s, block[1], rec)
+                continue
+            self._resets(s)
+            avail = min(
+                self.max_cont - s.cont,
+                self.max_day - s.day,
+                (s.span + self.max_span - s.t) if s.span is not None else self.max_span,
+            )
+            if block:
+                avail = min(avail, block[0] - s.t)
+            if avail <= 0:
+                rest = s.day >= self.max_day or (
+                    s.span is not None and s.t - s.span >= self.max_span
+                )
+                length = self.rest if rest else self.brk
+                if not moving:
+                    if kind == "loaded":
+                        raise Infeasible
+                    self._wait_until(info, s, s.t + length, rec, rest=rest)
+                else:
+                    pauses.append(("rest" if rest else "break", s.t, s.t + length))
+                    s.idle += length
+                    s.t += length
+                continue
+            chunk = min(avail, remaining)
+            if not moving:
+                start, moving, s.started = s.t, True, True
+            if s.span is None:
+                s.span = s.t
+            s.idle = 0
+            s.cont += chunk
+            s.day += chunk
+            s.t += chunk
+            s.duty += chunk
+            remaining -= chunk
+        if rec is not None:
+            rec.activities.append((kind, s.loc, dest, start, s.t, job_id, distance, pauses))
+        s.loc = dest
+        s.dist += distance
+
+    def _home_block(self, info: TeamInfo, t: int) -> tuple[int, int, bool] | None:
+        return next((b for b in info.blocks if b[2] and b[1] > t), None)
+
+    def _go_home_for(
+        self, info: TeamInfo, s: State, block: tuple[int, int, bool], rec: Recorder | None
+    ) -> None:
+        if s.loc != info.home:
+            self._drive(info, s, info.home, "empty", None, rec)
+        if s.t > block[0]:
+            raise Infeasible
+        self._wait_until(info, s, block[1], rec)
+
+    def _job(self, info: TeamInfo, s: State, job: Job, rec: Recorder | None) -> None:
+        for _ in range(8):
+            block = self._home_block(info, s.t)
+            if block is None:
+                break
+            pickup_open, _, _, delivery_close = self.window[job.id]
+            home_drive = self.lane(job.delivery_site_id, info.home)[0]
+            bound = (
+                max(s.t, delivery_close)
+                + job.unloading_minutes
+                + job.turnaround_minutes
+                + self.elapsed(home_drive)
+                + (self.rest if self.rules else 0)
+            )
+            if block[0] >= bound:
+                break
+            trial = s.copy()
+            try:
+                self._job_core(info, trial, job, None)
+                after = trial.copy()
+                if after.loc != info.home:
+                    self._drive(info, after, info.home, "empty", None, None)
+                if after.t > block[0]:
+                    raise Infeasible
+            except Infeasible:
+                self._go_home_for(info, s, block, rec)
+                continue
+            if rec is None:
+                for name in State.__slots__:
+                    setattr(s, name, getattr(trial, name))
+                return
+            break
+        self._job_core(info, s, job, rec)
+
+    def _job_core(self, info: TeamInfo, s: State, job: Job, rec: Recorder | None) -> None:
+        pickup_open, pickup_close, delivery_open, delivery_close = self.window[job.id]
+        locked = self.locks.get(job.id)
+        if locked and locked[1] is not None:
+            pickup_open = pickup_close = locked[1]
+        if s.loc != job.pickup_site_id:
+            if not s.started:
+                drive = self.elapsed(self.lane(s.loc, job.pickup_site_id)[0])
+                depart = max(s.t, pickup_open - drive)
+                if not any(b[0] < pickup_open and b[1] > s.t for b in info.blocks):
+                    s.t = depart
+            self._drive(info, s, job.pickup_site_id, "empty", None, rec)
+        if s.t > pickup_close:
+            raise Infeasible
+        self._wait_until(info, s, pickup_open, rec)
+        loading = self._work(info, s, "loading", job.loading_minutes, job.id, rec, then_drive=True)
+        if loading > pickup_close or (locked and locked[1] is not None and loading != locked[1]):
+            raise Infeasible
+        self._drive(info, s, job.delivery_site_id, "loaded", job.id, rec)
+        if s.t > delivery_close:
+            raise Infeasible
+        self._wait_until(info, s, delivery_open, rec)
+        unloading = self._work(
+            info, s, "unloading", job.unloading_minutes, job.id, rec, follow=job.turnaround_minutes
+        )
+        if unloading > delivery_close:
+            raise Infeasible
+        if rec is not None:
+            rec.activities.append(
+                ("turnaround", s.loc, s.loc, s.t, s.t + job.turnaround_minutes, job.id, 0, [])
+            )
+        s.t += job.turnaround_minutes
+        s.duty += job.turnaround_minutes
+        if s.t > info.available_until:
+            raise Infeasible
+        if rec is not None:
+            delivered = (
+                unloading
+                if job.delivery_window_kind == "service_start"
+                else unloading + job.unloading_minutes
+            )
+            rec.assignments.append((job.id, loading, delivered, s.t))
+
+    def _finish(self, info: TeamInfo, s: State, rec: Recorder | None) -> None:
+        if info.end_site is not None:
+            if s.loc != info.end_site:
+                self._drive(info, s, info.end_site, "empty", None, rec)
+            if s.t > info.end_limit:
+                raise Infeasible
+        block = self._home_block(info, s.t)
+        if block and s.loc != info.home:
+            if info.end_site is not None:
+                raise Infeasible
+            self._drive(info, s, info.home, "empty", None, rec)
+            if s.t > block[0]:
+                raise Infeasible
+        if s.t > info.available_until:
+            raise Infeasible
+
+    def cost(self, s: State) -> float:
+        return s.dist / 1000 * self.per_km + s.duty * self.per_minute
+
+    def run(
+        self, info: TeamInfo, state: State, jobs: list[str], rec: Recorder | None = None
+    ) -> float | None:
+        s = state.copy()
+        try:
+            for job_id in jobs:
+                self._job(info, s, self.jobs[job_id], rec)
+            self._finish(info, s, rec)
+        except Infeasible:
+            return None
+        return self.cost(s)
+
+    def prefixes(self, info: TeamInfo, route: list[str]) -> tuple[list[State], float] | None:
+        s = State(t=info.ready, loc=info.start)
+        states = [s.copy()]
+        try:
+            for job_id in route:
+                self._job(info, s, self.jobs[job_id], None)
+                states.append(s.copy())
+            end = s.copy()
+            self._finish(info, end, None)
+        except Infeasible:
+            return None
+        return states, self.cost(end)
+
+
+@dataclass
+class Solution:
+    routes: dict[str, list[str]]
+    states: dict[str, list[State]]
+    costs: dict[str, float]
+    where: dict[str, str]  # job -> team
+
+
+class Search:
+    def __init__(self, engine: Engine) -> None:
+        self.e = engine
+        self.confirmed = [j for j, job in engine.jobs.items() if job.state == "confirmed"]
+        self.offered = [j for j, job in engine.jobs.items() if job.state == "offered"]
+        self.solution = Solution({}, {}, {}, {})
+        for team_id, info in engine.teams.items():
+            computed = engine.prefixes(info, [])
+            states, cost = computed if computed else ([State(t=info.ready, loc=info.start)], 0.0)
+            self.solution.routes[team_id] = []
+            self.solution.states[team_id] = states
+            self.solution.costs[team_id] = cost
+
+    def objective(self, sol: Solution | None = None) -> float:
+        sol = sol or self.solution
+        e = self.e
+        total = sum(sol.costs.values())
+        total += sum(e.penalties.get((j, t), 0) for j, t in sol.where.items())
+        total += UNSERVED_PENALTY * sum(1 for j in self.confirmed if j not in sol.where)
+        total -= sum(
+            e.jobs[j].revenue_minor or 0 for j in sol.where if e.jobs[j].state == "offered"
+        )
+        return total
+
+    def _bound(self, team_id: str, position: int, job: Job) -> float:
+        """Cheap, approximate lower bound on the extra cost of an insertion."""
+        e = self.e
+        route = self.solution.routes[team_id]
+        here = self.solution.states[team_id][position].loc
+        if position < len(route):
+            after: str | None = e.jobs[route[position]].pickup_site_id
+        else:
+            after = e.teams[team_id].end_site
+        to_pickup = e.lane(here, job.pickup_site_id)
+        loaded = e.lane(job.pickup_site_id, job.delivery_site_id)
+        onward = e.lane(job.delivery_site_id, after) if after else (0, 0)
+        skipped = e.lane(here, after) if after else (0, 0)
+        metres = to_pickup[1] + loaded[1] + onward[1] - skipped[1]
+        minutes = (
+            to_pickup[0]
+            + loaded[0]
+            + onward[0]
+            - skipped[0]
+            + job.loading_minutes
+            + job.unloading_minutes
+            + job.turnaround_minutes
+        )
+        return metres / 1000 * e.per_km + max(0, minutes) * e.per_minute
+
+    def best_insertion(self, job_id: str, noise: float = 0.0) -> tuple[float, str, int] | None:
+        e, sol = self.e, self.solution
+        job = e.jobs[job_id]
+        pickup_open, pickup_close, _, _ = e.window[job_id]
+        locked = e.locks.get(job_id)
+        options: list[tuple[float, str, int]] = []
+        for team_id in e.eligible[job_id]:
+            if locked and locked[0] != team_id:
+                continue
+            states = sol.states[team_id]
+            route = sol.routes[team_id]
+            for position in range(len(route) + 1):
+                state = states[position]
+                if state.t + e.lane(state.loc, job.pickup_site_id)[0] > pickup_close:
+                    break
+                if position < len(route):
+                    following = e.jobs[route[position]]
+                    earliest_release = (
+                        max(
+                            max(state.t, pickup_open)
+                            + job.loading_minutes
+                            + e.lane(job.pickup_site_id, job.delivery_site_id)[0],
+                            e.window[job_id][2],
+                        )
+                        + job.unloading_minutes
+                        + job.turnaround_minutes
+                    )
+                    reach = (
+                        earliest_release + e.lane(job.delivery_site_id, following.pickup_site_id)[0]
+                    )
+                    if reach > e.window[following.id][1]:
+                        continue
+                bound = self._bound(team_id, position, job) + e.penalties.get((job_id, team_id), 0)
+                options.append((bound, team_id, position))
+        options.sort()
+        best: tuple[float, str, int] | None = None
+        for bound, team_id, position in options:
+            if best is not None and bound >= best[0] * (1 + noise) + 1:
+                break
+            info = e.teams[team_id]
+            route = sol.routes[team_id]
+            cost = e.run(info, sol.states[team_id][position], [job_id, *route[position:]])
+            if cost is None:
+                continue
+            delta = cost - sol.costs[team_id] + e.penalties.get((job_id, team_id), 0)
+            if noise:
+                delta += abs(delta) * noise * (2 * e.rng.random() - 1)
+            if best is None or delta < best[0]:
+                best = (delta, team_id, position)
+        return best
+
+    def insert(self, job_id: str, team_id: str, position: int) -> None:
+        sol = self.solution
+        sol.routes[team_id].insert(position, job_id)
+        sol.where[job_id] = team_id
+        self._refresh(team_id)
+
+    def remove(self, job_ids: list[str]) -> None:
+        sol = self.solution
+        touched = set()
+        for job_id in job_ids:
+            team_id = sol.where.pop(job_id, None)
+            if team_id is not None:
+                sol.routes[team_id].remove(job_id)
+                touched.add(team_id)
+        for team_id in touched:
+            self._refresh(team_id)
+
+    def _refresh(self, team_id: str) -> None:
+        sol = self.solution
+        computed = self.e.prefixes(self.e.teams[team_id], sol.routes[team_id])
+        if computed is None:
+            # Removing work can, rarely, break a home-rest schedule; repair by dropping jobs.
+            route = sol.routes[team_id]
+            while route and computed is None:
+                sol.where.pop(route.pop(), None)
+                computed = self.e.prefixes(self.e.teams[team_id], route)
+        assert computed is not None
+        sol.states[team_id], sol.costs[team_id] = computed
+
+    def recreate(self, candidates: list[str], noise: float = 0.0, ejections: int = 10**6) -> None:
+        e = self.e
+        confirmed = [j for j in candidates if e.jobs[j].state == "confirmed"]
+        offered = [j for j in candidates if e.jobs[j].state == "offered"]
+        confirmed.sort(key=lambda j: (j not in e.locks, e.window[j][1]))
+        offered.sort(key=lambda j: -(e.jobs[j].revenue_minor or 0))
+        for job_id in confirmed:
+            found = self.best_insertion(job_id, noise)
+            if found:
+                self.insert(job_id, found[1], found[2])
+            elif ejections > 0:
+                ejections -= 1
+                self.eject_offer_for(job_id)
+        for job_id in offered:
+            found = self.best_insertion(job_id, noise)
+            if found and found[0] < (e.jobs[job_id].revenue_minor or 0):
+                self.insert(job_id, found[1], found[2])
+
+    def eject_offer_for(self, job_id: str) -> bool:
+        """Confirmed work outranks optional loads: drop one offer to make room."""
+        e, sol = self.e, self.solution
+        job = e.jobs[job_id]
+        pickup_close = e.window[job_id][1]
+        best: tuple[float, str, str, int] | None = None
+        holders = [
+            t
+            for t in e.eligible[job_id]
+            if any(e.jobs[j].state == "offered" for j in sol.routes[t])
+        ]
+        holders.sort(
+            key=lambda t: min(
+                self._bound(t, position, job) for position in range(len(sol.routes[t]) + 1)
+            )
+        )
+        for team_id in holders[:6]:
+            info = e.teams[team_id]
+            for offer in [j for j in sol.routes[team_id] if e.jobs[j].state == "offered"]:
+                route = [j for j in sol.routes[team_id] if j != offer]
+                computed = e.prefixes(info, route)
+                if computed is None:
+                    continue
+                states, _ = computed
+                for position in range(len(route) + 1):
+                    state = states[position]
+                    if state.t + e.lane(state.loc, job.pickup_site_id)[0] > pickup_close:
+                        break
+                    cost = e.run(info, state, [job_id, *route[position:]])
+                    if cost is None:
+                        continue
+                    loss = (
+                        cost
+                        - sol.costs[team_id]
+                        + (e.jobs[offer].revenue_minor or 0)
+                        + e.penalties.get((job_id, team_id), 0)
+                    )
+                    if best is None or loss < best[0]:
+                        best = (loss, team_id, offer, position)
+        if best is None:
+            return False
+        _, team_id, offer, position = best
+        self.remove([offer])
+        self.insert(job_id, team_id, position)
+        return True
+
+    def ruin(self) -> list[str]:
+        e, sol = self.e, self.solution
+        assigned = list(sol.where)
+        if not assigned:
+            return []
+        size = e.rng.randint(2, max(3, min(30, len(assigned) // 6)))
+        pick = e.rng.random()
+        if pick < 0.45:
+            seed = e.jobs[e.rng.choice(assigned)]
+            open_minute = e.window[seed.id][0]
+
+            def related(j: str) -> float:
+                other = e.jobs[j]
+                metres = e.lane(seed.pickup_site_id, other.pickup_site_id)[1]
+                metres += e.lane(seed.delivery_site_id, other.delivery_site_id)[1]
+                return metres / 1000 + abs(e.window[j][0] - open_minute) / 6
+
+            return sorted(assigned, key=related)[:size]
+        if pick < 0.7:
+            busy = [t for t, r in sol.routes.items() if r]
+            chosen = e.rng.sample(busy, min(len(busy), e.rng.randint(1, 3)))
+            return [j for t in chosen for j in sol.routes[t]][: size * 2]
+        return e.rng.sample(assigned, min(size, len(assigned)))
+
+    def copy_solution(self) -> Solution:
+        sol = self.solution
+        return Solution(
+            {t: list(r) for t, r in sol.routes.items()},
+            dict(sol.states),
+            dict(sol.costs),
+            dict(sol.where),
+        )
+
+    def improve(self, deadline: float, offers: bool = True) -> dict[str, int]:
+        e = self.e
+        current = self.objective()
+        best, best_value = self.copy_solution(), current
+        started = perf_counter()
+        budget = max(1e-6, deadline - started)
+        temperature = 0.002 * abs(current - UNSERVED_PENALTY * self.unserved()) + 1
+        stats = {"iterations": 0, "accepted": 0, "improved": 0}
+        while perf_counter() < deadline:
+            stats["iterations"] += 1
+            saved = self.copy_solution()
+            removed = self.ruin()
+            self.remove(removed)
+            unserved = [j for j in self.confirmed if j not in self.solution.where]
+            spare = [j for j in self.offered if j not in self.solution.where]
+            sample = e.rng.sample(spare, min(len(spare), len(removed) + 2)) if offers else []
+            self.recreate(
+                list(dict.fromkeys([*removed, *unserved, *sample])),
+                noise=0.1 if e.rng.random() < 0.3 else 0.0,
+                ejections=2,
+            )
+            value = self.objective()
+            progress = (perf_counter() - started) / budget
+            threshold = temperature * max(0.0, 1 - progress)
+            if value < current or (
+                threshold > 0 and e.rng.random() < math.exp(-(value - current) / threshold)
+            ):
+                current = value
+                stats["accepted"] += 1
+                if value < best_value - 1e-6:
+                    best, best_value = self.copy_solution(), value
+                    stats["improved"] += 1
+            else:
+                self.solution = saved
+        self.solution = best
+        return stats
+
+    def unserved(self) -> int:
+        return sum(1 for j in self.confirmed if j not in self.solution.where)
+
+
+def plan_lns(snapshot: Snapshot, *, seconds: float = 30, seed: int = 7) -> Plan:
+    started = perf_counter()
+    problems = input_findings(snapshot)
+    confirmed = tuple(j.id for j in snapshot.jobs if j.state == "confirmed")
+    if problems:
+        return Plan(
+            snapshot_hash=snapshot.fingerprint,
+            method="lns",
+            outcome="model_invalid",
+            coverage="partial",
+            unserved_job_ids=confirmed,
+            findings=problems,
+        )
+    engine = Engine(snapshot, seed)
+    search = Search(engine)
+    order = sorted(search.confirmed, key=lambda j: (j not in engine.locks, engine.window[j][0]))
+    search.recreate(order)
+    construction_ms = round((perf_counter() - started) * 1000)
+    construction_value = search.objective()
+    # Phase 1 plans confirmed work alone, so optional loads can never take its place.
+    # Phase 2 fills the remaining capacity with offers that earn more than they cost.
+    phase_one = started + seconds * (0.6 if search.offered else 1.0)
+    stats = search.improve(phase_one, offers=False)
+    if search.offered:
+        search.recreate(search.offered)
+        second = search.improve(started + seconds)
+        stats = {k: stats[k] + second[k] for k in stats}
+    plan = materialize(engine, search.solution)
+    plan = plan.model_copy(
+        update={
+            "runtime_ms": round((perf_counter() - started) * 1000),
+            "model_stats": {
+                "construction_ms": construction_ms,
+                "construction_objective": round(construction_value),
+                "final_objective": round(search.objective()),
+                **stats,
+            },
+        }
+    )
+    return validate_plan(snapshot, plan)
+
+
+def materialize(engine: Engine, solution: Solution) -> Plan:
+    origin = engine.origin
+
+    def at(minute: int) -> datetime:
+        return origin + timedelta(minutes=minute)
+
+    activities: list[Activity] = []
+    assignments: list[Assignment] = []
+    for team_id, route in solution.routes.items():
+        info = engine.teams[team_id]
+        recorder = Recorder(team_id, [], [])
+        cost = engine.run(info, State(t=info.ready, loc=info.start), route, recorder)
+        if cost is None:
+            raise RuntimeError(f"Route for {team_id} no longer simulates")
+        for kind, a, b, start, end, job_id, distance, pauses in recorder.activities:
+            activities.append(
+                Activity(
+                    team_id=team_id,
+                    kind=cast(
+                        Literal[
+                            "empty",
+                            "loading",
+                            "loaded",
+                            "unloading",
+                            "turnaround",
+                            "waiting",
+                            "rest",
+                        ],
+                        kind,
+                    ),
+                    from_site_id=a,
+                    to_site_id=b,
+                    start=at(start),
+                    end=at(end),
+                    job_id=job_id,
+                    distance_m=distance,
+                    pauses=tuple(
+                        Pause(kind=cast(Literal["break", "rest"], k), start=at(s), end=at(e))
+                        for k, s, e in pauses
+                    ),
+                )
+            )
+        for job_id, pickup, delivery, released in recorder.assignments:
+            assignments.append(
+                Assignment(
+                    job_id=job_id,
+                    team_id=team_id,
+                    pickup_at=at(pickup),
+                    delivery_at=at(delivery),
+                    released_at=at(released),
+                )
+            )
+    snapshot = engine.snapshot
+    served = {a.job_id for a in assignments}
+    unserved = tuple(j.id for j in snapshot.jobs if j.state == "confirmed" and j.id not in served)
+    return Plan(
+        snapshot_hash=snapshot.fingerprint,
+        method="lns",
+        outcome="feasible",
+        coverage="partial" if unserved else "complete",
+        assignments=tuple(assignments),
+        activities=tuple(activities),
+        unserved_job_ids=unserved,
+        diagnostic=bool(unserved),
+    )

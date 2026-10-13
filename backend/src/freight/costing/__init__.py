@@ -6,12 +6,17 @@ from freight.domain.models import Activity, CostBreakdown, CostProfile
 def calculate_cost(activities: tuple[Activity, ...], profile: CostProfile) -> CostBreakdown:
     """Round each aggregate cost component once, in minor currency units.
 
-    Duty includes loading, driving, waiting, unloading and turnaround. The
-    per-distance component includes fuel. No optimization penalties are money.
+    Duty includes loading, driving, waiting, unloading and turnaround. Rest
+    and on-road pauses are not paid duty. The per-distance component includes
+    fuel. No optimization penalties are money.
     """
     empty = sum(a.distance_m for a in activities if a.kind == "empty")
     loaded = sum(a.distance_m for a in activities if a.kind == "loaded")
-    seconds = sum(int((a.end - a.start).total_seconds()) for a in activities)
+    seconds = sum(
+        int((a.end - a.start).total_seconds()) - a.paused_seconds
+        for a in activities
+        if a.kind != "rest"
+    )
     distance_minor = duty_minor = None
     if profile.distance_minor_per_km is not None:
         distance_minor = int(

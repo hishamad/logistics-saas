@@ -1,12 +1,76 @@
 """Independent checking of final activities; does not import planning code."""
 
 from collections import Counter, defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 from itertools import pairwise
 
 from freight.costing import calculate_cost
-from freight.domain.models import Activity, Finding, Plan, Snapshot
+from freight.domain.models import Activity, DrivingRules, Finding, Plan, Snapshot
 from freight.domain.time import overlaps
+
+
+def work_intervals(activity: Activity) -> list[tuple[datetime, datetime]]:
+    """Periods in which the team is working: travel minus pauses; rest is not work."""
+    if activity.kind == "rest":
+        return []
+    intervals, cursor = [], activity.start
+    for pause in sorted(activity.pauses, key=lambda p: p.start):
+        intervals.append((cursor, pause.start))
+        cursor = pause.end
+    intervals.append((cursor, activity.end))
+    return [(start, end) for start, end in intervals if start < end]
+
+
+def driving_findings(rules: DrivingRules, route: list[Activity]) -> list[tuple[str, str]]:
+    """Sweep one team's ordered activities and check driving-hours limits.
+
+    Contiguous non-work time (waiting, rest, pauses, gaps) of at least the
+    break length resets continuous driving; at least the daily rest resets the
+    driving day and its duty span.
+    """
+    segments: list[tuple[datetime, datetime, str]] = []
+    for activity in route:
+        if activity.kind in ("waiting", "rest"):
+            segments.append((activity.start, activity.end, "idle"))
+            continue
+        kind = "drive" if activity.kind in ("empty", "loaded") else "work"
+        cursor = activity.start
+        for pause in sorted(activity.pauses, key=lambda p: p.start):
+            segments.append((cursor, pause.start, kind))
+            segments.append((pause.start, pause.end, "idle"))
+            cursor = pause.end
+        segments.append((cursor, activity.end, kind))
+    problems: list[tuple[str, str]] = []
+    idle = float("inf")
+    continuous = daily = 0.0
+    span_start: datetime | None = None
+    previous_end: datetime | None = None
+    for start, end, kind in segments:
+        if previous_end is not None and start > previous_end:
+            idle += (start - previous_end).total_seconds() / 60
+        previous_end = max(end, previous_end) if previous_end else end
+        minutes = (end - start).total_seconds() / 60
+        if kind == "idle":
+            idle += minutes
+            continue
+        if minutes <= 0:
+            continue
+        if idle >= rules.break_minutes:
+            continuous = 0
+        if idle >= rules.daily_rest_minutes:
+            daily, span_start = 0, None
+        idle = 0
+        span_start = span_start or start
+        if kind == "drive":
+            continuous += minutes
+            daily += minutes
+            if continuous > rules.max_continuous_driving_minutes:
+                problems.append(("continuous_driving", "Driving continues past the break limit."))
+            if daily > rules.max_daily_driving_minutes:
+                problems.append(("daily_driving", "Daily driving exceeds the limit."))
+        if (end - span_start).total_seconds() / 60 > rules.max_duty_span_minutes:
+            problems.append(("duty_span", "A working day exceeds the maximum duty span."))
+    return problems
 
 
 def input_findings(snapshot: Snapshot) -> tuple[Finding, ...]:
@@ -96,14 +160,16 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
         if count != 1:
             fail("duplicate_assignment", "A job has multiple assignments.", job_id)
     expected = {j.id for j in snapshot.jobs if j.state == "confirmed"}
+    allowed = expected | {j.id for j in snapshot.jobs if j.state == "offered"}
     actual = set(counts)
-    if actual - expected:
+    if actual - allowed:
         fail(
             "unexpected_job",
-            "An assignment refers to an unknown, offered or cancelled job.",
-            *sorted(actual - expected),
+            "An assignment refers to an unknown or cancelled job.",
+            *sorted(actual - allowed),
         )
     missing = expected - actual
+    actual &= allowed
     if missing and not plan.diagnostic and plan.outcome in ("feasible", "optimal"):
         fail(
             "strict_coverage",
@@ -149,16 +215,28 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
             lane = lanes.get((activity.from_site_id, activity.to_site_id))
             duration = 0 if same_site else lane.duration_minutes if lane else None
             distance = 0 if same_site else lane.distance_m if lane else None
+            pauses = sorted(activity.pauses, key=lambda p: p.start)
+            if any(
+                p.start >= p.end or p.start <= activity.start or p.end >= activity.end
+                for p in pauses
+            ) or any(a.end > b.start for a, b in pairwise(pauses)):
+                fail(
+                    "invalid_pause",
+                    "Pauses must lie inside the drive without overlapping.",
+                    activity.team_id,
+                )
             if duration is None or distance is None:
                 fail("missing_lane", "Travel has no known estimate.", activity.team_id)
-            elif activity.distance_m != distance or activity.end - activity.start < timedelta(
-                minutes=duration
-            ):
+            elif activity.distance_m != distance or activity.end - activity.start - timedelta(
+                seconds=activity.paused_seconds
+            ) < timedelta(minutes=duration):
                 fail(
                     "invalid_travel",
                     "Movement distance or time disagrees with the lane estimate.",
                     activity.team_id,
                 )
+        elif activity.pauses:
+            fail("invalid_pause", "Only travel can contain pauses.", activity.team_id)
         elif activity.from_site_id != activity.to_site_id or activity.distance_m != 0:
             fail(
                 "invalid_stationary_activity",
@@ -179,7 +257,10 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
                     resource_id,
                 )
             for window in resource.unavailable:
-                if overlaps(activity.start, activity.end, window.start, window.end):
+                if any(
+                    overlaps(start, end, window.start, window.end)
+                    for start, end in work_intervals(activity)
+                ):
                     fail(
                         "resource_unavailable",
                         "Activity overlaps a resource calendar exception.",
@@ -210,6 +291,30 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
             # A required-end rule explicitly replaces the default terminal site.
             if not any(r.kind == "required_end" and r.team_id == team_id for r in snapshot.rules):
                 fail("terminal_location", "The plan omits the required return movement.", team_id)
+
+    for team_id, member_team in teams.items():
+        route = sorted(by_team.get(team_id, []), key=lambda a: (a.start, a.end))
+        if snapshot.driving_rules is not None:
+            for code, message in driving_findings(snapshot.driving_rules, route):
+                fail(code, message, team_id)
+        if not snapshot.rest_at_home:
+            continue
+        home = resources[member_team.tractor_id].site_id
+        for resource_id in member_team.resource_ids:
+            for window in resources[resource_id].unavailable:
+                covering = next((a for a in route if a.start <= window.start < a.end), None)
+                before = [a for a in route if a.end <= window.start]
+                rest_site: str | None
+                if covering is not None:
+                    rest_site = covering.from_site_id if covering.kind == "rest" else None
+                else:
+                    rest_site = before[-1].to_site_id if before else home
+                if rest_site != home:
+                    fail(
+                        "rest_away_from_home",
+                        "A calendar exception must be spent at the home depot.",
+                        resource_id,
+                    )
 
     for resource_id, activities in by_resource.items():
         route = sorted(activities, key=lambda a: (a.start, a.end))
@@ -355,7 +460,10 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
     for rule in snapshot.rules:
         if rule.kind == "resource_unavailable" and rule.window:
             for activity in by_resource.get(rule.resource_id or "", []):
-                if overlaps(activity.start, activity.end, rule.window.start, rule.window.end):
+                if any(
+                    overlaps(start, end, rule.window.start, rule.window.end)
+                    for start, end in work_intervals(activity)
+                ):
                     fail("rule_unavailable", "Activity violates approved unavailability.", rule.id)
         elif rule.kind == "required_end" and rule.window:
             team = teams[rule.team_id or ""]
@@ -402,10 +510,14 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
 
     # Findings are stable and concise even if one bad route causes repeated violations.
     unique = {(f.code, f.message, f.entity_ids): f for f in findings}
+    prices = [jobs[a.job_id].revenue_minor for a in plan.assignments if a.job_id in jobs]
+    costs = calculate_cost(plan.activities, snapshot.costs).model_copy(
+        update={"revenue_minor": None if None in prices else sum(p or 0 for p in prices)}
+    )
     return plan.model_copy(
         update={
             "findings": tuple(unique.values()),
-            "costs": calculate_cost(plan.activities, snapshot.costs),
+            "costs": costs,
             "objective_penalty_minor": penalty,
         }
     )

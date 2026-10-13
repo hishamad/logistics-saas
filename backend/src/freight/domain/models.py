@@ -165,6 +165,58 @@ class Rule(Model):
         return self
 
 
+class DrivingRules(Model):
+    """Driver hours policy. Defaults follow a reported TGA-style rule set and
+    must be confirmed against the current regulation before live use.
+
+    Non-work time (waiting, rest, pauses) that lasts at least ``break_minutes``
+    resets continuous driving; at least ``daily_rest_minutes`` resets the
+    driving day. A driving day may not span more than ``max_duty_span_minutes``
+    from its first to its last work.
+    """
+
+    max_continuous_driving_minutes: int = Field(default=270, ge=30, le=720)
+    break_minutes: int = Field(default=45, ge=1, le=240)
+    max_daily_driving_minutes: int = Field(default=540, ge=60, le=900)
+    daily_rest_minutes: int = Field(default=660, ge=60, le=1440)
+    max_duty_span_minutes: int = Field(default=900, ge=60, le=1440)
+
+    @model_validator(mode="after")
+    def coherent(self) -> Self:
+        if self.break_minutes >= self.daily_rest_minutes:
+            raise ValueError("A break must be shorter than a daily rest")
+        if self.max_daily_driving_minutes > self.max_duty_span_minutes:
+            raise ValueError("Daily driving cannot exceed the duty span")
+        return self
+
+    def elapsed(self, drive_minutes: int) -> int:
+        """Elapsed minutes for a rested driver to complete ``drive_minutes`` of driving."""
+        t = continuous = daily = span = 0
+        remaining = drive_minutes
+        while remaining > 0:
+            available = min(
+                self.max_continuous_driving_minutes - continuous,
+                self.max_daily_driving_minutes - daily,
+                span + self.max_duty_span_minutes - t,
+            )
+            if available <= 0:
+                if (
+                    daily >= self.max_daily_driving_minutes
+                    or t - span >= self.max_duty_span_minutes
+                ):
+                    t += self.daily_rest_minutes
+                    continuous = daily = 0
+                    span = t
+                else:
+                    t += self.break_minutes
+                    continuous = 0
+                continue
+            chunk = min(available, remaining)
+            t, continuous, daily = t + chunk, continuous + chunk, daily + chunk
+            remaining -= chunk
+        return t
+
+
 class AssignmentLock(Model):
     job_id: Identifier
     team_id: Identifier
@@ -185,14 +237,17 @@ class Snapshot(Model):
     timezone: Literal["Asia/Riyadh"] = "Asia/Riyadh"
     horizon: Window
     sites: tuple[Site, ...] = Field(max_length=100)
-    resources: tuple[Resource, ...] = Field(max_length=300)
-    teams: tuple[Team, ...] = Field(max_length=60)
-    jobs: tuple[Job, ...] = Field(max_length=200)
+    resources: tuple[Resource, ...] = Field(max_length=900)
+    teams: tuple[Team, ...] = Field(max_length=300)
+    jobs: tuple[Job, ...] = Field(max_length=2000)
     lanes: tuple[Lane, ...] = Field(max_length=10_000)
     rules: tuple[Rule, ...] = Field(default=(), max_length=500)
     locks: tuple[AssignmentLock, ...] = Field(default=(), max_length=200)
     costs: CostProfile = CostProfile()
     return_to_start: bool = True
+    # Calendar exceptions (weekly rest, workshop) must be spent at the home depot.
+    rest_at_home: bool = False
+    driving_rules: DrivingRules | None = None
     freshness_minutes: int = Field(default=24 * 60, ge=1)
 
     @model_validator(mode="after")
@@ -201,8 +256,6 @@ class Snapshot(Model):
             raise ValueError("At least one site and one team are required")
         if not 0 < (self.horizon.end - self.horizon.start).total_seconds() <= 7 * 86400:
             raise ValueError("The planning horizon must be positive and no longer than seven days")
-        if len(self.teams) > 60 or len(self.jobs) > 200:
-            raise ValueError("MVP limit: 60 teams and 200 jobs per snapshot")
         for name in ("sites", "resources", "teams", "jobs", "rules"):
             rows = getattr(self, name)
             if len({row.id for row in rows}) != len(rows):
@@ -255,20 +308,38 @@ class Snapshot(Model):
         return hashlib.sha256(canonical.encode()).hexdigest()
 
 
+class Pause(Model):
+    """A break or rest taken on the road during a travel activity."""
+
+    kind: Literal["break", "rest"]
+    start: datetime
+    end: datetime
+
+    @field_validator("start", "end")
+    @classmethod
+    def aware_time(cls, value: datetime) -> datetime:
+        return Window.timezone_required(value)
+
+
 class Activity(Model):
     team_id: Identifier
-    kind: Literal["empty", "loading", "loaded", "unloading", "turnaround", "waiting"]
+    kind: Literal["empty", "loading", "loaded", "unloading", "turnaround", "waiting", "rest"]
     from_site_id: Identifier
     to_site_id: Identifier
     start: datetime
     end: datetime
     job_id: str | None = None
     distance_m: int = Field(default=0, ge=0)
+    pauses: tuple[Pause, ...] = ()
 
     @field_validator("start", "end")
     @classmethod
     def aware_time(cls, value: datetime) -> datetime:
         return Window.timezone_required(value)
+
+    @property
+    def paused_seconds(self) -> int:
+        return sum(int((p.end - p.start).total_seconds()) for p in self.pauses)
 
 
 class Assignment(Model):
@@ -298,13 +369,15 @@ class CostBreakdown(Model):
     empty_distance_m: int
     loaded_distance_m: int
     duty_minutes: int
+    # Revenue of every assigned job; None when any assigned job lacks a price.
+    revenue_minor: int | None = None
     currency: Literal["SAR"] = "SAR"
     exclusions: tuple[str, ...] = ()
 
 
 class Plan(Model):
     snapshot_hash: str
-    method: Literal["baseline", "cp_sat", "manual"]
+    method: Literal["baseline", "cp_sat", "lns", "manual"]
     outcome: Literal["optimal", "feasible", "unknown", "proven_infeasible", "model_invalid"]
     coverage: Literal["complete", "partial"]
     assignments: tuple[Assignment, ...] = ()
