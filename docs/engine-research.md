@@ -80,7 +80,14 @@ Original plan:
 - **A lower bound** for full-truckload planning: an LP relaxation of "which job follows which on which truck" (an assignment/flow model) tells us how far from optimal we might be. Today we can't say if we're 2% or 20% off.
 - ~~Calibrate on the Sartori–Buriol instances~~: they are multi-load PDPTW, not full truckload. Replaced by CP-SAT-proven optima on small Saudi scenarios.
 
-### Step B — A stronger, faster search (≈ 2–3 weeks)
+### Step B — A stronger, faster search (≈ 2–3 weeks) — **mostly done 13 Oct**
+
+- **Done: leave later instead of waiting on paid time.** The simulator slides the day so far later when a truck would wait, within every earlier deadline, without shortening legal breaks. Exact gap on small scenarios: 1.5–6.6% → **0.0%** (proven optimum found in all five).
+- **Done: SISR string removal, varied insertion order with blinks, adaptive operator weights, record-to-record acceptance, fewer wasted retries.** A/B on identical seeds: full week +4 confirmed jobs, +6–9 offer loads, +2.2–2.6% contribution, 2.7× iterations. Pilot flat (−0.7% on one seed).
+- **On hold: compiled simulator.** It needs a Rust or C++ build toolchain across Windows, Linux and a server. After the fixes above, look-ahead (Step C) is the bigger lever. Revisit when real carrier sizes demand it.
+- **Not started: smarter rest placement.** No evidence yet that it would rescue jobs; revisit with real data.
+
+Original plan:
 - **Smarter moves:** SISR string removal, regret insertion (place the hardest job first), adaptive operator weights.
 - **Better acceptance:** record-to-record travel in place of our simple annealing.
 - **Speed:** move the route simulator to compiled code (Rust or C++ with a Python wrapper, like PyVRP), and add incremental evaluation so a change re-checks only the part of the route it touches. Target: 10–50× more iterations in the same 60 seconds.
