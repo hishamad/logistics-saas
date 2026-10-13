@@ -43,6 +43,12 @@ Add `--board ../boards/week.html` to also write the **plan board**: a single HTM
 uv run pytest
 ```
 
+To measure the engine (exact gaps on small scenarios, bound gaps on the pilot and the full week), run the command below. Results land in [docs/benchmarks](docs/benchmarks/README.md).
+
+```bash
+uv run python scripts/benchmark.py
+```
+
 ## Results so far (13 Oct 2026, synthetic scenarios, one laptop)
 
 **Pilot:** 40 trucks, 48 h, classic rules (every truck returns to its depot), 30 s.

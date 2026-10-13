@@ -8,7 +8,7 @@ Sartori & Buriol, *Instances for the Pickup and Delivery Problem with Time Windo
 - Only the 100-, 200- and 400-location sets are included: 75 instances plus their best-known solutions, 4.7 MB in total. The larger sets (600–5,000 locations, about 1.3 GB) were skipped.
 - File formats: `instances/README.txt` and `solutions/README.txt`.
 
-These are general PDPTW instances (capacitated, multi-stop), not full truckload. Use them to check route-construction and search quality against published best-known solutions. Use `data/saudi/scenarios/` for the product's own full-truckload problem.
+**Not usable for our engine**, as found on 13 Oct: these are multi-load PDPTW instances (a vehicle carries several shipments at once); our engine plans full truckloads. Kept for a possible future multi-load extension.
 
 ## Not obtained
 

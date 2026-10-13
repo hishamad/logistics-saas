@@ -157,7 +157,7 @@ def read_network() -> tuple[list[dict[str, str]], dict[tuple[str, str], Lane]]:
     return sites, lanes
 
 
-def main() -> None:
+def arguments() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("--name", required=True)
     parser.add_argument("--trucks", type=int, default=100)
@@ -175,7 +175,17 @@ def main() -> None:
         action="store_true",
         help="Trucks end where they are, driving-hours rules apply, days off are spent at home",
     )
-    args = parser.parse_args()
+    return parser
+
+
+def scenario(*argv: str) -> dict[str, object]:
+    """Build a scenario in memory, e.g. scenario("--name", "x", "--trucks", "6")."""
+    return build(arguments().parse_args(list(argv)))[0]
+
+
+def build(
+    args: argparse.Namespace,
+) -> tuple[dict[str, object], list[Job], dict[tuple[str, str], Lane], list[int]]:
     rng = random.Random(args.seed)
     site_rows, lanes = read_network()
     kinds = {s["id"]: s["kind"] for s in site_rows}
@@ -337,6 +347,12 @@ def main() -> None:
             "rest_at_home": True,
             "driving_rules": RULES.model_dump(mode="json"),
         }
+    return snapshot_data, jobs, lanes, depot_counts
+
+
+def main() -> None:
+    args = arguments().parse_args()
+    snapshot_data, jobs, lanes, depot_counts = build(args)
     out = DATA / "scenarios" / args.name
     out.mkdir(parents=True, exist_ok=True)
     (out / "snapshot.json").write_text(

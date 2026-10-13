@@ -65,10 +65,20 @@ Recommended order: measure, then strengthen the search, then teach it to look ah
 
 ## 3 What we should improve, in order
 
-### Step A — Measure before improving (≈ 1 week)
+### Step A — Measure before improving (≈ 1 week) — **done 13 Oct**
+
+Results are in [benchmarks/README.md](benchmarks/README.md), produced by `backend/scripts/benchmark.py`.
+
+- **Exact gap on small scenarios: 1.5–6.6% above the proven optimum (about 3% on average).**
+- **The main cause is waiting.** On exact-1, drivers wait 29 h in total against 13 h in the optimal plan, about SAR 490 of the SAR 561 gap. The engine schedules every truck as early as possible; the optimum delays departures so trucks arrive as windows open. This is the first fix in Step B.
+- **The full week is at most about 11–13% from optimal against our bound**, but the bound is loose (12–32% below the known optimum on small cases), so the real gap is smaller.
+- **Results are stable across seeds** (pilot: SAR 93,681–93,693), so differences between engine versions will be easy to see.
+- **The Sartori–Buriol instances don't fit our problem.** They carry several shipments per vehicle; we plan full truckloads. Calibration uses CP-SAT-proven optima instead.
+
+Original plan:
 - **A benchmark harness:** fixed scenarios (pilot, full, plus 10 randomized seeds), fixed time budgets, results logged to a file we commit. Every engine change must beat it.
 - **A lower bound** for full-truckload planning: an LP relaxation of "which job follows which on which truck" (an assignment/flow model) tells us how far from optimal we might be. Today we can't say if we're 2% or 20% off.
-- **Calibrate on public benchmarks:** run our search core on the Sartori–Buriol instances we downloaded (without our Saudi rules) against their published best-known solutions.
+- ~~Calibrate on the Sartori–Buriol instances~~: they are multi-load PDPTW, not full truckload. Replaced by CP-SAT-proven optima on small Saudi scenarios.
 
 ### Step B — A stronger, faster search (≈ 2–3 weeks)
 - **Smarter moves:** SISR string removal, regret insertion (place the hardest job first), adaptive operator weights.
