@@ -1,0 +1,1082 @@
+[
+ {
+  "policy": "free",
+  "seed": 1,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 38,
+    "changed_within_a_day": 44
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 44,
+    "changed_within_a_day": 47
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 32,
+    "changed_within_a_day": 38
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 24,
+    "changed_within_a_day": 29
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 41,
+    "changed_within_a_day": 44
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 21,
+    "changed_within_a_day": 21
+   }
+  ],
+  "served": 467,
+  "confirmed": 490,
+  "offers": 78,
+  "revenue_sar": 1973460,
+  "cost_sar": 559552,
+  "contribution_sar": 1413908,
+  "empty_km": 92274,
+  "moved_total": 200,
+  "changed_within_a_day": 223
+ },
+ {
+  "policy": "free",
+  "seed": 2,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 34,
+    "changed_within_a_day": 39
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 39,
+    "changed_within_a_day": 42
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 36,
+    "changed_within_a_day": 42
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 26,
+    "changed_within_a_day": 29
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 32,
+    "changed_within_a_day": 37
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 25,
+    "changed_within_a_day": 25
+   }
+  ],
+  "served": 466,
+  "confirmed": 490,
+  "offers": 71,
+  "revenue_sar": 1946900,
+  "cost_sar": 553320,
+  "contribution_sar": 1393580,
+  "empty_km": 94137,
+  "moved_total": 192,
+  "changed_within_a_day": 214
+ },
+ {
+  "policy": "free",
+  "seed": 3,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 35,
+    "changed_within_a_day": 39
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 39,
+    "changed_within_a_day": 41
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 40,
+    "changed_within_a_day": 45
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 30,
+    "changed_within_a_day": 32
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 42,
+    "changed_within_a_day": 45
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 25,
+    "changed_within_a_day": 25
+   }
+  ],
+  "served": 471,
+  "confirmed": 490,
+  "offers": 67,
+  "revenue_sar": 1972931,
+  "cost_sar": 561382,
+  "contribution_sar": 1411549,
+  "empty_km": 96894,
+  "moved_total": 211,
+  "changed_within_a_day": 227
+ },
+ {
+  "policy": "penalty only",
+  "seed": 1,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 16,
+    "changed_within_a_day": 20
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 11,
+    "changed_within_a_day": 14
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 13,
+    "changed_within_a_day": 17
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 16,
+    "changed_within_a_day": 19
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 9,
+    "changed_within_a_day": 13
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 467,
+  "confirmed": 490,
+  "offers": 74,
+  "revenue_sar": 1973408,
+  "cost_sar": 568970,
+  "contribution_sar": 1404438,
+  "empty_km": 99118,
+  "moved_total": 65,
+  "changed_within_a_day": 83
+ },
+ {
+  "policy": "penalty only",
+  "seed": 2,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 16,
+    "changed_within_a_day": 20
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 18,
+    "changed_within_a_day": 22
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 12,
+    "changed_within_a_day": 16
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 14,
+    "changed_within_a_day": 17
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 21,
+    "changed_within_a_day": 24
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 1,
+    "changed_within_a_day": 1
+   }
+  ],
+  "served": 472,
+  "confirmed": 490,
+  "offers": 72,
+  "revenue_sar": 1989186,
+  "cost_sar": 560740,
+  "contribution_sar": 1428446,
+  "empty_km": 93521,
+  "moved_total": 82,
+  "changed_within_a_day": 100
+ },
+ {
+  "policy": "penalty only",
+  "seed": 3,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 12,
+    "changed_within_a_day": 16
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 23,
+    "changed_within_a_day": 28
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 7,
+    "changed_within_a_day": 11
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 14,
+    "changed_within_a_day": 18
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 11,
+    "changed_within_a_day": 15
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 1,
+    "changed_within_a_day": 2
+   }
+  ],
+  "served": 467,
+  "confirmed": 490,
+  "offers": 69,
+  "revenue_sar": 1954003,
+  "cost_sar": 559934,
+  "contribution_sar": 1394069,
+  "empty_km": 97835,
+  "moved_total": 68,
+  "changed_within_a_day": 90
+ },
+ {
+  "policy": "freeze 6 h",
+  "seed": 1,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 9,
+    "changed_within_a_day": 14
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 6,
+    "changed_within_a_day": 7
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 12,
+    "changed_within_a_day": 15
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 8,
+    "changed_within_a_day": 9
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 3,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 1,
+    "changed_within_a_day": 1
+   }
+  ],
+  "served": 464,
+  "confirmed": 490,
+  "offers": 75,
+  "revenue_sar": 1980180,
+  "cost_sar": 558031,
+  "contribution_sar": 1422149,
+  "empty_km": 91482,
+  "moved_total": 39,
+  "changed_within_a_day": 52
+ },
+ {
+  "policy": "freeze 6 h",
+  "seed": 2,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 11,
+    "changed_within_a_day": 15
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 4,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 12,
+    "changed_within_a_day": 16
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 11,
+    "changed_within_a_day": 12
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 6,
+    "changed_within_a_day": 9
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 2,
+    "changed_within_a_day": 2
+   }
+  ],
+  "served": 467,
+  "confirmed": 490,
+  "offers": 71,
+  "revenue_sar": 1958307,
+  "cost_sar": 559366,
+  "contribution_sar": 1398941,
+  "empty_km": 95850,
+  "moved_total": 46,
+  "changed_within_a_day": 60
+ },
+ {
+  "policy": "freeze 6 h",
+  "seed": 3,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 4,
+    "changed_within_a_day": 9
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 5,
+    "changed_within_a_day": 7
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 6,
+    "changed_within_a_day": 11
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 8,
+    "changed_within_a_day": 10
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 8,
+    "changed_within_a_day": 11
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 3,
+    "changed_within_a_day": 3
+   }
+  ],
+  "served": 465,
+  "confirmed": 490,
+  "offers": 70,
+  "revenue_sar": 1943025,
+  "cost_sar": 550626,
+  "contribution_sar": 1392399,
+  "empty_km": 92438,
+  "moved_total": 34,
+  "changed_within_a_day": 51
+ },
+ {
+  "policy": "calm",
+  "seed": 1,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 1,
+    "changed_within_a_day": 3
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 3,
+    "changed_within_a_day": 3
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 4,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 2,
+    "changed_within_a_day": 3
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 2,
+    "changed_within_a_day": 5
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 458,
+  "confirmed": 490,
+  "offers": 75,
+  "revenue_sar": 1947891,
+  "cost_sar": 546520,
+  "contribution_sar": 1401371,
+  "empty_km": 87755,
+  "moved_total": 12,
+  "changed_within_a_day": 20
+ },
+ {
+  "policy": "calm",
+  "seed": 2,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 1,
+    "changed_within_a_day": 2
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 6,
+    "changed_within_a_day": 7
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 5,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 1,
+    "changed_within_a_day": 1
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 3,
+    "changed_within_a_day": 3
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 463,
+  "confirmed": 490,
+  "offers": 76,
+  "revenue_sar": 1977125,
+  "cost_sar": 563600,
+  "contribution_sar": 1413525,
+  "empty_km": 94689,
+  "moved_total": 16,
+  "changed_within_a_day": 19
+ },
+ {
+  "policy": "calm",
+  "seed": 3,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 1,
+    "changed_within_a_day": 2
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 6,
+    "changed_within_a_day": 7
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 6,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 3,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 0,
+    "changed_within_a_day": 3
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 457,
+  "confirmed": 490,
+  "offers": 64,
+  "revenue_sar": 1924635,
+  "cost_sar": 542065,
+  "contribution_sar": 1382570,
+  "empty_km": 89539,
+  "moved_total": 16,
+  "changed_within_a_day": 24
+ },
+ {
+  "policy": "lookahead",
+  "seed": 1,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 1,
+    "changed_within_a_day": 2
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 5,
+    "changed_within_a_day": 5
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 6,
+    "changed_within_a_day": 7
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 3,
+    "changed_within_a_day": 5
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 2,
+    "changed_within_a_day": 4
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 457,
+  "confirmed": 490,
+  "offers": 70,
+  "revenue_sar": 1934921,
+  "cost_sar": 550508,
+  "contribution_sar": 1384414,
+  "empty_km": 92865,
+  "moved_total": 17,
+  "changed_within_a_day": 23
+ },
+ {
+  "policy": "lookahead",
+  "seed": 2,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 2,
+    "changed_within_a_day": 4
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 5,
+    "changed_within_a_day": 5
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 2,
+    "changed_within_a_day": 4
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 0,
+    "changed_within_a_day": 1
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 1,
+    "changed_within_a_day": 3
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 463,
+  "confirmed": 490,
+  "offers": 73,
+  "revenue_sar": 1970113,
+  "cost_sar": 560709,
+  "contribution_sar": 1409404,
+  "empty_km": 94631,
+  "moved_total": 10,
+  "changed_within_a_day": 17
+ },
+ {
+  "policy": "lookahead",
+  "seed": 3,
+  "valid_days": 7,
+  "days": [
+   {
+    "morning": "Sun 18 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 137,
+    "moved": 0,
+    "changed_within_a_day": 0
+   },
+   {
+    "morning": "Mon 19 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 2,
+    "changed_within_a_day": 4
+   },
+   {
+    "morning": "Tue 20 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 159,
+    "moved": 5,
+    "changed_within_a_day": 5
+   },
+   {
+    "morning": "Wed 21 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 139,
+    "moved": 5,
+    "changed_within_a_day": 6
+   },
+   {
+    "morning": "Thu 22 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 155,
+    "moved": 3,
+    "changed_within_a_day": 4
+   },
+   {
+    "morning": "Fri 23 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 122,
+    "moved": 0,
+    "changed_within_a_day": 4
+   },
+   {
+    "morning": "Sat 24 Oct",
+    "valid": true,
+    "findings": [],
+    "jobs_known": 67,
+    "moved": 0,
+    "changed_within_a_day": 0
+   }
+  ],
+  "served": 463,
+  "confirmed": 490,
+  "offers": 62,
+  "revenue_sar": 1932176,
+  "cost_sar": 552212,
+  "contribution_sar": 1379964,
+  "empty_km": 95832,
+  "moved_total": 15,
+  "changed_within_a_day": 23
+ }
+]

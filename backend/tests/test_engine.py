@@ -228,3 +228,18 @@ def test_truck_leaves_later_instead_of_waiting_on_paid_time():
     assignment = plan.assignments[0]
     loading = next(a for a in plan.activities if a.kind == "loading")
     assert assignment.pickup_at == loading.start >= hours(9)
+
+
+def test_a_day_off_already_running_at_plan_start_is_waited_out_at_home():
+    # Daily re-planning starts mid-day-off: the driver is home until 6 h, then works.
+    day_off = Window(start=hours(-10), end=hours(6))
+    snapshot = two_site_snapshot(
+        [job("after-rest", "a", "b", (7, 10), (7, 20))],
+        unavailable=(day_off,),
+        rest_at_home=True,
+        return_to_start=False,
+        driving_rules=DrivingRules(),
+    )
+    plan = plan_lns(snapshot, seconds=1)
+    assert plan.valid and plan.coverage == "complete", plan.findings
+    assert plan.assignments[0].pickup_at >= day_off.end

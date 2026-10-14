@@ -24,6 +24,7 @@ from freight.planning.context import Context
 from freight.validation.validator import input_findings, validate_plan
 
 UNSERVED_PENALTY = 10_000_000  # search-only cost (minor units) of leaving confirmed work unserved
+LOCKED_WEIGHT = 10  # frozen, already communicated work outranks every other job
 FOREVER = 10**9
 
 
@@ -126,6 +127,15 @@ class Engine:
                     if team.id != rule.team_id and rule.job_id:
                         key = (rule.job_id, team.id)
                         self.penalties[key] = self.penalties.get(key, 0) + rule.penalty_minor
+        if snapshot.change_penalty_minor:
+            for job_id, before in snapshot.previous.items():
+                if job_id in self.jobs:
+                    for team in snapshot.teams:
+                        if team.id != before:
+                            key = (job_id, team.id)
+                            self.penalties[key] = (
+                                self.penalties.get(key, 0) + snapshot.change_penalty_minor
+                            )
         self.teams = {team.id: self._team_info(team.id) for team in snapshot.teams}
         self.eligible = {
             job.id: [t.id for t in snapshot.teams if self.context.eligible(job, t)]
@@ -341,7 +351,9 @@ class Engine:
         while remaining > 0:
             block = self._block_after(info, s.t)
             if block and block[0] <= s.t:
-                if block[2] or kind == "loaded" and not moving:
+                # On the road: a day off at home cannot start here. Not yet moving: wait
+                # (at home, if the exception must be spent there) before setting off.
+                if (moving and block[2]) or (kind == "loaded" and not moving):
                     raise Infeasible
                 s.frozen = True
                 if moving:
@@ -406,6 +418,10 @@ class Engine:
             block = self._home_block(info, s.t)
             if block is None:
                 break
+            if block[0] <= s.t:
+                # Already in a day off: wait it out (this fails unless the team is home).
+                self._wait_until(info, s, block[1], rec)
+                continue
             pickup_open, _, _, delivery_close = self.window[job.id]
             home_drive = self.lane(job.delivery_site_id, info.home)[0]
             bound = (
@@ -568,7 +584,9 @@ class Search:
         e = self.e
         total = sum(sol.costs.values())
         total += sum(e.penalties.get((j, t), 0) for j, t in sol.where.items())
-        total += UNSERVED_PENALTY * sum(1 for j in self.confirmed if j not in sol.where)
+        total += UNSERVED_PENALTY * sum(
+            LOCKED_WEIGHT if j in e.locks else 1 for j in self.confirmed if j not in sol.where
+        )
         total -= sum(
             e.jobs[j].revenue_minor or 0 for j in sol.where if e.jobs[j].state == "offered"
         )
@@ -728,10 +746,13 @@ class Search:
         else:
             confirmed.sort(key=lambda j: (j not in e.locks, e.window[j][1]))
         offered.sort(key=lambda j: -(e.jobs[j].revenue_minor or 0))
+        confirmed.sort(key=lambda j: j not in e.locks)  # stable: frozen work always first
         for job_id in confirmed:
             found = self.best_insertion(job_id, noise, blink)
             if found:
                 self.insert(job_id, found[1], found[2])
+            elif job_id in e.locks:
+                self.make_room_for_locked(job_id, noise)
             elif ejections > 0:
                 ejections -= 1
                 self.eject_offer_for(job_id)
@@ -739,6 +760,17 @@ class Search:
             found = self.best_insertion(job_id, noise)
             if found and found[0] < (e.jobs[job_id].revenue_minor or 0):
                 self.insert(job_id, found[1], found[2])
+
+    def make_room_for_locked(self, job_id: str, noise: float) -> None:
+        """Move unfrozen work off a frozen job's truck, place the job, re-place the rest."""
+        e, sol = self.e, self.solution
+        team_id = e.locks[job_id][0]
+        movable = [j for j in sol.routes[team_id] if j not in e.locks]
+        self.remove(movable)
+        found = self.best_insertion(job_id)
+        if found:
+            self.insert(job_id, found[1], found[2])
+        self.recreate(movable, noise, ejections=0)
 
     def eject_offer_for(self, job_id: str) -> bool:
         """Confirmed work outranks optional loads: drop one offer to make room."""

@@ -43,7 +43,7 @@ Add `--board ../boards/week.html` to also write the **plan board**: a single HTM
 uv run pytest
 ```
 
-To measure the engine (exact gaps on small scenarios, bound gaps on the pilot and the full week), run the command below. Results land in [docs/benchmarks](docs/benchmarks/README.md).
+To compare daily re-planning policies over a simulated week (freeze window, change penalty, look-ahead), run `uv run python scripts/daily.py` ([results](docs/benchmarks/daily.md)). To measure the engine (exact gaps on small scenarios, bound gaps on the pilot and the full week), run the command below. Results land in [docs/benchmarks](docs/benchmarks/README.md).
 
 ```bash
 uv run python scripts/benchmark.py

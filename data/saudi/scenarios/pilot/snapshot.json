@@ -1836,280 +1836,320 @@
    "name": "Team DMM-001",
    "tractor_id": "truck-DMM-001",
    "trailer_id": "trailer-DMM-001",
-   "driver_id": "driver-DMM-001"
+   "driver_id": "driver-DMM-001",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-002",
    "name": "Team DMM-002",
    "tractor_id": "truck-DMM-002",
    "trailer_id": "trailer-DMM-002",
-   "driver_id": "driver-DMM-002"
+   "driver_id": "driver-DMM-002",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-003",
    "name": "Team DMM-003",
    "tractor_id": "truck-DMM-003",
    "trailer_id": "trailer-DMM-003",
-   "driver_id": "driver-DMM-003"
+   "driver_id": "driver-DMM-003",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-004",
    "name": "Team DMM-004",
    "tractor_id": "truck-DMM-004",
    "trailer_id": "trailer-DMM-004",
-   "driver_id": "driver-DMM-004"
+   "driver_id": "driver-DMM-004",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-005",
    "name": "Team DMM-005",
    "tractor_id": "truck-DMM-005",
    "trailer_id": "trailer-DMM-005",
-   "driver_id": "driver-DMM-005"
+   "driver_id": "driver-DMM-005",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-006",
    "name": "Team DMM-006",
    "tractor_id": "truck-DMM-006",
    "trailer_id": "trailer-DMM-006",
-   "driver_id": "driver-DMM-006"
+   "driver_id": "driver-DMM-006",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-007",
    "name": "Team DMM-007",
    "tractor_id": "truck-DMM-007",
    "trailer_id": "trailer-DMM-007",
-   "driver_id": "driver-DMM-007"
+   "driver_id": "driver-DMM-007",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-008",
    "name": "Team DMM-008",
    "tractor_id": "truck-DMM-008",
    "trailer_id": "trailer-DMM-008",
-   "driver_id": "driver-DMM-008"
+   "driver_id": "driver-DMM-008",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-009",
    "name": "Team DMM-009",
    "tractor_id": "truck-DMM-009",
    "trailer_id": "trailer-DMM-009",
-   "driver_id": "driver-DMM-009"
+   "driver_id": "driver-DMM-009",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-010",
    "name": "Team DMM-010",
    "tractor_id": "truck-DMM-010",
    "trailer_id": "trailer-DMM-010",
-   "driver_id": "driver-DMM-010"
+   "driver_id": "driver-DMM-010",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-011",
    "name": "Team DMM-011",
    "tractor_id": "truck-DMM-011",
    "trailer_id": "trailer-DMM-011",
-   "driver_id": "driver-DMM-011"
+   "driver_id": "driver-DMM-011",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-012",
    "name": "Team DMM-012",
    "tractor_id": "truck-DMM-012",
    "trailer_id": "trailer-DMM-012",
-   "driver_id": "driver-DMM-012"
+   "driver_id": "driver-DMM-012",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-013",
    "name": "Team DMM-013",
    "tractor_id": "truck-DMM-013",
    "trailer_id": "trailer-DMM-013",
-   "driver_id": "driver-DMM-013"
+   "driver_id": "driver-DMM-013",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-014",
    "name": "Team DMM-014",
    "tractor_id": "truck-DMM-014",
    "trailer_id": "trailer-DMM-014",
-   "driver_id": "driver-DMM-014"
+   "driver_id": "driver-DMM-014",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-015",
    "name": "Team DMM-015",
    "tractor_id": "truck-DMM-015",
    "trailer_id": "trailer-DMM-015",
-   "driver_id": "driver-DMM-015"
+   "driver_id": "driver-DMM-015",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-016",
    "name": "Team DMM-016",
    "tractor_id": "truck-DMM-016",
    "trailer_id": "trailer-DMM-016",
-   "driver_id": "driver-DMM-016"
+   "driver_id": "driver-DMM-016",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-017",
    "name": "Team DMM-017",
    "tractor_id": "truck-DMM-017",
    "trailer_id": "trailer-DMM-017",
-   "driver_id": "driver-DMM-017"
+   "driver_id": "driver-DMM-017",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-018",
    "name": "Team DMM-018",
    "tractor_id": "truck-DMM-018",
    "trailer_id": "trailer-DMM-018",
-   "driver_id": "driver-DMM-018"
+   "driver_id": "driver-DMM-018",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-019",
    "name": "Team DMM-019",
    "tractor_id": "truck-DMM-019",
    "trailer_id": "trailer-DMM-019",
-   "driver_id": "driver-DMM-019"
+   "driver_id": "driver-DMM-019",
+   "home_site_id": null
   },
   {
    "id": "team-DMM-020",
    "name": "Team DMM-020",
    "tractor_id": "truck-DMM-020",
    "trailer_id": "trailer-DMM-020",
-   "driver_id": "driver-DMM-020"
+   "driver_id": "driver-DMM-020",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-001",
    "name": "Team RUH-001",
    "tractor_id": "truck-RUH-001",
    "trailer_id": "trailer-RUH-001",
-   "driver_id": "driver-RUH-001"
+   "driver_id": "driver-RUH-001",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-002",
    "name": "Team RUH-002",
    "tractor_id": "truck-RUH-002",
    "trailer_id": "trailer-RUH-002",
-   "driver_id": "driver-RUH-002"
+   "driver_id": "driver-RUH-002",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-003",
    "name": "Team RUH-003",
    "tractor_id": "truck-RUH-003",
    "trailer_id": "trailer-RUH-003",
-   "driver_id": "driver-RUH-003"
+   "driver_id": "driver-RUH-003",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-004",
    "name": "Team RUH-004",
    "tractor_id": "truck-RUH-004",
    "trailer_id": "trailer-RUH-004",
-   "driver_id": "driver-RUH-004"
+   "driver_id": "driver-RUH-004",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-005",
    "name": "Team RUH-005",
    "tractor_id": "truck-RUH-005",
    "trailer_id": "trailer-RUH-005",
-   "driver_id": "driver-RUH-005"
+   "driver_id": "driver-RUH-005",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-006",
    "name": "Team RUH-006",
    "tractor_id": "truck-RUH-006",
    "trailer_id": "trailer-RUH-006",
-   "driver_id": "driver-RUH-006"
+   "driver_id": "driver-RUH-006",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-007",
    "name": "Team RUH-007",
    "tractor_id": "truck-RUH-007",
    "trailer_id": "trailer-RUH-007",
-   "driver_id": "driver-RUH-007"
+   "driver_id": "driver-RUH-007",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-008",
    "name": "Team RUH-008",
    "tractor_id": "truck-RUH-008",
    "trailer_id": "trailer-RUH-008",
-   "driver_id": "driver-RUH-008"
+   "driver_id": "driver-RUH-008",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-009",
    "name": "Team RUH-009",
    "tractor_id": "truck-RUH-009",
    "trailer_id": "trailer-RUH-009",
-   "driver_id": "driver-RUH-009"
+   "driver_id": "driver-RUH-009",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-010",
    "name": "Team RUH-010",
    "tractor_id": "truck-RUH-010",
    "trailer_id": "trailer-RUH-010",
-   "driver_id": "driver-RUH-010"
+   "driver_id": "driver-RUH-010",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-011",
    "name": "Team RUH-011",
    "tractor_id": "truck-RUH-011",
    "trailer_id": "trailer-RUH-011",
-   "driver_id": "driver-RUH-011"
+   "driver_id": "driver-RUH-011",
+   "home_site_id": null
   },
   {
    "id": "team-RUH-012",
    "name": "Team RUH-012",
    "tractor_id": "truck-RUH-012",
    "trailer_id": "trailer-RUH-012",
-   "driver_id": "driver-RUH-012"
+   "driver_id": "driver-RUH-012",
+   "home_site_id": null
   },
   {
    "id": "team-JED-001",
    "name": "Team JED-001",
    "tractor_id": "truck-JED-001",
    "trailer_id": "trailer-JED-001",
-   "driver_id": "driver-JED-001"
+   "driver_id": "driver-JED-001",
+   "home_site_id": null
   },
   {
    "id": "team-JED-002",
    "name": "Team JED-002",
    "tractor_id": "truck-JED-002",
    "trailer_id": "trailer-JED-002",
-   "driver_id": "driver-JED-002"
+   "driver_id": "driver-JED-002",
+   "home_site_id": null
   },
   {
    "id": "team-JED-003",
    "name": "Team JED-003",
    "tractor_id": "truck-JED-003",
    "trailer_id": "trailer-JED-003",
-   "driver_id": "driver-JED-003"
+   "driver_id": "driver-JED-003",
+   "home_site_id": null
   },
   {
    "id": "team-JED-004",
    "name": "Team JED-004",
    "tractor_id": "truck-JED-004",
    "trailer_id": "trailer-JED-004",
-   "driver_id": "driver-JED-004"
+   "driver_id": "driver-JED-004",
+   "home_site_id": null
   },
   {
    "id": "team-JED-005",
    "name": "Team JED-005",
    "tractor_id": "truck-JED-005",
    "trailer_id": "trailer-JED-005",
-   "driver_id": "driver-JED-005"
+   "driver_id": "driver-JED-005",
+   "home_site_id": null
   },
   {
    "id": "team-JED-006",
    "name": "Team JED-006",
    "tractor_id": "truck-JED-006",
    "trailer_id": "trailer-JED-006",
-   "driver_id": "driver-JED-006"
+   "driver_id": "driver-JED-006",
+   "home_site_id": null
   },
   {
    "id": "team-JED-007",
    "name": "Team JED-007",
    "tractor_id": "truck-JED-007",
    "trailer_id": "trailer-JED-007",
-   "driver_id": "driver-JED-007"
+   "driver_id": "driver-JED-007",
+   "home_site_id": null
   },
   {
    "id": "team-JED-008",
    "name": "Team JED-008",
    "tractor_id": "truck-JED-008",
    "trailer_id": "trailer-JED-008",
-   "driver_id": "driver-JED-008"
+   "driver_id": "driver-JED-008",
+   "home_site_id": null
   }
  ],
  "jobs": [
@@ -2135,7 +2175,8 @@
    "weight_kg": 19500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 551000
+   "revenue_minor": 551000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0005",
@@ -2159,7 +2200,8 @@
    "weight_kg": 24500,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 382400
+   "revenue_minor": 382400,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0010",
@@ -2183,7 +2225,8 @@
    "weight_kg": 11000,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 65700
+   "revenue_minor": 65700,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0013",
@@ -2207,7 +2250,8 @@
    "weight_kg": 22500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 383600
+   "revenue_minor": 383600,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0015",
@@ -2231,7 +2275,8 @@
    "weight_kg": 24500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 262300
+   "revenue_minor": 262300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0038",
@@ -2255,7 +2300,8 @@
    "weight_kg": 15500,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 109200
+   "revenue_minor": 109200,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0048",
@@ -2279,7 +2325,8 @@
    "weight_kg": 11500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 271300
+   "revenue_minor": 271300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0003",
@@ -2303,7 +2350,8 @@
    "weight_kg": 24500,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 436700
+   "revenue_minor": 436700,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0019",
@@ -2327,7 +2375,8 @@
    "weight_kg": 25000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 396300
+   "revenue_minor": 396300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0025",
@@ -2351,7 +2400,8 @@
    "weight_kg": 8500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 215200
+   "revenue_minor": 215200,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0036",
@@ -2375,7 +2425,8 @@
    "weight_kg": 10000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 132700
+   "revenue_minor": 132700,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0064",
@@ -2399,7 +2450,8 @@
    "weight_kg": 23000,
    "priority": 1,
    "state": "offered",
-   "revenue_minor": 237100
+   "revenue_minor": 237100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0026",
@@ -2423,7 +2475,8 @@
    "weight_kg": 9000,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 66100
+   "revenue_minor": 66100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0030",
@@ -2447,7 +2500,8 @@
    "weight_kg": 25000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 401600
+   "revenue_minor": 401600,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0035",
@@ -2471,7 +2525,8 @@
    "weight_kg": 15500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 227000
+   "revenue_minor": 227000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0046",
@@ -2495,7 +2550,8 @@
    "weight_kg": 18500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 417900
+   "revenue_minor": 417900,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0004",
@@ -2519,7 +2575,8 @@
    "weight_kg": 10500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 685700
+   "revenue_minor": 685700,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0007",
@@ -2543,7 +2600,8 @@
    "weight_kg": 10000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 368500
+   "revenue_minor": 368500,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0031",
@@ -2567,7 +2625,8 @@
    "weight_kg": 18000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 396100
+   "revenue_minor": 396100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0043",
@@ -2591,7 +2650,8 @@
    "weight_kg": 25000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 514800
+   "revenue_minor": 514800,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0045",
@@ -2615,7 +2675,8 @@
    "weight_kg": 10500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 114200
+   "revenue_minor": 114200,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0002",
@@ -2639,7 +2700,8 @@
    "weight_kg": 24000,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 417100
+   "revenue_minor": 417100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0018",
@@ -2663,7 +2725,8 @@
    "weight_kg": 10000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 70100
+   "revenue_minor": 70100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0070",
@@ -2687,7 +2750,8 @@
    "weight_kg": 11000,
    "priority": 3,
    "state": "offered",
-   "revenue_minor": 214900
+   "revenue_minor": 214900,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0059",
@@ -2711,7 +2775,8 @@
    "weight_kg": 23500,
    "priority": 1,
    "state": "offered",
-   "revenue_minor": 216800
+   "revenue_minor": 216800,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0061",
@@ -2735,7 +2800,8 @@
    "weight_kg": 11500,
    "priority": 2,
    "state": "offered",
-   "revenue_minor": 381200
+   "revenue_minor": 381200,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0016",
@@ -2759,7 +2825,8 @@
    "weight_kg": 15500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 764300
+   "revenue_minor": 764300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0029",
@@ -2783,7 +2850,8 @@
    "weight_kg": 21500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 552000
+   "revenue_minor": 552000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0033",
@@ -2807,7 +2875,8 @@
    "weight_kg": 8000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 586500
+   "revenue_minor": 586500,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0063",
@@ -2831,7 +2900,8 @@
    "weight_kg": 16000,
    "priority": 2,
    "state": "offered",
-   "revenue_minor": 492900
+   "revenue_minor": 492900,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0012",
@@ -2855,7 +2925,8 @@
    "weight_kg": 15500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 427000
+   "revenue_minor": 427000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0020",
@@ -2879,7 +2950,8 @@
    "weight_kg": 11000,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 64900
+   "revenue_minor": 64900,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0021",
@@ -2903,7 +2975,8 @@
    "weight_kg": 16000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 328200
+   "revenue_minor": 328200,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0006",
@@ -2927,7 +3000,8 @@
    "weight_kg": 22000,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 365500
+   "revenue_minor": 365500,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0056",
@@ -2951,7 +3025,8 @@
    "weight_kg": 15500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 72000
+   "revenue_minor": 72000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0057",
@@ -2975,7 +3050,8 @@
    "weight_kg": 13500,
    "priority": 1,
    "state": "offered",
-   "revenue_minor": 440100
+   "revenue_minor": 440100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0051",
@@ -2999,7 +3075,8 @@
    "weight_kg": 19500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 416100
+   "revenue_minor": 416100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0062",
@@ -3023,7 +3100,8 @@
    "weight_kg": 17500,
    "priority": 3,
    "state": "offered",
-   "revenue_minor": 244300
+   "revenue_minor": 244300,
+   "known_at": "2026-10-18T03:04:01.019031Z"
   },
   {
    "id": "job-0069",
@@ -3047,7 +3125,8 @@
    "weight_kg": 16500,
    "priority": 1,
    "state": "offered",
-   "revenue_minor": 394300
+   "revenue_minor": 394300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0047",
@@ -3071,7 +3150,8 @@
    "weight_kg": 10000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 944000
+   "revenue_minor": 944000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0068",
@@ -3095,7 +3175,8 @@
    "weight_kg": 8500,
    "priority": 3,
    "state": "offered",
-   "revenue_minor": 230200
+   "revenue_minor": 230200,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0008",
@@ -3119,7 +3200,8 @@
    "weight_kg": 14500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 455600
+   "revenue_minor": 455600,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0052",
@@ -3143,7 +3225,8 @@
    "weight_kg": 22500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 524400
+   "revenue_minor": 524400,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0058",
@@ -3167,7 +3250,8 @@
    "weight_kg": 17500,
    "priority": 1,
    "state": "offered",
-   "revenue_minor": 520000
+   "revenue_minor": 520000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0065",
@@ -3191,7 +3275,8 @@
    "weight_kg": 14000,
    "priority": 2,
    "state": "offered",
-   "revenue_minor": 533900
+   "revenue_minor": 533900,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0011",
@@ -3215,7 +3300,8 @@
    "weight_kg": 10000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 75100
+   "revenue_minor": 75100,
+   "known_at": "2026-10-18T04:24:48.065576Z"
   },
   {
    "id": "job-0014",
@@ -3239,7 +3325,8 @@
    "weight_kg": 9500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 198500
+   "revenue_minor": 198500,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0049",
@@ -3263,7 +3350,8 @@
    "weight_kg": 11000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 438900
+   "revenue_minor": 438900,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0066",
@@ -3287,7 +3375,8 @@
    "weight_kg": 17000,
    "priority": 2,
    "state": "offered",
-   "revenue_minor": 249000
+   "revenue_minor": 249000,
+   "known_at": "2026-10-18T05:12:13.566939Z"
   },
   {
    "id": "job-0009",
@@ -3311,7 +3400,8 @@
    "weight_kg": 21500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 521800
+   "revenue_minor": 521800,
+   "known_at": "2026-10-18T11:58:58.718191Z"
   },
   {
    "id": "job-0054",
@@ -3335,7 +3425,8 @@
    "weight_kg": 20000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 123000
+   "revenue_minor": 123000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0055",
@@ -3359,7 +3450,8 @@
    "weight_kg": 16500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 389600
+   "revenue_minor": 389600,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0017",
@@ -3383,7 +3475,8 @@
    "weight_kg": 12000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 372100
+   "revenue_minor": 372100,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0022",
@@ -3407,7 +3500,8 @@
    "weight_kg": 16000,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 525100
+   "revenue_minor": 525100,
+   "known_at": "2026-10-18T10:56:04.634324Z"
   },
   {
    "id": "job-0067",
@@ -3431,7 +3525,8 @@
    "weight_kg": 10500,
    "priority": 2,
    "state": "offered",
-   "revenue_minor": 101000
+   "revenue_minor": 101000,
+   "known_at": "2026-10-18T10:14:58.315694Z"
   },
   {
    "id": "job-0024",
@@ -3455,7 +3550,8 @@
    "weight_kg": 11000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 337500
+   "revenue_minor": 337500,
+   "known_at": "2026-10-18T04:08:27.012879Z"
   },
   {
    "id": "job-0042",
@@ -3479,7 +3575,8 @@
    "weight_kg": 8500,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 388700
+   "revenue_minor": 388700,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0044",
@@ -3503,7 +3600,8 @@
    "weight_kg": 20500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 196300
+   "revenue_minor": 196300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0050",
@@ -3527,7 +3625,8 @@
    "weight_kg": 15500,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 409500
+   "revenue_minor": 409500,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0034",
@@ -3551,7 +3650,8 @@
    "weight_kg": 23000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 601400
+   "revenue_minor": 601400,
+   "known_at": "2026-10-18T14:23:24.710626Z"
   },
   {
    "id": "job-0037",
@@ -3575,7 +3675,8 @@
    "weight_kg": 8000,
    "priority": 3,
    "state": "confirmed",
-   "revenue_minor": 994000
+   "revenue_minor": 994000,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0060",
@@ -3599,7 +3700,8 @@
    "weight_kg": 23000,
    "priority": 1,
    "state": "offered",
-   "revenue_minor": 203100
+   "revenue_minor": 203100,
+   "known_at": "2026-10-18T04:44:07.534421Z"
   },
   {
    "id": "job-0001",
@@ -3623,7 +3725,8 @@
    "weight_kg": 16500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 823300
+   "revenue_minor": 823300,
+   "known_at": "2026-10-18T10:33:37.444476Z"
   },
   {
    "id": "job-0041",
@@ -3647,7 +3750,8 @@
    "weight_kg": 12500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 541100
+   "revenue_minor": 541100,
+   "known_at": "2026-10-18T07:32:32.177662Z"
   },
   {
    "id": "job-0053",
@@ -3671,7 +3775,8 @@
    "weight_kg": 16500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 89600
+   "revenue_minor": 89600,
+   "known_at": "2026-10-18T05:35:01.279125Z"
   },
   {
    "id": "job-0028",
@@ -3695,7 +3800,8 @@
    "weight_kg": 16000,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 424300
+   "revenue_minor": 424300,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0032",
@@ -3719,7 +3825,8 @@
    "weight_kg": 17000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 184700
+   "revenue_minor": 184700,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0027",
@@ -3743,7 +3850,8 @@
    "weight_kg": 20500,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 459400
+   "revenue_minor": 459400,
+   "known_at": "2026-10-18T03:00:00Z"
   },
   {
    "id": "job-0039",
@@ -3767,7 +3875,8 @@
    "weight_kg": 13000,
    "priority": 2,
    "state": "confirmed",
-   "revenue_minor": 367200
+   "revenue_minor": 367200,
+   "known_at": "2026-10-19T03:57:56.320028Z"
   },
   {
    "id": "job-0040",
@@ -3791,7 +3900,8 @@
    "weight_kg": 22000,
    "priority": 1,
    "state": "confirmed",
-   "revenue_minor": 353300
+   "revenue_minor": 353300,
+   "known_at": "2026-10-18T03:00:00Z"
   }
  ],
  "lanes": [

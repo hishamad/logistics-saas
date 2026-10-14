@@ -117,7 +117,32 @@ Original plan:
 - **Opportunity-cost load acceptance:** an offer load is worth taking only if its revenue beats both its cost *and* what the truck loses by not being somewhere better. The value estimates from the first point give this almost for free.
 - **Sampled future demand:** add likely backhauls (from history, or for now from our generator's lane weights) as uncertain jobs, plan several scenarios, and keep the near-term decisions most scenarios agree on.
 
-### Step D — Re-planning dispatchers can live with (≈ 2 weeks; needed for any pilot)
+### Step D — Re-planning dispatchers can live with (≈ 2 weeks; needed for any pilot) — **done 14 Oct**
+
+What exists:
+- `planning/daily.py`: every morning, plan 48 h with only the jobs **known by then** (jobs carry `known_at`; orders arrive 12–72 h ahead, spot offers 6–36 h ahead), starting where each truck really is. Then execute the day and move on.
+- **Freeze window:** work starting within N hours keeps yesterday's truck (a lock). Frozen work ranks above all other jobs in the search, and a booked offer becomes a commitment.
+- **Change penalty:** moving a job away from yesterday's truck costs a set amount.
+- `planning/diff.py`: moved, new, dropped and re-timed jobs, and which teams need new instructions.
+- `scripts/daily.py`: a week of mornings, five policies, three search seeds each ([results](benchmarks/daily.md)).
+- Two engine bugs found and fixed: a day off that is **already running** at plan start was treated as impossible. Weekly one-shot plans never hit this.
+
+What we measured (100 trucks, 7 days, mean of 3 seeds):
+
+| Policy | Jobs served | Contribution | Changes after drivers were told |
+| --- | --- | --- | --- |
+| Free re-planning | 468 | SAR 1,406k | 221 |
+| Change penalty only (SAR 300) | 469 | SAR 1,409k | 91 (−59%) |
+| Penalty + 6 h freeze | 465 | SAR 1,404k | 54 (−76%) |
+| Penalty + 12 h freeze | 459 | SAR 1,399k | 21 (−90%) |
+| + look-ahead | 461 | SAR 1,391k | 21 |
+
+- **The change penalty is free:** 59% fewer changed instructions at no cost.
+- **The freeze is a trade-off** between calm and jobs served. It should be a customer setting; the default is the 6 h freeze.
+- **Look-ahead: still no measurable gain** in daily re-planning. It stays experimental (see Step C).
+- Simplifications: execution follows the plan exactly, and drivers start each morning rested.
+
+Original plan:
 - A freeze window: nothing in the next N hours changes without approval.
 - A penalty for changing an already communicated assignment, so the engine only moves work when the saving is real.
 - A "what changed and why" diff between plan versions.

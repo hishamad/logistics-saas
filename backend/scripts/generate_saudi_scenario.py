@@ -271,6 +271,13 @@ def build(
         price = max(MIN_CHARGE, distance_km * per_km) * rng.uniform(0.9, 1.1)
         return int(round(price, -2))
 
+    def known_at(index: int, state: str, pickup_start: datetime) -> datetime:
+        # Orders arrive 12-72 h ahead, spot offers 6-36 h ahead. A separate random
+        # stream keeps every other job attribute identical to earlier versions.
+        lead = random.Random(args.seed * 100_003 + index)
+        hours = lead.uniform(12, 72) if state == "confirmed" else lead.uniform(6, 36)
+        return max(origin, pickup_start - timedelta(hours=hours))
+
     def make_job(index: int, pickup: str, delivery: str, state: str) -> Job:
         lane = lanes[pickup, delivery]
         km = lane.distance_m / 1000
@@ -312,6 +319,7 @@ def build(
             priority=rng.choices([1, 2, 3], weights=[3, 5, 2])[0],
             state=state,
             revenue_minor=rate(pickup, delivery, km),
+            known_at=known_at(index, state, pickup_start),
         )
 
     confirmed = round(args.trucks * args.days * args.loads_per_truck_day)

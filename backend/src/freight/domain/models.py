@@ -94,6 +94,13 @@ class Job(Model):
     priority: int = Field(default=1, ge=1, le=3)
     state: Literal["confirmed", "offered", "cancelled"] = "confirmed"
     revenue_minor: int | None = Field(default=None, ge=0)
+    # When the order became known; replay and rolling planning only see known work.
+    known_at: datetime | None = None
+
+    @field_validator("known_at")
+    @classmethod
+    def aware_known_at(cls, value: datetime | None) -> datetime | None:
+        return Window.timezone_required(value) if value else None
 
 
 class Lane(Model):
@@ -253,6 +260,10 @@ class Snapshot(Model):
     # Value (minor units) of the 1st, 2nd, ... truck ending the plan at a site, from a
     # look-ahead model; the last value repeats. Planning credit only, never cash.
     end_values: dict[str, tuple[int, ...]] = {}
+    # Yesterday's plan (job -> team). Moving a job to another team costs the penalty,
+    # so a re-plan only changes communicated work when the gain is worth it.
+    previous: dict[str, str] = {}
+    change_penalty_minor: int = Field(default=0, ge=0, le=10_000_000)
     freshness_minutes: int = Field(default=24 * 60, ge=1)
 
     @model_validator(mode="after")
@@ -310,6 +321,8 @@ class Snapshot(Model):
         for lock in self.locks:
             if lock.job_id not in jobs or lock.team_id not in teams:
                 raise ValueError("Unknown lock reference")
+        if any(team not in teams for team in self.previous.values()):
+            raise ValueError("Previous assignments refer to unknown teams")
         return self
 
     def home_of(self, team: Team) -> str:
