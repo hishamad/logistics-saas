@@ -189,3 +189,34 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; }
 .tl-tip { position: fixed; z-index: 20; max-width: 320px; background: var(--dark); color: #e8f3ed; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; pointer-events: none; box-shadow: 0 8px 28px #0003; }
 .tl-tip b { color: #fff; display: block; margin-bottom: 2px; }
 .tl-tip .muted { color: #a9c6bb; }
+
+/* Data page */
+.panel h2 { display: flex; align-items: center; gap: 8px; }
+.alert-info { background: var(--teal-light); color: var(--teal); }
+.alert-warn { background: var(--amber-light); color: var(--amber); margin: 12px 0 0; }
+.alert-ok { background: var(--teal-light); color: var(--ink); }
+.alert-ok a { font-weight: 600; margin-inline-start: 6px; }
+.ok-text { color: var(--teal); font-size: 13px; font-weight: 550; }
+.error-text { color: var(--red); font-size: 13px; }
+.data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.data-window, .data-sites { grid-column: 1 / -1; }
+.window-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.window-form .field { margin: 0; }
+.window-form .field span { font-size: 13px; color: var(--ink-2); font-weight: 550; }
+.window-form .input { padding: 8px 10px; }
+.counts { display: flex; gap: 22px; margin: 4px 0 14px; flex-wrap: wrap; }
+.count b { display: block; font-size: 22px; font-weight: 650; line-height: 1.2; }
+.count span { color: var(--muted); font-size: 12.5px; }
+.downloads { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.dropzone { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 1.5px dashed #c9d3cc; border-radius: 10px; padding: 14px; }
+.dropzone.over { border-color: var(--teal); background: var(--teal-light); }
+.result { margin-top: 12px; }
+.result .alert { margin-bottom: 10px; }
+.result-actions { display: flex; gap: 8px; }
+.problems { max-height: 320px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.problems th { position: sticky; top: 0; background: var(--panel); }
+.value-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; color: var(--ink-2); }
+.sites-table { max-height: 340px; overflow-y: auto; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #f1f4f1; padding: 1px 5px; border-radius: 5px; direction: ltr; unicode-bidi: isolate; }
+@media (max-width: 1000px) { .data-grid { grid-template-columns: minmax(0, 1fr); } }
+.file-name { font-weight: 650; }

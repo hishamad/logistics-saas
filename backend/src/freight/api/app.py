@@ -16,7 +16,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import select
@@ -28,8 +28,19 @@ from freight.api.security import hash_token, new_token, verify_password
 from freight.board import board_data
 from freight.domain.models import Plan, Snapshot
 from freight.settings import get_settings
+from freight.sheets import (
+    Kind,
+    SheetError,
+    import_fleet,
+    import_jobs,
+    read_rows,
+    set_window,
+    workbook,
+)
 
 COOKIE = "freight_session"
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 def iso(value: datetime) -> str:
@@ -47,6 +58,11 @@ class PlanRequest(BaseModel):
     rounds: int | None = Field(default=None, ge=1, le=200_000)
     seed: int = 1
     lookahead: bool = False
+
+
+class WindowRequest(BaseModel):
+    start: datetime
+    days: int = Field(ge=1, le=7)
 
 
 def create_app(database_url: str | None = None, executor: Executor | None = None) -> FastAPI:
@@ -218,5 +234,111 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
         return board_data(
             Snapshot.model_validate_json(run.snapshot), Plan.model_validate_json(run.plan)
         )
+
+    # --- data in: planning window, orders and fleet ------------------------------------
+
+    def save_operation(session: Session, company_id: str, snapshot: Snapshot) -> int:
+        row = session.get_one(Operation, company_id)
+        row.snapshot = snapshot.model_dump_json()
+        row.version += 1
+        row.updated_at = utcnow()
+        session.commit()
+        return row.version
+
+    @app.get("/api/data")
+    def data_overview(user: Me, session: Db) -> dict[str, Any]:
+        snapshot = operation_of(session, user.company_id)
+        row = session.get_one(Operation, user.company_id)
+        horizon = snapshot.horizon
+        depots: dict[str, int] = {}
+        for team in snapshot.teams:
+            depots[snapshot.home_of(team)] = depots.get(snapshot.home_of(team), 0) + 1
+        return {
+            "version": row.version,
+            "updated_at": iso(row.updated_at),
+            "window": {"start": horizon.start.isoformat(), "end": horizon.end.isoformat()},
+            "jobs": {
+                "contract": sum(j.state == "confirmed" for j in snapshot.jobs),
+                "spot": sum(j.state == "offered" for j in snapshot.jobs),
+                "outside_window": sum(
+                    j.pickup_window.start >= horizon.end or j.delivery_window.end <= horizon.start
+                    for j in snapshot.jobs
+                ),
+                "customers": len({j.customer for j in snapshot.jobs}),
+            },
+            "fleet": {
+                "trucks": len(snapshot.teams),
+                "depots": depots,
+                "dry_van": sum(
+                    r.kind == "trailer" and r.equipment == "dry_van" for r in snapshot.resources
+                ),
+                "flatbed": sum(
+                    r.kind == "trailer" and r.equipment == "flatbed" for r in snapshot.resources
+                ),
+            },
+            "sites": [s.model_dump() for s in snapshot.sites],
+            "locks": len(snapshot.locks),
+            "rules": len(snapshot.rules),
+        }
+
+    @app.post("/api/data/window")
+    def change_window(
+        body: WindowRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, Any]:
+        if body.start.tzinfo is None:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Start needs a timezone")
+        snapshot = set_window(operation_of(session, user.company_id), body.start, body.days)
+        return {"version": save_operation(session, user.company_id, snapshot)}
+
+    @app.get("/api/data/{kind}.xlsx")
+    def download_sheet(kind: Kind, user: Me, session: Db, template: bool = False) -> Response:
+        snapshot = operation_of(session, user.company_id)
+        name = ("orders" if kind == "jobs" else "fleet") + ("-template" if template else "")
+        return Response(
+            workbook(snapshot, kind, template=template),
+            media_type=XLSX,
+            headers={"Content-Disposition": f'attachment; filename="{name}.xlsx"'},
+        )
+
+    @app.post("/api/data/{kind}")
+    async def upload_sheet(
+        kind: Kind,
+        session: Db,
+        user: Annotated[User, Depends(dispatcher)],
+        file: Annotated[UploadFile, File()],
+        apply: bool = False,
+        version: int | None = None,
+    ) -> dict[str, Any]:
+        """Check an uploaded sheet; with ``apply`` (and no problems) replace the data."""
+        content = await file.read(MAX_UPLOAD_BYTES + 1)
+        if len(content) > MAX_UPLOAD_BYTES:
+            raise HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "File too large")
+        snapshot = operation_of(session, user.company_id)
+        row = session.get_one(Operation, user.company_id)
+        try:
+            rows = read_rows(file.filename or "", content, kind)
+        except SheetError as error:
+            return {
+                "applied": False,
+                "file_error": error.code,
+                "detail": error.detail,
+                "problems": [],
+                "summary": {},
+            }
+        outcome = (import_jobs if kind == "jobs" else import_fleet)(snapshot, rows)
+        result: dict[str, Any] = {
+            "applied": False,
+            "file_error": None,
+            "problems": [vars(p) for p in outcome.problems[:500]],
+            "problem_count": len(outcome.problems),
+            "summary": outcome.summary,
+            "version": row.version,
+        }
+        if apply and outcome.snapshot is not None:
+            if version is not None and version != row.version:
+                raise HTTPException(status.HTTP_409_CONFLICT, "The data changed; check again")
+            result["version"] = save_operation(session, user.company_id, outcome.snapshot)
+            result["applied"] = True
+        return result
 
     return app

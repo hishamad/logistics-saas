@@ -12,12 +12,13 @@ export class ApiError extends Error {
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: "application/json" };
   if (method !== "GET") headers["X-Requested-With"] = "freight"; // the API's CSRF guard
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const form = body instanceof FormData;
+  if (body !== undefined && !form) headers["Content-Type"] = "application/json";
   const response = await fetch(path, {
     method,
     headers,
     credentials: "same-origin",
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: body === undefined ? undefined : form ? body : JSON.stringify(body),
   });
   if (!response.ok) {
     let detail = response.statusText;
@@ -34,6 +35,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body ?? {}),
+  upload: <T>(path: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<T>("POST", path, form);
+  },
 };
 
 export type Me = {
@@ -137,4 +143,29 @@ export type Board = {
   };
   emptyReasons: Record<string, number>;
   frozen: string[];
+};
+
+export type SheetKind = "jobs" | "fleet";
+
+export type DataOverview = {
+  version: number;
+  updated_at: string;
+  window: { start: string; end: string };
+  jobs: { contract: number; spot: number; outside_window: number; customers: number };
+  fleet: { trucks: number; depots: Record<string, number>; dry_van: number; flatbed: number };
+  sites: { id: string; name: string; name_ar: string }[];
+  locks: number;
+  rules: number;
+};
+
+export type SheetProblem = { row: number; column: string; code: string; value: string; detail: string };
+
+export type UploadResult = {
+  applied: boolean;
+  file_error: string | null;
+  detail?: string;
+  problems: SheetProblem[];
+  problem_count?: number;
+  summary: Record<string, number>;
+  version?: number;
 };
