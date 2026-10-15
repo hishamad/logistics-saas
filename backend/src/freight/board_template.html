@@ -126,10 +126,23 @@ td .key { margin-right: 6px; vertical-align: middle; }
 footer { color: var(--muted); font-size: 12px; margin-top: 20px; }
 .status { display: inline-flex; align-items: center; gap: 6px; }
 .status svg { width: 14px; height: 14px; }
+.crumbs { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; font-size: 13px; }
+.crumbs a { color: var(--ink); text-decoration: none; border: 1px solid var(--ring); border-radius: 999px; padding: 4px 12px; background: var(--raised); }
+.crumbs a:hover { border-color: var(--loaded); }
+.crumbs .here { color: var(--ink-2); padding: 4px 4px; }
+.notify { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 999px; font-size: 10px; font-weight: 600; vertical-align: 1px;
+  color: var(--ink); background: var(--select); border: 1px solid var(--loaded); }
+.change-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 10px; }
+.change-grid h3 { font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+.change-grid ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+.change-grid li { margin: 2px 0; }
+.counts { display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-2); font-size: 13px; margin-top: 4px; }
+.counts b { color: var(--ink); }
 </style>
 </head>
 <body>
 <main>
+  <nav class="crumbs" id="nav" hidden aria-label="Week navigation"></nav>
   <header>
     <div>
       <h1>Plan board</h1>
@@ -139,6 +152,8 @@ footer { color: var(--muted); font-size: 12px; margin-top: 20px; }
   </header>
 
   <section class="tiles" id="tiles" aria-label="Key figures"></section>
+
+  <section class="panel section" id="changes" hidden aria-label="Changes since yesterday"></section>
 
   <section class="panel" aria-label="Truck timeline">
     <div class="controls">
@@ -222,6 +237,34 @@ const tiles = [
 ];
 document.getElementById("tiles").innerHTML = tiles.map(([label, value, sub]) =>
   `<div class="tile"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${esc(sub)}</div></div>`).join("");
+// ---- Week navigation and changes since yesterday (daily mode only) ----------
+const notify = new Set(DATA.changes ? DATA.changes.notify : []);
+const frozen = new Set(DATA.frozen || []);
+if (DATA.nav) {
+  const nav = document.getElementById("nav");
+  const link = (href, label) => href ? `<a href="${esc(href)}">${esc(label)}</a>` : "";
+  nav.innerHTML = link(DATA.nav.home, "← Week summary") + link(DATA.nav.prev, "‹ Previous morning") +
+    `<span class="here">${esc(DATA.nav.label || "")}</span>` + link(DATA.nav.next, "Next morning ›");
+  nav.hidden = false;
+  if (DATA.nav.label) document.querySelector("h1").textContent = "Plan board · " + DATA.nav.label;
+}
+if (DATA.changes) {
+  const c = DATA.changes;
+  const list = (items, render) => items.length ? `<ul>${items.map(render).join("")}</ul>` : `<p class="meta">None.</p>`;
+  const timeOf = iso => fmtTime.format(new Date(iso));
+  document.getElementById("changes").innerHTML =
+    `<h2>Changes since yesterday's plan</h2>` +
+    `<div class="counts"><span><b>${c.unchanged}</b> jobs unchanged</span><span><b>${c.added}</b> new jobs planned</span>` +
+    `<span><b>${c.moved.length}</b> moved to another truck</span><span><b>${c.retimed.length}</b> re-timed</span>` +
+    `<span><b>${notify.size}</b> trucks whose plan changed</span><span><b>${frozen.size}</b> jobs frozen (next hours, not changeable)</span></div>` +
+    `<div class="change-grid">` +
+    `<div><h3>Moved to another truck</h3>${list(c.moved, m => `<li>${esc(m[0])}: ${esc(m[1])} → ${esc(m[2])}</li>`)}</div>` +
+    `<div><h3>Re-timed (pickup moved over 30 min)</h3>${list(c.retimed, r => `<li>${esc(r[0])} on ${esc(r[1])}: ${timeOf(r[2])} → ${timeOf(r[3])}</li>`)}</div>` +
+    `<div><h3>No longer planned</h3>${list(c.dropped, d => `<li>${esc(d[0])} (was ${esc(d[1])})</li>`)}</div>` +
+    `</div>`;
+  document.getElementById("changes").hidden = false;
+}
+
 document.getElementById("footer").textContent =
   "Synthetic scenario on real Saudi roads. Costs are modeled, not invoiced. Every activity was checked by the independent validator.";
 
@@ -321,7 +364,7 @@ function render() {
     }
     const s = team.stats;
     html += `<div class="row${state.selected === team.id ? " selected" : ""}" data-team="${esc(team.id)}">` +
-      `<div class="who"><b>${esc(team.name)}</b><span>${esc(site(team.depot))} · ${esc(team.equipment.replace("_", " "))} · ${s.jobs} job${s.jobs === 1 ? "" : "s"}${s.offers ? ` (${s.offers} offer)` : ""}</span></div>` +
+      `<div class="who"><b>${esc(team.name)}${notify.has(team.id) ? '<span class="notify" title="This truck\'s plan changed since yesterday">changed</span>' : ""}</b><span>${esc(site(team.depot))} · ${esc(team.equipment.replace("_", " "))} · ${s.jobs} job${s.jobs === 1 ? "" : "s"}${s.offers ? ` (${s.offers} offer)` : ""}</span></div>` +
       `<div class="lane" style="width:${laneWidth}px">${background}${segs}</div></div>`;
   }
   if (!teams.length) html += `<p class="empty-note">No trucks match these filters.</p>`;
@@ -396,7 +439,7 @@ function showDetail(team) {
     const job = a[3] ? DATA.jobs[a[3]] : null;
     const where = a[4] === a[5] ? esc(site(a[4])) : `${esc(site(a[4]))} → ${esc(site(a[5]))}`;
     const notes = [];
-    if (job) notes.push(`${esc(job.ref)}${job.offer ? " (offer)" : ""} · ${esc(job.customer)}`);
+    if (job) notes.push(`${esc(job.ref)}${job.offer ? " (offer)" : ""}${frozen.has(a[3]) && a[0] === 2 && a[8] === "loading" ? " · frozen" : ""} · ${esc(job.customer)}`);
     if (a[7].length) notes.push(a[7].map(p => `${p[0]} ${when(p[1])}–${when(p[2]).slice(-5)}`).join(", "));
     return `<tr><td>${when(a[1])}</td><td>${when(a[2])}</td><td><i class="key k${a[0]}${a[0] === 0 && job && job.offer ? " offer" : ""}"></i>${ACT_LABEL[a[8]]}</td>` +
       `<td>${where}</td><td class="num">${a[6] ? num(a[6]) : ""}</td><td>${notes.join("<br>")}</td></tr>`;

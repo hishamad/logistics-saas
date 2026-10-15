@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from freight.domain.models import Activity, Plan, Snapshot
+from freight.planning.diff import PlanDiff
 
 TEMPLATE = Path(__file__).with_name("board_template.html")
 KINDS = {
@@ -49,7 +50,13 @@ def empty_breakdown(plan: Plan) -> Counter[str]:
     return reasons
 
 
-def board_data(snapshot: Snapshot, plan: Plan) -> dict[str, object]:
+def board_data(
+    snapshot: Snapshot,
+    plan: Plan,
+    changes: PlanDiff | None = None,
+    nav: dict[str, str] | None = None,
+) -> dict[str, object]:
+    """Everything the page shows. ``changes`` adds a "since yesterday" panel; ``nav`` links."""
     origin = snapshot.horizon.start
 
     def minute(value: datetime) -> int:
@@ -151,11 +158,44 @@ def board_data(snapshot: Snapshot, plan: Plan) -> dict[str, object]:
             "runtime_s": round(plan.runtime_ms / 1000, 1),
         },
         "emptyReasons": {k: round(v / 1000) for k, v in empty_breakdown(plan).items()},
+        "frozen": sorted(lock.job_id for lock in snapshot.locks),
+        "changes": describe_changes(snapshot, changes) if changes else None,
+        "nav": nav,
     }
 
 
-def render_board(snapshot: Snapshot, plan: Plan) -> str:
-    payload = json.dumps(board_data(snapshot, plan), ensure_ascii=False, separators=(",", ":"))
+def describe_changes(snapshot: Snapshot, changes: PlanDiff) -> dict[str, object]:
+    names = {t.id: t.name for t in snapshot.teams}
+    refs = {j.id: j.reference for j in snapshot.jobs}
+    open_jobs = set(refs)
+    return {
+        "moved": [[refs.get(j, j), names.get(a, a), names.get(b, b)] for j, a, b in changes.moved],
+        "retimed": [
+            [refs.get(j, j), names.get(t, t), x.isoformat(), y.isoformat()]
+            for j, t, x, y in changes.retimed
+        ],
+        # Work done yesterday is not a change; only still-open jobs that lost their truck are.
+        "dropped": [
+            [refs.get(j, j), names.get(t, t)] for j, t in changes.dropped if j in open_jobs
+        ],
+        "added": len(changes.added),
+        "unchanged": changes.unchanged,
+        "notify": sorted(
+            {t for _, a, b in changes.moved for t in (a, b)}
+            | {t for _, t, _, _ in changes.retimed}
+            | {t for j, t in changes.dropped if j in open_jobs}
+        ),
+    }
+
+
+def render_board(
+    snapshot: Snapshot,
+    plan: Plan,
+    changes: PlanDiff | None = None,
+    nav: dict[str, str] | None = None,
+) -> str:
+    data = board_data(snapshot, plan, changes, nav)
+    payload = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
     # Keep the embedded JSON from ever closing the script element.
     payload = payload.replace("</", "<\\/")
     return TEMPLATE.read_text(encoding="utf-8").replace("/*__DATA__*/null", payload)

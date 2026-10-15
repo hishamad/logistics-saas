@@ -16,6 +16,7 @@ backend/                 Python planning engine
     planning/            older planners kept for comparison: greedy baseline, CP-SAT
     ai.py                turns Arabic/English dispatcher instructions into typed rules (parked)
     board.py             plan board: renders a plan as a self-contained HTML timeline
+    demo.py              carrier demo: a simulated week as a bilingual result sheet + daily boards
     cli.py               command line: plan a scenario
   scripts/               scenario generator
   tests/                 engine tests
@@ -41,6 +42,12 @@ Add `--board ../boards/week.html` to also write the **plan board**: a single HTM
 
 ```bash
 uv run pytest
+```
+
+**The carrier demo.** Simulates a dispatch week (every morning plans 48 h from the orders known by then) and writes a small website to open or email: `index.html` is a one-page result sheet in English and Arabic, and `day-1.html` … `day-7.html` are the plan boards per morning with "changes since yesterday". `--rounds` makes the result exactly repeatable.
+
+```bash
+uv run freight demo ../data/saudi/scenarios/full/snapshot.json --out ../boards/demo --rounds 6000 --seed 1
 ```
 
 To compare daily re-planning policies over a simulated week (freeze window, change penalty, look-ahead), run `uv run python scripts/daily.py` ([results](docs/benchmarks/daily.md)). To measure the engine (exact gaps on small scenarios, bound gaps on the pilot and the full week), run the command below. Results land in [docs/benchmarks](docs/benchmarks/README.md).

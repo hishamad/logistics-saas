@@ -36,7 +36,9 @@ POLICIES = {
 }
 
 
-def with_lookahead(snapshot: Snapshot, seconds: float, seed: int) -> tuple[Snapshot, Plan]:
+def with_lookahead(
+    snapshot: Snapshot, seconds: float, seed: int, rounds: int | None = None
+) -> tuple[Snapshot, Plan]:
     return plan_with_lookahead(snapshot, seconds=seconds, seed=seed)
 
 

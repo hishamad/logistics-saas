@@ -869,7 +869,9 @@ class Search:
             dict(sol.ends),
         )
 
-    def improve(self, deadline: float, offers: bool = True) -> dict[str, int]:
+    def improve(
+        self, deadline: float, offers: bool = True, rounds: int | None = None
+    ) -> dict[str, int]:
         """Ruin and recreate with adaptive operator choice and record-to-record acceptance.
 
         A candidate is accepted when it is within a shrinking threshold of the best
@@ -880,12 +882,19 @@ class Search:
         best, best_value = self.copy_solution(), current
         started = perf_counter()
         budget = max(1e-6, deadline - started)
+
+        def progress() -> float:
+            """Share of the budget used: rounds when counting rounds, else time."""
+            if rounds is not None:
+                return stats["iterations"] / max(1, rounds)
+            return (perf_counter() - started) / budget
+
         threshold0 = 0.005 * abs(current - UNSERVED_PENALTY * self.unserved()) + 1
         weights = dict.fromkeys(self.RUINS, 1.0)
         scores = dict.fromkeys(self.RUINS, 0.0)
         uses = dict.fromkeys(self.RUINS, 0)
         stats = {"iterations": 0, "accepted": 0, "improved": 0}
-        while perf_counter() < deadline:
+        while perf_counter() < deadline and (rounds is None or stats["iterations"] < rounds):
             stats["iterations"] += 1
             operator = e.rng.choices(self.RUINS, weights=[weights[o] for o in self.RUINS])[0]
             uses[operator] += 1
@@ -904,7 +913,7 @@ class Search:
                 blink=0.01,
             )
             value = self.objective()
-            threshold = threshold0 * max(0.0, 1 - (perf_counter() - started) / budget)
+            threshold = threshold0 * max(0.0, 1 - progress())
             if value < best_value - 1e-6:
                 best, best_value = self.copy_solution(), value
                 current = value
@@ -943,9 +952,17 @@ def plan_lns(
     seconds: float = 30,
     seed: int = 7,
     initial: dict[str, list[str]] | None = None,
+    rounds: int | None = None,
 ) -> Plan:
-    """Plan with ruin-and-recreate; ``initial`` continues from an earlier plan's routes."""
+    """Plan with ruin-and-recreate; ``initial`` continues from an earlier plan's routes.
+
+    By default the search stops after ``seconds``, so results vary slightly with machine
+    load. Give ``rounds`` to stop after a fixed number of search rounds instead: the
+    same seed then always gives the same plan (``seconds`` remains a safety limit).
+    """
     started = perf_counter()
+    if rounds is not None:
+        seconds = max(seconds, 3600.0)
     problems = input_findings(snapshot)
     confirmed = tuple(j.id for j in snapshot.jobs if j.state == "confirmed")
     if problems:
@@ -974,15 +991,18 @@ def plan_lns(
     construction_value = search.objective()
     if initial:
         # The earlier plan already separated confirmed work from offers.
-        stats = search.improve(started + seconds)
+        stats = search.improve(started + seconds, rounds=rounds)
     else:
         # Phase 1 plans confirmed work alone, so optional loads can never take its place.
         # Phase 2 fills the remaining capacity with offers that earn more than they cost.
         phase_one = started + seconds * (0.6 if search.offered else 1.0)
-        stats = search.improve(phase_one, offers=False)
+        first = None if rounds is None else round(rounds * (0.6 if search.offered else 1.0))
+        stats = search.improve(phase_one if rounds is None else started + seconds, False, first)
         if search.offered:
             search.recreate(search.offered)
-            second = search.improve(started + seconds)
+            second = search.improve(
+                started + seconds, rounds=None if rounds is None else rounds - (first or 0)
+            )
             stats = {k: stats[k] + second[k] for k in stats}
     plan = materialize(engine, search.solution)
     plan = plan.model_copy(

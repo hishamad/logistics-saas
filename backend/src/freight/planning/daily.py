@@ -18,14 +18,19 @@ from datetime import datetime, timedelta
 
 from freight.costing import calculate_cost
 from freight.domain.models import Activity, Assignment, AssignmentLock, Plan, Snapshot, Window
-from freight.planning.diff import diff_plans
+from freight.planning.diff import PlanDiff, diff_plans
 from freight.planning.engine import plan_lns
 
-Planner = Callable[[Snapshot, float, int], tuple[Snapshot, Plan]]
+# (snapshot, seconds, seed, rounds) -> (snapshot actually planned, plan)
+Planner = Callable[[Snapshot, float, int, int | None], tuple[Snapshot, Plan]]
+# Called after each morning's plan: (day index, snapshot, plan, changes since yesterday).
+MorningHook = Callable[[int, Snapshot, Plan, PlanDiff | None], None]
 
 
-def myopic(snapshot: Snapshot, seconds: float, seed: int) -> tuple[Snapshot, Plan]:
-    return snapshot, plan_lns(snapshot, seconds=seconds, seed=seed)
+def myopic(
+    snapshot: Snapshot, seconds: float, seed: int, rounds: int | None = None
+) -> tuple[Snapshot, Plan]:
+    return snapshot, plan_lns(snapshot, seconds=seconds, seed=seed, rounds=rounds)
 
 
 @dataclass
@@ -148,6 +153,8 @@ def simulate(
     change_penalty_minor: int = 0,
     seconds: float = 20,
     seed: int = 1,
+    on_morning: MorningHook | None = None,
+    rounds: int | None = None,
 ) -> dict[str, object]:
     """Run a week of mornings and score the executed result."""
     now = base.horizon.start
@@ -157,7 +164,8 @@ def simulate(
         snapshot = morning(
             base, now, fleet, week, previous, hours, freeze_hours, change_penalty_minor
         )
-        snapshot, plan = planner(snapshot, seconds, seed)
+        snapshot, plan = planner(snapshot, seconds, seed, rounds)
+        done_before = len(week.executed)
         tomorrow = now + timedelta(days=1)
         communicated = {
             a.job_id for a in (previous.assignments if previous else ()) if a.pickup_at < tomorrow
@@ -178,9 +186,18 @@ def simulate(
                 "jobs_known": len(snapshot.jobs),
                 "moved": len(changes.moved) if changes else 0,
                 "changed_within_a_day": nervous,
+                "notified": len(
+                    {t for j, a, b in changes.moved if j in communicated for t in (a, b)}
+                    | {t for j, t in changes.dropped if j in communicated and j in still_open}
+                )
+                if changes
+                else 0,
             }
         )
+        if on_morning is not None:
+            on_morning(len(week.days) - 1, snapshot, plan, changes)
         execute(plan, tomorrow, fleet, week)
+        week.days[-1]["jobs_done"] = len(week.executed) - done_before
         previous, now = plan, tomorrow
     week_end = base.horizon.start + timedelta(days=days)
     confirmed = {
@@ -200,6 +217,8 @@ def simulate(
         "cost_sar": round((costs.total_minor or 0) / 100),
         "contribution_sar": round((revenue - (costs.total_minor or 0)) / 100),
         "empty_km": round(costs.empty_distance_m / 1000),
+        "loaded_km": round(costs.loaded_distance_m / 1000),
+        "trucks": len(base.teams),
         "moved_total": sum(int(d["moved"]) for d in week.days),  # type: ignore[call-overload]
         "changed_within_a_day": sum(int(d["changed_within_a_day"]) for d in week.days),  # type: ignore[call-overload]
     }

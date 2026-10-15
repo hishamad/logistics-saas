@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulated dispatch week</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --raised: #ffffff; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --ring: rgba(11, 11, 11, 0.10); --accent: #2a78d6; --warn-bg: #fff6e0; --warn-ink: #6b4d00;
+  --good: #0ca30c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --raised: #222221; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --ring: rgba(255, 255, 255, 0.10); --accent: #3987e5; --warn-bg: #2b2414; --warn-ink: #f2cf7a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --raised: #222221; --ink: #ffffff; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --ring: rgba(255, 255, 255, 0.10); --accent: #3987e5; --warn-bg: #2b2414; --warn-ink: #f2cf7a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--page); color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 56px; }
+header { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+h1 { font-size: 28px; margin: 0 0 4px; font-weight: 650; }
+h2 { font-size: 17px; margin: 0 0 10px; font-weight: 600; }
+.sub { color: var(--ink-2); margin: 0; }
+.tools { display: flex; gap: 8px; }
+button { font: inherit; color: var(--ink); background: var(--raised); border: 1px solid var(--ring); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+.banner { margin: 18px 0; padding: 10px 14px; border-radius: 10px; background: var(--warn-bg); color: var(--warn-ink); font-weight: 600; font-size: 14px; }
+.lead { color: var(--ink-2); max-width: 760px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 22px 0; }
+.tile { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 14px 16px; }
+.tile .label { color: var(--ink-2); font-size: 13px; }
+.tile .value { font-size: 28px; font-weight: 650; margin-top: 2px; }
+.tile .value small { font-size: 15px; font-weight: 500; color: var(--ink-2); }
+.tile .note { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.panel { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 18px; margin-top: 16px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+ul { margin: 0; padding-inline-start: 20px; }
+li { margin: 4px 0; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: start; padding: 8px 10px; border-bottom: 1px solid var(--grid); }
+th { color: var(--muted); font-weight: 500; font-size: 13px; }
+td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; }
+a { color: var(--accent); }
+.ok { color: var(--good); font-weight: 600; }
+footer { color: var(--muted); font-size: 12px; margin-top: 22px; }
+@media print { .tools { display: none; } body { background: #fff; } .panel, .tile { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1 data-t="title"></h1>
+      <p class="sub" id="subtitle"></p>
+    </div>
+    <div class="tools">
+      <button type="button" id="lang" aria-label="Switch language">العربية</button>
+      <button type="button" id="theme" data-t="theme"></button>
+    </div>
+  </header>
+  <div class="banner" data-t="synthetic"></div>
+  <p class="lead" data-t="intro"></p>
+  <section class="tiles" id="tiles"></section>
+  <section class="panel">
+    <h2 data-t="simulated"></h2>
+    <ul id="simulated"></ul>
+  </section>
+  <section class="panel">
+    <h2 data-t="daily"></h2>
+    <div class="table-wrap"><table id="days"></table></div>
+  </section>
+  <section class="cols">
+    <div class="panel"><h2 data-t="shows"></h2><ul id="shows"></ul></div>
+    <div class="panel"><h2 data-t="notShows"></h2><ul id="notShows"></ul></div>
+  </section>
+  <section class="panel">
+    <h2 data-t="need"></h2>
+    <ul id="need"></ul>
+  </section>
+  <footer id="footer"></footer>
+</main>
+<script>
+const DATA = /*__DATA__*/null;
+const r = DATA.result, s = DATA.settings;
+const T = {
+  en: {
+    title: "Simulated dispatch week",
+    subtitle: (d) => `${d.trucks} trucks · ${d.days} days · real Saudi roads`,
+    theme: "Theme",
+    synthetic: "Synthetic data: an engine demonstration, not a customer result.",
+    intro: "Every morning the engine planned the next 48 hours using only the orders known at that moment, starting from where each truck really was. The first day of each plan was carried out, then the engine re-planned the next morning.",
+    simulated: "What was simulated",
+    sim: [
+      (d) => `${d.trucks} trucks in fixed teams (tractor, trailer, driver) based in ${d.depots.map(x => `${x.name_en} (${x.count})`).join(", ")}`,
+      () => "Distances and drive times between 28 Saudi sites from OpenStreetMap",
+      () => "Orders arrive 12–72 hours before pickup; spot and return loads 6–36 hours before",
+      () => "Driving hours: 45-minute break after 4.5 h, at most 9 h of driving a day, 11 h rest, weekly day off at home",
+      (d) => `Work in the next ${d.settings.freeze_hours} hours is frozen; moving a job to another truck carries a planning penalty of SAR ${d.settings.change_penalty_sar}`,
+    ],
+    tiles: {
+      done: ["Contract jobs done", (r) => `of ${num(r.confirmed)}`],
+      offers: ["Spot and return loads taken", () => "taken only when they cover their extra cost"],
+      empty: ["Driving without a load", (r) => `${num(r.empty_km)} of ${num(r.empty_km + r.loaded_km)} km`],
+      contribution: ["Contribution", () => "revenue minus modeled cost"],
+      perTruck: ["Revenue per truck per day", (r) => `${r.trucks} trucks, ${r.days.length} days`],
+      changes: ["Driver instructions changed", (r) => `after drivers were told · ${avg(r)} per day`],
+      valid: ["Plans passing every check", () => "driving hours, windows, equipment, days off"],
+    },
+    daily: "Morning by morning",
+    cols: ["Morning", "Orders known", "Jobs carried out that day", "Moved to another truck", "Drivers re-instructed", "Plan valid", "Plan board"],
+    open: "Open",
+    shows: "What this week shows",
+    showsList: [
+      (r) => `Daily re-planning without unsettling drivers: on average ${avg(r)} instruction changes per day after drivers were told.`,
+      () => "Every plan passed the independent checker: driving hours, time windows, equipment and days off at home.",
+      () => "Spot and return loads are accepted only when they earn more than the extra driving costs.",
+    ],
+    notShows: "What it does not show",
+    notShowsList: [
+      () => "Demand, prices and costs are synthetic assumptions, not operating results.",
+      () => "Plans were carried out exactly; there were no breakdowns or delays.",
+      () => "The driving-hour rules are assumed and must be confirmed against TGA regulation.",
+    ],
+    need: "To repeat this on your data",
+    needList: [
+      "4–8 weeks of job history: sites, time windows, equipment, price",
+      "Your fleet: trucks, trailers, drivers and their home depots",
+      "Your cost per km and per driver hour",
+      "Ten rules your dispatchers follow",
+    ],
+    footer: (d) => `Generated ${d.generated} · Modeled cost excludes fixed overhead, insurance, tolls and taxes · ${d.scenario}`,
+    yes: "yes", no: "no",
+  },
+  ar: {
+    title: "أسبوع توزيع محاكى",
+    subtitle: (d) => `${d.trucks} شاحنة · ${d.days} أيام · طرق المملكة الحقيقية`,
+    theme: "المظهر",
+    synthetic: "بيانات اصطناعية: عرض لقدرات المحرك، وليست نتائج عميل حقيقي.",
+    intro: "خطّط المحرك كل صباح للساعات الـ48 التالية مستخدماً الطلبات المعروفة حتى تلك اللحظة فقط، ابتداءً من المواقع الفعلية للشاحنات. نُفِّذ اليوم الأول من كل خطة، ثم أعاد المحرك التخطيط في الصباح التالي.",
+    simulated: "ما تمت محاكاته",
+    sim: [
+      (d) => `${d.trucks} شاحنة بفرق ثابتة (رأس قاطرة ومقطورة وسائق) مقرها ${d.depots.map(x => `${x.name_ar} (${x.count})`).join("، ")}`,
+      () => "المسافات وأزمنة القيادة بين 28 موقعاً في المملكة من خريطة الطرق المفتوحة (OpenStreetMap)",
+      () => "تصل الطلبات قبل 12–72 ساعة من التحميل، والحمولات الفورية وحمولات العودة قبل 6–36 ساعة",
+      () => "ساعات القيادة: استراحة 45 دقيقة بعد 4.5 ساعات، وبحد أقصى 9 ساعات قيادة يومياً، و11 ساعة راحة، ويوم الراحة الأسبوعي في المقر",
+      (d) => `تُجمَّد الأعمال خلال الساعات الـ${d.settings.freeze_hours} القادمة، ونقل شحنة إلى شاحنة أخرى عليه غرامة تخطيطية قدرها ${d.settings.change_penalty_sar} ريال`,
+    ],
+    tiles: {
+      done: ["الشحنات المتعاقد عليها المنفذة", (r) => `من أصل ${num(r.confirmed)}`],
+      offers: ["الحمولات الفورية وحمولات العودة", () => "تُقبل فقط عندما تغطي تكلفتها الإضافية"],
+      empty: ["القيادة بدون حمولة", (r) => `${num(r.empty_km)} من ${num(r.empty_km + r.loaded_km)} كم`],
+      contribution: ["هامش المساهمة", () => "الإيراد مطروحاً منه التكلفة التقديرية"],
+      perTruck: ["الإيراد لكل شاحنة يومياً", (r) => `${r.trucks} شاحنة، ${r.days.length} أيام`],
+      changes: ["تغييرات في تعليمات السائقين", (r) => `بعد إبلاغ السائقين · ${avg(r)} يومياً`],
+      valid: ["خطط اجتازت جميع الفحوصات", () => "ساعات القيادة والنوافذ الزمنية والمعدات وأيام الراحة"],
+    },
+    daily: "صباحاً بصباح",
+    cols: ["الصباح", "الطلبات المعروفة", "الشحنات المنفذة في ذلك اليوم", "نُقلت إلى شاحنة أخرى", "سائقون أُعيد إبلاغهم", "الخطة صالحة", "لوحة الخطة"],
+    open: "فتح",
+    shows: "ما يُظهره هذا الأسبوع",
+    showsList: [
+      (r) => `إعادة التخطيط يومياً دون إرباك السائقين: ${avg(r)} تغيير يومياً في المتوسط بعد إبلاغهم.`,
+      () => "اجتازت جميع الخطط المدقق المستقل: ساعات القيادة والنوافذ الزمنية والمعدات وأيام الراحة في المقر.",
+      () => "تُقبل الحمولات الفورية وحمولات العودة فقط عندما يزيد عائدها عن تكلفة القيادة الإضافية.",
+    ],
+    notShows: "ما لا يُظهره",
+    notShowsList: [
+      () => "الطلب والأسعار والتكاليف افتراضات اصطناعية، وليست نتائج تشغيلية.",
+      () => "نُفذت الخطط كما هي تماماً، دون أعطال أو تأخير.",
+      () => "قواعد ساعات القيادة افتراضية ويجب التحقق منها مقابل أنظمة الهيئة العامة للنقل.",
+    ],
+    need: "لتكرار ذلك على بياناتكم",
+    needList: [
+      "سجل 4–8 أسابيع من الشحنات: المواقع والنوافذ الزمنية ونوع المعدات والسعر",
+      "أسطولكم: الشاحنات والمقطورات والسائقون ومقارّهم",
+      "تكلفة الكيلومتر وتكلفة ساعة السائق لديكم",
+      "عشر قواعد يتبعها مخططو الرحلات لديكم",
+    ],
+    footer: (d) => `أُنشئ في ${d.generated} · التكلفة التقديرية لا تشمل النفقات الثابتة والتأمين والرسوم والضرائب · ${d.scenario}`,
+    yes: "نعم", no: "لا",
+  },
+};
+let lang = "en";
+const locale = () => lang === "ar" ? "ar-SA-u-nu-latn-ca-gregory" : "en-GB";
+const num = (v) => Math.round(v).toLocaleString(lang === "ar" ? "ar-SA-u-nu-latn" : "en-US");
+const sar = (v) => (lang === "ar" ? `${num(v)} ريال` : `SAR ${num(v)}`);
+const avg = (r) => (r.changed_within_a_day / r.days.length).toFixed(1);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function render() {
+  const t = T[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  document.title = t.title;
+  document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = t[el.dataset.t]; });
+  document.getElementById("lang").textContent = lang === "ar" ? "English" : "العربية";
+  document.getElementById("subtitle").textContent = t.subtitle(DATA);
+  const total = r.empty_km + r.loaded_km;
+  const days = r.days.length;
+  const tiles = [
+    ["done", `${num(r.served)}`],
+    ["offers", `${num(r.offers)}`],
+    ["empty", `${total ? Math.round(100 * r.empty_km / total) : 0}<small>%</small>`],
+    ["contribution", sar(r.contribution_sar)],
+    ["perTruck", sar(r.revenue_sar / r.trucks / days)],
+    ["changes", `${num(r.changed_within_a_day)}`],
+    ["valid", `${r.valid_days}<small> / ${days}</small>`],
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(([key, value]) => {
+    const [label, note] = t.tiles[key];
+    return `<div class="tile"><div class="label">${esc(label)}</div><div class="value">${value}</div><div class="note">${esc(note(r))}</div></div>`;
+  }).join("");
+  document.getElementById("simulated").innerHTML = t.sim.map((f) => `<li>${esc(f(DATA))}</li>`).join("");
+  const dateFmt = new Intl.DateTimeFormat(locale(), { timeZone: "Asia/Riyadh", weekday: "short", day: "numeric", month: "short" });
+  document.getElementById("days").innerHTML =
+    `<thead><tr>${t.cols.map((c, i) => `<th class="${i > 0 && i < 5 ? "num" : ""}">${esc(c)}</th>`).join("")}</tr></thead><tbody>` +
+    r.days.map((d, i) => `<tr><td>${esc(dateFmt.format(new Date(DATA.mornings[i].iso)))}</td>` +
+      `<td class="num">${num(d.jobs_known)}</td><td class="num">${num(d.jobs_done)}</td><td class="num">${num(d.moved)}</td>` +
+      `<td class="num">${num(d.notified)}</td><td>${d.valid ? `<span class="ok">✓ ${t.yes}</span>` : `✗ ${t.no}`}</td>` +
+      `<td><a href="${esc(DATA.mornings[i].file)}">${t.open}</a></td></tr>`).join("") + "</tbody>";
+  document.getElementById("shows").innerHTML = t.showsList.map((f) => `<li>${esc(f(r))}</li>`).join("");
+  document.getElementById("notShows").innerHTML = t.notShowsList.map((f) => `<li>${esc(f(r))}</li>`).join("");
+  document.getElementById("need").innerHTML = t.needList.map((x) => `<li>${esc(x)}</li>`).join("");
+  document.getElementById("footer").textContent = t.footer(DATA);
+}
+document.getElementById("lang").addEventListener("click", () => { lang = lang === "ar" ? "en" : "ar"; render(); });
+document.getElementById("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+if (new URLSearchParams(location.search).get("lang") === "ar") lang = "ar";
+render();
+</script>
+</body>
+</html>

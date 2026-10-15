@@ -11,6 +11,7 @@ from collections import Counter
 from pathlib import Path
 
 from freight.board import empty_breakdown, render_board
+from freight.demo import build_demo
 from freight.domain.models import Plan, Snapshot
 from freight.fixtures import demo_snapshot
 from freight.planning.baseline import baseline_plan
@@ -69,11 +70,20 @@ def summary(snapshot: Snapshot, plan: Plan) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Plan a freight scenario")
-    parser.add_argument("command", choices=["plan"])
+    parser.add_argument(
+        "command",
+        choices=["plan", "demo"],
+        help="plan: one plan; demo: a simulated dispatch week as a small website",
+    )
     parser.add_argument("scenario", type=Path, nargs="?", help="snapshot.json (default: demo)")
     parser.add_argument("--method", choices=["lns", "baseline", "cp_sat"], default="lns")
     parser.add_argument("--seconds", type=float, default=30)
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument(
+        "--rounds",
+        type=int,
+        help="Stop after this many search rounds instead of --seconds (repeatable results)",
+    )
     parser.add_argument(
         "--diagnostic", action="store_true", help="Allow unserved jobs (CP-SAT only)"
     )
@@ -87,12 +97,39 @@ def main() -> None:
     )
     parser.add_argument("--json", type=Path, help="Also write the full plan to this file")
     parser.add_argument("--board", type=Path, help="Also write an HTML plan board to this file")
+    parser.add_argument("--out", type=Path, default=Path("demo"), help="demo: output folder")
+    parser.add_argument("--days", type=int, default=7, help="demo: mornings to simulate")
+    parser.add_argument("--freeze", type=float, default=6, help="demo: freeze window in hours")
+    parser.add_argument(
+        "--penalty", type=int, default=300, help="demo: SAR penalty for moving a job"
+    )
     args = parser.parse_args()
     snapshot = (
         Snapshot.model_validate_json(args.scenario.read_text(encoding="utf-8"))
         if args.scenario
         else demo_snapshot()
     )
+    if args.command == "demo":
+        data = build_demo(
+            snapshot,
+            args.out,
+            days=args.days,
+            seconds=args.seconds,
+            seed=args.seed,
+            freeze_hours=args.freeze,
+            change_penalty_minor=args.penalty * 100,
+            rounds=args.rounds,
+        )
+        result = data["result"]
+        assert isinstance(result, dict)
+        print(
+            f"Week       {result['served']}/{result['confirmed']} contract jobs, "
+            f"{result['offers']} offers, contribution SAR {result['contribution_sar']:,}, "
+            f"{result['changed_within_a_day']} changes after drivers were told, "
+            f"{result['valid_days']}/{args.days} valid mornings"
+        )
+        print(f"Demo       {(args.out / 'index.html').resolve()}")
+        return
     if args.confirmed_only:
         snapshot = snapshot.model_copy(
             update={"jobs": tuple(j for j in snapshot.jobs if j.state == "confirmed")}
@@ -100,7 +137,7 @@ def main() -> None:
     if args.method == "lns" and args.lookahead:
         snapshot, plan = plan_with_lookahead(snapshot, seconds=args.seconds, seed=args.seed)
     elif args.method == "lns":
-        plan = plan_lns(snapshot, seconds=args.seconds, seed=args.seed)
+        plan = plan_lns(snapshot, seconds=args.seconds, seed=args.seed, rounds=args.rounds)
     elif args.method == "baseline":
         plan = baseline_plan(snapshot, seconds=args.seconds)
     else:
