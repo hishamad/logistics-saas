@@ -75,3 +75,66 @@ export type PlanRun = {
   summary: PlanSummary | null;
   error: string | null;
 };
+
+// Board data, as produced by freight.board.board_data on the server.
+// An activity: [kind index, start minute, end minute, job id, from site, to site, km,
+//               pauses [[break|rest, start, end]], kind name]
+export type BoardActivity = [
+  number,
+  number,
+  number,
+  string | null,
+  string,
+  string,
+  number,
+  ["break" | "rest", number, number][],
+  "loaded" | "empty" | "loading" | "unloading" | "turnaround" | "waiting" | "rest",
+];
+
+export type BoardTeam = {
+  id: string;
+  name: string;
+  depot: string;
+  equipment: string;
+  acts: BoardActivity[];
+  stats: { jobs: number; offers: number; loaded_km: number; empty_km: number; revenue: number; driving_h: number };
+};
+
+export type BoardJob = {
+  ref: string;
+  customer: string;
+  from: string;
+  to: string;
+  offer: boolean;
+  revenue: number | null;
+  tonnes: number;
+  equipment: string;
+};
+
+export type Board = {
+  name: string;
+  valid: boolean;
+  findings: string[];
+  origin: string;
+  horizonEnd: number;
+  end: number;
+  sites: Record<string, [string, string]>;
+  jobs: Record<string, BoardJob>;
+  teams: BoardTeam[];
+  unserved: string[];
+  kpis: {
+    confirmed: number;
+    served: number;
+    offered: number;
+    accepted: number;
+    loaded_km: number;
+    empty_km: number;
+    cost: number | null;
+    revenue: number | null;
+    trucks: number;
+    days: number;
+    runtime_s: number;
+  };
+  emptyReasons: Record<string, number>;
+  frozen: string[];
+};

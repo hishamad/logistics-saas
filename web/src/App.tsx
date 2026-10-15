@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth";
 import { Shell } from "./components/Shell";
 import { I18nProvider, useI18n, type StringKey } from "./i18n";
+import { Board } from "./pages/Board";
 import { Login } from "./pages/Login";
 import { Overview } from "./pages/Overview";
 
@@ -38,7 +39,7 @@ export default function App() {
               }
             >
               <Route index element={<Overview />} />
-              <Route path="board" element={<ComingNext title="navBoard" body="comingBoard" />} />
+              <Route path="board" element={<Board />} />
               <Route path="data" element={<ComingNext title="navData" body="comingData" />} />
               <Route path="rules" element={<ComingNext title="navRules" body="comingRules" />} />
               <Route path="history" element={<ComingNext title="navHistory" body="comingHistory" />} />
