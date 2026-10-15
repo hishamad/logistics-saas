@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     openai_model_rules: str = ""
     openai_reasoning_effort: Literal["none", "low", "medium", "high"] | None = None
+    # Web app. SQLite by default (one local file); a PostgreSQL URL works the same way.
+    database_url: str = f"sqlite:///{(BACKEND_ROOT / '.data' / 'freight.db').as_posix()}"
+    session_hours: int = 12
+    cookie_secure: bool = False  # set True behind HTTPS in production
+    plan_workers: int = 2
 
     @property
     def ai_configured(self) -> bool:

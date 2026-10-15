@@ -9,6 +9,10 @@ dependencies = [
   "ortools>=9.12,<10",
   "openai>=2,<3",
   "tzdata>=2025.1",
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+  "sqlalchemy>=2.0,<3",
+  "python-multipart>=0.0.20,<1",
 ]
 
 [dependency-groups]
