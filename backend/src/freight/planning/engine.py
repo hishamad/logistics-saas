@@ -934,6 +934,28 @@ class Search:
         self.solution = best
         return stats
 
+    def load(self, routes: dict[str, list[str]]) -> None:
+        """Start from given routes (e.g. an earlier plan); unknown jobs are skipped."""
+        for team_id, route in routes.items():
+            if team_id in self.solution.routes:
+                self.solution.routes[team_id] = [j for j in route if j in self.e.jobs]
+                for job_id in self.solution.routes[team_id]:
+                    self.solution.where[job_id] = team_id
+                self._refresh(team_id)
+
+    def insertion_on(self, job_id: str, team_id: str) -> tuple[float, int] | None:
+        """Cheapest extra cost (and position) of adding a job to one team's route."""
+        e, sol = self.e, self.solution
+        info, route = e.teams[team_id], sol.routes[team_id]
+        best: tuple[float, int] | None = None
+        for position in range(len(route) + 1):
+            result = e.run(info, sol.states[team_id][position], [job_id, *route[position:]])
+            if result is not None:
+                delta = result[0] - sol.costs[team_id] + e.penalties.get((job_id, team_id), 0)
+                if best is None or delta < best[0]:
+                    best = (delta, position)
+        return best
+
     def unserved(self) -> int:
         return sum(1 for j in self.confirmed if j not in self.solution.where)
 
@@ -977,12 +999,7 @@ def plan_lns(
     engine = Engine(snapshot, seed)
     search = Search(engine)
     if initial:
-        for team_id, route in initial.items():
-            if team_id in search.solution.routes:
-                search.solution.routes[team_id] = [j for j in route if j in engine.jobs]
-                for job_id in search.solution.routes[team_id]:
-                    search.solution.where[job_id] = team_id
-                search._refresh(team_id)
+        search.load(initial)
         search.recreate([j for j in search.confirmed if j not in search.solution.where])
     else:
         order = sorted(search.confirmed, key=lambda j: (j not in engine.locks, engine.window[j][0]))

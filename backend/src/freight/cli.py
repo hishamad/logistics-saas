@@ -7,12 +7,15 @@ uv run freight plan ../data/saudi/scenarios/pilot/snapshot.json --method baselin
 
 import argparse
 import json
+import sys
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 
 from freight.board import empty_breakdown, render_board
 from freight.demo import build_demo
 from freight.domain.models import Plan, Snapshot
+from freight.explain import narrate, template, what_if, why
 from freight.fixtures import demo_snapshot
 from freight.planning.baseline import baseline_plan
 from freight.planning.engine import plan_lns
@@ -69,11 +72,18 @@ def summary(snapshot: Snapshot, plan: Plan) -> str:
 
 
 def main() -> None:
+    # Arabic text must print on Windows consoles too (their default code page cannot).
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="Plan a freight scenario")
     parser.add_argument(
         "command",
-        choices=["plan", "demo"],
-        help="plan: one plan; demo: a simulated dispatch week as a small website",
+        choices=["plan", "demo", "explain", "whatif"],
+        help=(
+            "plan: one plan | demo: a simulated week as a small website | "
+            "explain: why a job is on its truck | whatif: re-plan under a change"
+        ),
     )
     parser.add_argument("scenario", type=Path, nargs="?", help="snapshot.json (default: demo)")
     parser.add_argument("--method", choices=["lns", "baseline", "cp_sat"], default="lns")
@@ -103,6 +113,17 @@ def main() -> None:
     parser.add_argument(
         "--penalty", type=int, default=300, help="demo: SAR penalty for moving a job"
     )
+    parser.add_argument("--job", help="explain/whatif: job reference, e.g. SA-26053")
+    parser.add_argument("--drop", help="whatif: cancel this job reference")
+    parser.add_argument("--unavailable", help="whatif: this team (e.g. team-DMM-007) is down")
+    parser.add_argument("--from", dest="start", help="whatif: start, e.g. 2026-10-18T12:00+03:00")
+    parser.add_argument("--to", dest="end", help="whatif: end, e.g. 2026-10-18T20:00+03:00")
+    parser.add_argument("--assign", help="whatif: force this job reference onto --team")
+    parser.add_argument("--team", help="whatif: team id for --assign")
+    parser.add_argument("--lang", choices=["en", "ar"], default="en", help="explanation language")
+    parser.add_argument(
+        "--no-ai", action="store_true", help="explain with the built-in template only"
+    )
     args = parser.parse_args()
     snapshot = (
         Snapshot.model_validate_json(args.scenario.read_text(encoding="utf-8"))
@@ -130,6 +151,9 @@ def main() -> None:
         )
         print(f"Demo       {(args.out / 'index.html').resolve()}")
         return
+    if args.command in ("explain", "whatif"):
+        explain_or_what_if(snapshot, args)
+        return
     if args.confirmed_only:
         snapshot = snapshot.model_copy(
             update={"jobs": tuple(j for j in snapshot.jobs if j.state == "confirmed")}
@@ -151,6 +175,35 @@ def main() -> None:
             json.dumps(plan.model_dump(mode="json"), ensure_ascii=False, indent=1),
             encoding="utf-8",
         )
+
+
+def explain_or_what_if(snapshot: Snapshot, args: argparse.Namespace) -> None:
+    by_reference = {j.reference: j.id for j in snapshot.jobs}
+    plan = plan_lns(snapshot, seconds=args.seconds, seed=args.seed, rounds=args.rounds or 3000)
+    if args.command == "explain":
+        if args.job not in by_reference:
+            raise SystemExit("Give --job with a job reference from the scenario, e.g. SA-26053")
+        facts = why(snapshot, plan, by_reference[args.job])
+    else:
+        if args.drop:
+            change: dict[str, object] = {"kind": "drop", "job": by_reference[args.drop]}
+        elif args.unavailable:
+            change = {
+                "kind": "unavailable",
+                "team": args.unavailable,
+                "start": datetime.fromisoformat(args.start),
+                "end": datetime.fromisoformat(args.end),
+            }
+        elif args.assign:
+            change = {"kind": "assign", "job": by_reference[args.assign], "team": args.team}
+        else:
+            raise SystemExit("Give one of --drop, --unavailable (with --from/--to), --assign")
+        facts, _, _ = what_if(snapshot, plan, change, seed=args.seed)
+    text, source = (
+        (template(facts, args.lang), "template") if args.no_ai else narrate(facts, args.lang)
+    )
+    print(json.dumps(facts, ensure_ascii=False, indent=1))
+    print(f"\n[{source}]\n{text}")
 
 
 if __name__ == "__main__":

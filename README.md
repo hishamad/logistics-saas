@@ -17,6 +17,7 @@ backend/                 Python planning engine
     ai.py                turns Arabic/English dispatcher instructions into typed rules (parked)
     board.py             plan board: renders a plan as a self-contained HTML timeline
     demo.py              carrier demo: a simulated week as a bilingual result sheet + daily boards
+    explain.py           why / what-if: computed facts, explained by AI or a built-in template
     cli.py               command line: plan a scenario
   scripts/               scenario generator
   tests/                 engine tests
@@ -48,6 +49,16 @@ uv run pytest
 
 ```bash
 uv run freight demo ../data/saudi/scenarios/full/snapshot.json --out ../boards/demo --rounds 6000 --seed 1
+```
+
+**Why and what-if.** The engine computes the facts and an AI model (OpenAI, key in `backend/.env`) explains them in English or Arabic; without a working key a built-in template explains instead. What-if answers isolate the change: they compare against a control re-plan with the same effort and only move what the change forces.
+
+```bash
+uv run freight explain ../data/saudi/scenarios/pilot/snapshot.json --job SA-26006 --lang ar
+```
+
+```bash
+uv run freight whatif ../data/saudi/scenarios/pilot/snapshot.json --unavailable team-DMM-012 --from 2026-10-18T14:00+03:00 --to 2026-10-19T02:00+03:00
 ```
 
 To compare daily re-planning policies over a simulated week (freeze window, change penalty, look-ahead), run `uv run python scripts/daily.py` ([results](docs/benchmarks/daily.md)). To measure the engine (exact gaps on small scenarios, bound gaps on the pilot and the full week), run the command below. Results land in [docs/benchmarks](docs/benchmarks/README.md).
