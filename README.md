@@ -14,6 +14,7 @@ backend/                 Python planning engine
     costing/             modeled cost of a plan (fuel, distance, driver time)
     planning/engine.py   the planner: route simulator with driving-hours rules + ruin-and-recreate search
     planning/            older planners kept for comparison: greedy baseline, CP-SAT
+    api/                 web API: logins, companies, background plan runs (FastAPI)
     ai.py                turns Arabic/English dispatcher instructions into typed rules (parked)
     board.py             plan board: renders a plan as a self-contained HTML timeline
     demo.py              carrier demo: a simulated week as a bilingual result sheet + daily boards
@@ -21,10 +22,27 @@ backend/                 Python planning engine
     cli.py               command line: plan a scenario
   scripts/               scenario generator
   tests/                 engine tests
+web/                     the dispatcher web app (React + TypeScript, Vite)
 data/saudi/              real road network (28 sites) + generated scenarios
 data/benchmarks/         public academic test problems
 docs/                    product brief, engine research, Saudi road freight guide, reference screenshots
 scripts/                 builds the road network from OpenStreetMap
+```
+
+## Run the web app (development)
+
+Two terminals. First time only: `uv run python scripts/seed_dev.py` in `backend/` creates a local demo company; its test logins are listed in that file (local use only). And `npm install` in `web/`.
+
+API, from `backend/`:
+
+```bash
+uv run uvicorn freight.api.app:create_app --factory --port 8000
+```
+
+Web app, from `web/` (then open http://127.0.0.1:5173):
+
+```bash
+npm run dev
 ```
 
 ## Run it
