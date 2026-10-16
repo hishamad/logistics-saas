@@ -71,10 +71,12 @@ export type PlanSummary = {
   cost_minor: number | null;
   revenue_minor: number | null;
   runtime_s: number;
+  changed: number | null;
 };
 
 export type PlanRun = {
   id: string;
+  created_by: string | null;
   status: "queued" | "running" | "done" | "failed";
   created_at: string;
   finished_at: string | null;
@@ -251,3 +253,16 @@ export type WhatIfRun = {
   result: { facts: WhatIfFacts; text: { en: string; ar: string }; source: string } | null;
   error: string | null;
 };
+
+export type ChangedJob = { job: string; ref: string; customer: string };
+
+export type Changes = {
+  moved: (ChangedJob & { from: string; to: string })[];
+  retimed: (ChangedJob & { truck: string; before: string; after: string })[];
+  added: (ChangedJob & { truck: string })[];
+  dropped: (ChangedJob & { truck: string })[];
+  unchanged: number;
+  notify: { truck: string; changes: number }[];
+};
+
+export type ChangesAnswer = { against: { id: string; created_at: string } | null; changes: Changes | null };

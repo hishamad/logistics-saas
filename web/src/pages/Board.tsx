@@ -1,8 +1,9 @@
 // The plan board: run the engine, watch it work, read the result truck by truck.
-import { Lock, Play, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Download, Lock, Play, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api, type Board as BoardData, type Lock as LockRow, type PlanRun, type Steering } from "../api";
+import { api, type Board as BoardData, type ChangesAnswer, type Lock as LockRow, type PlanRun, type Steering } from "../api";
+import { ChangesView } from "../components/Changes";
 import { useAuth } from "../auth";
 import { Drawer, type DrawerTarget } from "../components/Drawer";
 import { ACTIVITY_LABEL, Timeline, useSites } from "../components/Timeline";
@@ -17,7 +18,7 @@ const DEPTHS = [
 const busy = (run: PlanRun | null) => run?.status === "queued" || run?.status === "running";
 
 export function Board() {
-  const { t, number, money, date } = useI18n();
+  const { t, lang, number, money, date } = useI18n();
   const { me } = useAuth();
   const [params, setParams] = useSearchParams();
   const wanted = params.get("run");
@@ -30,6 +31,7 @@ export function Board() {
   const [, setTick] = useState(0);
   const [drawer, setDrawer] = useState<DrawerTarget | null>(null);
   const [locks, setLocks] = useState<LockRow[]>([]);
+  const [changes, setChanges] = useState<ChangesAnswer | null>(null);
   const itinerary = useRef<HTMLElement>(null);
 
   // Current frozen jobs (they apply to the next plan; the board shows those of its own plan).
@@ -66,6 +68,11 @@ export function Board() {
   useEffect(() => {
     if (!shown || shown.status !== "done" || shown.id === boardOf) return;
     setBoardOf(shown.id);
+    setChanges(null);
+    api
+      .get<ChangesAnswer>(`/api/plans/${shown.id}/changes`)
+      .then(setChanges)
+      .catch(() => setChanges(null));
     api
       .get<BoardData>(`/api/plans/${shown.id}/board`)
       .then(setBoard)
@@ -105,8 +112,14 @@ export function Board() {
             </span>
           )}
         </div>
+        <div className="run-controls">
+          {board && shown && (
+            <a className="btn" href={`/api/plans/${shown.id}/export.xlsx?lang=${lang}`} download>
+              <Download size={16} aria-hidden /> {t("exportExcel")}
+            </a>
+          )}
         {dispatcher ? (
-          <div className="run-controls">
+          <>
             <select className="input" aria-label={t("depth")} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} disabled={working}>
               {DEPTHS.map((d) => (
                 <option key={d.seconds} value={d.seconds}>
@@ -118,10 +131,11 @@ export function Board() {
               <Play size={16} aria-hidden />
               {t("runPlan")}
             </button>
-          </div>
+          </>
         ) : (
           <span className="muted">{t("viewerCannotPlan")}</span>
         )}
+        </div>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -166,6 +180,18 @@ export function Board() {
             {board.valid ? <ShieldCheck size={16} aria-hidden /> : <ShieldAlert size={16} aria-hidden />}
             {board.valid ? t("passed") : `${t("findingsLabel")}: ${board.findings.join(", ")}`}
           </div>
+
+          {changes?.changes && changes.against && (
+            <section className="panel changes-panel">
+              <h2>
+                {t("changesTitle")}{" "}
+                <span className="muted small">
+                  {t("changesSince")} {date(changes.against.created_at)}
+                </span>
+              </h2>
+              <ChangesView changes={changes.changes} />
+            </section>
+          )}
 
           <Timeline board={board} selected={selected} onSelect={select} />
 

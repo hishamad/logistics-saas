@@ -14,7 +14,8 @@ from concurrent.futures import Executor, ProcessPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -39,6 +40,7 @@ from freight.api.security import hash_token, new_token, verify_password
 from freight.board import board_data
 from freight.domain.models import AssignmentLock, Job, Plan, Rule, Snapshot
 from freight.explain import narrate, why
+from freight.handover import export_workbook, plan_changes
 from freight.planning.engine import routes_of
 from freight.settings import get_settings
 from freight.sheets import (
@@ -53,6 +55,7 @@ from freight.sheets import (
 from freight.validation.validator import input_findings
 
 COOKIE = "freight_session"
+RIYADH = ZoneInfo("Asia/Riyadh")
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
@@ -182,9 +185,10 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Plan not found")
         return run
 
-    def run_view(run: PlanRun) -> dict[str, Any]:
+    def run_view(run: PlanRun, by: str | None = None) -> dict[str, Any]:
         return {
             "id": run.id,
+            "created_by": by,
             "status": run.status,
             "created_at": iso(run.created_at),
             "finished_at": iso(run.finished_at) if run.finished_at else None,
@@ -293,7 +297,13 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             .order_by(PlanRun.created_at.desc())
             .limit(50)
         )
-        return [run_view(run) for run in runs]
+        names = {
+            row.id: row.name
+            for row in session.execute(
+                select(User.id, User.name).where(User.company_id == user.company_id)
+            )
+        }
+        return [run_view(run, names.get(run.created_by)) for run in runs]
 
     @app.get("/api/plans/{run_id}")
     def get_plan(run_id: str, user: Me, session: Db) -> dict[str, Any]:
@@ -306,6 +316,62 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             raise HTTPException(status.HTTP_409_CONFLICT, f"Plan is {run.status}")
         return board_data(
             Snapshot.model_validate_json(run.snapshot), Plan.model_validate_json(run.plan)
+        )
+
+    def done_plan_of(session: Session, user: User, run_id: str) -> tuple[PlanRun, Snapshot, Plan]:
+        run = run_of(session, user, run_id)
+        if run.status != "done" or run.plan is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, f"Plan is {run.status}")
+        return run, Snapshot.model_validate_json(run.snapshot), Plan.model_validate_json(run.plan)
+
+    def previous_done(session: Session, run: PlanRun) -> PlanRun | None:
+        return session.scalar(
+            select(PlanRun)
+            .where(
+                PlanRun.company_id == run.company_id,
+                PlanRun.status == "done",
+                PlanRun.created_at < run.created_at,
+            )
+            .order_by(PlanRun.created_at.desc())
+            .limit(1)
+        )
+
+    def changes_between(
+        session: Session, user: User, run_id: str, against: str | None
+    ) -> tuple[dict[str, Any] | None, PlanRun | None]:
+        run, snapshot, plan = done_plan_of(session, user, run_id)
+        other = run_of(session, user, against) if against else previous_done(session, run)
+        if other is None:
+            return None, None
+        _, before_snapshot, before = done_plan_of(session, user, other.id)
+        return plan_changes(snapshot, plan, before_snapshot, before), other
+
+    # --- hand-over: what changed, and the plan as Excel -------------------------------
+
+    @app.get("/api/plans/{run_id}/changes")
+    def get_changes(
+        run_id: str, user: Me, session: Db, against: str | None = None
+    ) -> dict[str, Any]:
+        """Changes since ``against`` (default: the plan before this one)."""
+        changes, other = changes_between(session, user, run_id, against)
+        if other is None:
+            return {"against": None, "changes": None}
+        return {
+            "against": {"id": other.id, "created_at": iso(other.created_at)},
+            "changes": changes,
+        }
+
+    @app.get("/api/plans/{run_id}/export.xlsx")
+    def export_plan(run_id: str, user: Me, session: Db, lang: str = "en") -> Response:
+        run, snapshot, plan = done_plan_of(session, user, run_id)
+        changes, _ = changes_between(session, user, run_id, None)
+        language: Literal["en", "ar"] = "ar" if lang == "ar" else "en"
+        created = run.created_at.replace(tzinfo=run.created_at.tzinfo or UTC)
+        stamp = f"{created.astimezone(RIYADH):%Y-%m-%d-%H%M}"
+        return Response(
+            export_workbook(snapshot, plan, changes, language),
+            media_type=XLSX,
+            headers={"Content-Disposition": f'attachment; filename="plan-{stamp}.xlsx"'},
         )
 
     def latest_done(session: Session, company_id: str) -> PlanRun | None:

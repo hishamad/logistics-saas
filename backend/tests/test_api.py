@@ -359,3 +359,26 @@ def test_what_if_cancelling_a_frozen_job_works(app):
         time.sleep(0.05)
     assert question["status"] == "done", question
     assert question["result"]["facts"]["after"]["contribution_sar"] is not None
+
+
+def test_changes_since_the_last_plan_and_excel_export(app):
+    client = login(app, "dispatcher@east.test")
+    first = done_plan(client)
+    assert client.get(f"/api/plans/{first['id']}/changes").json() == {
+        "against": None,
+        "changes": None,
+    }
+    second = done_plan(client)
+    answer = client.get(f"/api/plans/{second['id']}/changes").json()
+    assert answer["against"]["id"] == first["id"]
+    assert {"moved", "retimed", "added", "dropped", "notify", "unchanged"} <= set(answer["changes"])
+    explicit = client.get(
+        f"/api/plans/{first['id']}/changes", params={"against": second["id"]}
+    ).json()
+    assert explicit["against"]["id"] == second["id"]
+    sheet = client.get(f"/api/plans/{second['id']}/export.xlsx", params={"lang": "ar"})
+    assert sheet.status_code == 200 and sheet.content[:2] == b"PK"
+    assert client.get("/api/plans").json()[0]["created_by"] == "Eastern Carrier dispatcher"
+    other = login(app, "dispatcher@west.test")
+    assert other.get(f"/api/plans/{second['id']}/export.xlsx").status_code == 404
+    assert other.get(f"/api/plans/{second['id']}/changes").status_code == 404
