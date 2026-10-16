@@ -50,7 +50,11 @@ def test_fleet_round_trip_through_excel(snapshot: Snapshot) -> None:
     assert outcome.problems == []
     assert outcome.snapshot is not None
     assert outcome.snapshot.teams == snapshot.teams
-    assert outcome.snapshot.resources == snapshot.resources
+    # Availability end is not in the sheet: it is the window end plus a fixed tail.
+    strip = {"availability": {"end"}}
+    assert [r.model_dump(exclude=strip) for r in outcome.snapshot.resources] == [
+        r.model_dump(exclude=strip) for r in snapshot.resources
+    ]
 
 
 def test_templates_import_cleanly(snapshot: Snapshot) -> None:
@@ -142,7 +146,7 @@ def test_set_window_moves_fleet_availability(snapshot: Snapshot) -> None:
     moved = set_window(snapshot, start, 2)
     assert moved.horizon.end == start + timedelta(days=2)
     assert {r.availability.start for r in moved.resources} == {start}
-    assert {r.availability.end for r in moved.resources} == {start + timedelta(days=4)}
+    assert {r.availability.end for r in moved.resources} == {start + timedelta(days=2 + 7)}
 
 
 def test_orders_after_the_window_are_kept_to_wait_for_a_later_plan(snapshot: Snapshot) -> None:

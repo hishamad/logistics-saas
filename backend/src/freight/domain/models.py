@@ -430,6 +430,8 @@ class Plan(Model):
     activities: tuple[Activity, ...] = ()
     unserved_job_ids: tuple[str, ...] = ()
     findings: tuple[Finding, ...] = ()
+    # Information for the dispatcher that does not make the plan invalid.
+    notes: tuple[Finding, ...] = ()
     costs: CostBreakdown | None = None
     runtime_ms: int = 0
     objective_penalty_minor: int = 0

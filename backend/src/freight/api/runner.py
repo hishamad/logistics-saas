@@ -9,10 +9,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from freight.api.db import PlanRun, WhatIfRun, utcnow
-from freight.domain.models import Plan, Snapshot
+from freight.domain.models import Finding, Plan, Snapshot
 from freight.explain import WhatIfRefused, narrate, what_if
 from freight.planning.engine import plan_lns
 from freight.planning.lookahead import plan_with_lookahead
+from freight.rolling import release_impossible_locks
 
 
 def compute_plan(
@@ -21,7 +22,7 @@ def compute_plan(
     """Runs in a worker process. Returns (planned snapshot JSON, plan JSON).
 
     ``initial`` (team -> job ids) continues from an earlier plan instead of starting empty."""
-    snapshot = Snapshot.model_validate_json(snapshot_json)
+    snapshot, released = release_impossible_locks(Snapshot.model_validate_json(snapshot_json))
     seconds = float(settings.get("seconds", 30))
     seed = int(settings.get("seed", 1))
     rounds = settings.get("rounds")
@@ -29,6 +30,17 @@ def compute_plan(
         snapshot, plan = plan_with_lookahead(snapshot, seconds=seconds, seed=seed)
     else:
         plan = plan_lns(snapshot, seconds=seconds, seed=seed, rounds=rounds, initial=initial)
+    if released:
+        # Recorded on the plan so the dispatcher sees which freezes could not be kept.
+        notes = tuple(
+            Finding(
+                code="lock_released",
+                message="This frozen job is no longer possible on its truck; the freeze was released.",
+                entity_ids=(job_id,),
+            )
+            for job_id in released
+        )
+        plan = plan.model_copy(update={"notes": notes})
     return snapshot.model_dump_json(), plan.model_dump_json()
 
 
@@ -92,6 +104,12 @@ def summarize(snapshot: Snapshot, plan: Plan) -> dict[str, Any]:
         "cost_minor": c.total_minor if c else None,
         "revenue_minor": c.revenue_minor if c else None,
         "runtime_s": round(plan.runtime_ms / 1000, 1),
+        "released_locks": [
+            next((j.reference for j in snapshot.jobs if j.id == job_id), job_id)
+            for note in plan.notes
+            if note.code == "lock_released"
+            for job_id in note.entity_ids
+        ],
         # Jobs on a different truck than in the previous plan (instructions to re-send).
         "changed": sum(
             1

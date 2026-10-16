@@ -14,9 +14,9 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from freight.domain.models import Activity, DriverHours, Plan, Snapshot, Window
+from freight.planning.engine import Engine, Search
+from freight.sheets import AVAILABILITY_TAIL
 from freight.validation.validator import hours_sweep
-
-AVAILABILITY_TAIL = timedelta(days=2)
 
 
 def roll_forward(
@@ -143,3 +143,24 @@ def planning_view(operation: Snapshot) -> tuple[Snapshot, int]:
         "previous": {j: t for j, t in operation.previous.items() if j in ids},
     }
     return Snapshot.model_validate(data), len(operation.jobs) - len(due)
+
+
+def release_impossible_locks(snapshot: Snapshot) -> tuple[Snapshot, list[str]]:
+    """Frozen jobs their truck can no longer do at all (even with nothing else to do).
+
+    Situations change after a job is frozen (a shorter window, a day off, a new rule).
+    Keeping such a freeze would make the whole plan invalid, so it is released and
+    reported instead. Returns the snapshot to plan and the released job ids.
+    """
+    if not snapshot.locks:
+        return snapshot, []
+    search = Search(Engine(snapshot, 1))  # every route empty
+    released = [
+        lock.job_id
+        for lock in snapshot.locks
+        if search.insertion_on(lock.job_id, lock.team_id) is None
+    ]
+    if not released:
+        return snapshot, []
+    locks = tuple(lock for lock in snapshot.locks if lock.job_id not in released)
+    return snapshot.model_copy(update={"locks": locks}), released

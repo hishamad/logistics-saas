@@ -1,9 +1,9 @@
 // Data in: the planning window, orders and fleet as Excel/CSV, and the site list.
 // Uploads are checked first; nothing changes until the dispatcher applies.
-import { CalendarRange, Download, FileSpreadsheet, MapPin, Truck, Upload } from "lucide-react";
+import { CalendarRange, Download, FileSpreadsheet, MapPin, SunMedium, Truck, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { api, ApiError, type DataOverview, type SheetKind, type SheetProblem, type UploadResult } from "../api";
+import { api, ApiError, type DataOverview, type RollReport, type SheetKind, type SheetProblem, type UploadResult } from "../api";
 import { useAuth } from "../auth";
 import { useI18n, type StringKey } from "../i18n";
 import { fromRiyadhInput, toRiyadhInput } from "../time";
@@ -41,7 +41,8 @@ export function Data() {
       {!editable && <div className="alert alert-info">{t("viewerCannotEdit")}</div>}
       {data && (
         <div className="data-grid">
-          <WindowCard data={data} editable={editable} onChanged={load} />
+          <WindowCard key={data.window.start + data.window.end} data={data} editable={editable} onChanged={load} />
+          {editable && <NextDay onChanged={load} />}
           <SheetCard kind="jobs" data={data} editable={editable} onChanged={load} />
           <SheetCard kind="fleet" data={data} editable={editable} onChanged={load} />
           <SitesCard data={data} />
@@ -98,9 +99,61 @@ function WindowCard({ data, editable, onChanged }: { data: DataOverview; editabl
         {state === "saved" && !changed && <span className="ok-text">{t("saved")}</span>}
         {state !== "idle" && state !== "saving" && state !== "saved" && <span className="error-text">{state}</span>}
       </div>
-      {data.jobs.outside_window > 0 && (
+      {data.jobs.later > 0 && (
+        <div className="alert alert-info window-note">
+          {number(data.jobs.later)} {t("laterOrders")}
+        </div>
+      )}
+      {data.jobs.expired > 0 && (
         <div className="alert alert-warn">
-          {number(data.jobs.outside_window)} {t("outsideWindow")}
+          {number(data.jobs.expired)} {t("expiredOrders")}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function NextDay({ onChanged }: { onChanged: () => void }) {
+  const { t, number } = useI18n();
+  const [busy, setBusy] = useState(false);
+  const [report, setReport] = useState<RollReport | null>(null);
+  const [error, setError] = useState("");
+
+  async function roll() {
+    setBusy(true);
+    setError("");
+    try {
+      setReport(await api.post<RollReport>("/api/data/roll", { hours: 24 }));
+      onChanged();
+    } catch (caught) {
+      setError((caught as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="panel next-day">
+      <h2>
+        <SunMedium size={18} aria-hidden /> {t("nextDayTitle")}
+      </h2>
+      <p className="muted small">{t("nextDayLead")}</p>
+      <button className="btn" onClick={roll} disabled={busy}>
+        {busy ? t("rolling") : t("nextDayButton")}
+      </button>
+      {error && <div className="alert alert-error result">{error}</div>}
+      {report && (
+        <div className="alert alert-ok result">
+          <div>
+            <b>{number(report.executed)}</b> {t("rolledExecuted")} · <b>{number(report.in_progress.length)}</b> {t("rolledInProgress")} ·{" "}
+            <b>{number(report.trucks_moved)}</b> {t("rolledAway")} · <b>{number(report.drivers_with_hours)}</b> {t("rolledDrivers")}
+          </div>
+          {report.missed.length > 0 && (
+            <div className="error-text">
+              <b>{number(report.missed.length)}</b> {t("rolledMissed")}: {report.missed.map((m) => m.ref).join(", ")}
+            </div>
+          )}
+          <div className="muted small">{t("rolledNote")}</div>
         </div>
       )}
     </section>
@@ -268,9 +321,14 @@ function Result({
       <div className="alert alert-ok">
         <bdi className="file-name">{file.name}</bdi>: {t("checkedOk")}
         <div>{parts.join(" · ")}</div>
-        {s.outside_window > 0 && (
+        {s.later > 0 && (
           <div>
-            {number(s.outside_window)} {t("outsideWindow")}
+            {number(s.later)} {t("laterOrders")}
+          </div>
+        )}
+        {s.expired > 0 && (
+          <div>
+            {number(s.expired)} {t("expiredOrders")}
           </div>
         )}
         {s.locks_dropped > 0 && (

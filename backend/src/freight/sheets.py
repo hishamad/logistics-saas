@@ -29,7 +29,9 @@ from freight.domain.models import Job, Resource, Snapshot, Team, Window
 RIYADH = ZoneInfo("Asia/Riyadh")
 Kind = Literal["jobs", "fleet"]
 MAX_ROWS = {"jobs": 2000, "fleet": 300}
-AVAILABILITY_TAIL = timedelta(days=2)  # trucks may finish work after the window ends
+# Trucks keep working after the window ends: a job picked up inside it may be delivered
+# days later, and a driver may still have to get home for a day off.
+AVAILABILITY_TAIL = timedelta(days=7)
 
 JOB_COLUMNS = (
     "reference",

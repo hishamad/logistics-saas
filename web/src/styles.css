@@ -279,3 +279,5 @@ td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
   .tile .value, .board-tiles .value { font-size: 19px; }
   h1 { font-size: 24px; }
 }
+.next-day { grid-column: 1 / -1; }
+.window-note { margin: 12px 0 0; }

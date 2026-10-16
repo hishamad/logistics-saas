@@ -181,6 +181,12 @@ export function Board() {
             {board.valid ? t("passed") : `${t("findingsLabel")}: ${board.findings.join(", ")}`}
           </div>
 
+          {board.released.length > 0 && (
+            <div className="alert alert-warn">
+              {t("releasedLocks")} {board.released.map((id) => board.jobs[id]?.ref ?? id).join(", ")}
+            </div>
+          )}
+
           {changes?.changes && changes.against && (
             <section className="panel changes-panel">
               <h2>

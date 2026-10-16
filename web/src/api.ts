@@ -124,6 +124,7 @@ export type Board = {
   name: string;
   valid: boolean;
   findings: string[];
+  released: string[];
   origin: string;
   horizonEnd: number;
   end: number;
@@ -154,7 +155,7 @@ export type DataOverview = {
   version: number;
   updated_at: string;
   window: { start: string; end: string };
-  jobs: { contract: number; spot: number; outside_window: number; customers: number };
+  jobs: { contract: number; spot: number; later: number; expired: number; customers: number };
   fleet: { trucks: number; depots: Record<string, number>; dry_van: number; flatbed: number };
   sites: { id: string; name: string; name_ar: string }[];
   locks: number;
@@ -266,3 +267,13 @@ export type Changes = {
 };
 
 export type ChangesAnswer = { against: { id: string; created_at: string } | null; changes: Changes | null };
+
+export type RollReport = {
+  executed: number;
+  in_progress: string[];
+  missed: { job: string; ref: string; customer: string }[];
+  kept: number;
+  trucks_moved: number;
+  drivers_with_hours: number;
+  window: { start: string; end: string };
+};

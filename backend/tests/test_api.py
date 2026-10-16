@@ -423,3 +423,26 @@ def test_runs_cut_off_by_a_restart_are_failed_with_a_reason(app):
     run = client.get("/api/plans/stuck").json()
     assert run["status"] == "failed"
     assert "server restarted" in run["error"]
+
+
+def test_a_freeze_that_became_impossible_is_released_not_fatal(app):
+    client = login(app, "dispatcher@east.test")
+    first = done_plan(client)
+    board = client.get(f"/api/plans/{first['id']}/board").json()
+    team = next(t for t in board["teams"] if any(act[3] for act in t["acts"]))
+    job = next(act[3] for act in team["acts"] if act[3])
+    assert (
+        client.post(
+            "/api/locks", json={"job_id": job, "team_id": team["id"]}, headers=WRITE
+        ).status_code
+        == 200
+    )
+    catalog = client.get("/api/steering").json()
+    tractor = next(t["tractor_id"] for t in catalog["teams"] if t["id"] == team["id"])
+    window = {"start": catalog["horizon"]["start"], "end": catalog["horizon"]["end"]}
+    rule = {"kind": "resource_unavailable", "resource_id": tractor, "window": window}
+    assert client.post("/api/rules", json=rule, headers=WRITE).status_code == 200
+    second = done_plan(client)
+    assert second["summary"]["valid"], second["summary"]
+    assert second["summary"]["released_locks"] == [board["jobs"][job]["ref"]]
+    assert client.get(f"/api/plans/{second['id']}/board").json()["released"] == [job]

@@ -137,6 +137,12 @@ def board_data(
         "method": plan.method,
         "valid": plan.valid,
         "findings": sorted({f.code for f in plan.findings}),
+        "released": [
+            job_id
+            for note in plan.notes
+            if note.code == "lock_released"
+            for job_id in note.entity_ids
+        ],
         "origin": origin.isoformat(),
         "horizonEnd": minute(snapshot.horizon.end),
         "end": end,
