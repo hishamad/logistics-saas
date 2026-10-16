@@ -85,6 +85,7 @@ def why(snapshot: Snapshot, plan: Plan, job_id: str) -> dict[str, Any]:
     job = next(j for j in snapshot.jobs if j.id == job_id)
     trailers = {r.id: r for r in snapshot.resources if r.kind == "trailer"}
     reasons: Counter[str] = Counter()
+    free = Search(engine)  # every truck with nothing else to do
     options = []
     for team in snapshot.teams:
         if team.id == chosen:
@@ -98,10 +99,13 @@ def why(snapshot: Snapshot, plan: Plan, job_id: str) -> dict[str, Any]:
             reasons["a dispatcher rule or lock"] += 1
         else:
             found = search.insertion_on(job_id, team.id)
-            if found is None:
-                reasons["cannot fit in time (windows, driving hours or days off)"] += 1
-            else:
+            if found is not None:
                 options.append((found[0], team.id))
+            elif free.insertion_on(job_id, team.id) is not None:
+                # Possible for this truck on an empty day: its other work is in the way.
+                reasons["busy with other work"] += 1
+            else:
+                reasons["cannot fit in time (windows, driving hours or days off)"] += 1
     options.sort()
     chosen_cost = facts.get("assigned", {}).get("extra_cost_sar")
     facts["alternatives"] = [

@@ -114,3 +114,13 @@ def test_a_job_its_target_truck_can_never_do_is_reported_as_impossible():
         assert target.name in impossible.english and target.name in impossible.arabic
     else:
         raise AssertionError("expected the assignment to be impossible")
+
+
+def test_an_unplanned_job_says_when_trucks_are_busy_rather_than_unable():
+    snapshot = demo_snapshot(job_count=8, team_count=1)  # more work than one truck can do
+    plan = plan_lns(snapshot, rounds=200, seed=1)
+    confirmed = {j.id for j in snapshot.jobs if j.state == "confirmed"}
+    left = [j for j in plan.unserved_job_ids if j in confirmed]
+    assert left, "the fixture should leave work unplanned"
+    reasons = [explain.why(snapshot, plan, j)["trucks_that_cannot_take_it"] for j in left]
+    assert any(r.get("busy with other work") == 1 for r in reasons)
