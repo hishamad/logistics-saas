@@ -5,6 +5,7 @@ import traceback
 from concurrent.futures import Executor, Future
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from freight.api.db import PlanRun, WhatIfRun, utcnow
@@ -33,6 +34,25 @@ def compute_plan(
 
 # Errors starting with this are safe to show: they describe the user's own data.
 INPUT_PROBLEMS = "The engine refused these inputs: "
+
+INTERRUPTED = "Stopped because the server restarted. Run it again."
+
+
+def is_safe_error(error: str | None) -> bool:
+    """Errors that describe the user's own data or situation, not server internals."""
+    return bool(error) and (error.startswith(INPUT_PROBLEMS) or error == INTERRUPTED)  # type: ignore[union-attr]
+
+
+def fail_interrupted(session: sessionmaker) -> int:  # type: ignore[type-arg]
+    """Runs still queued or running when the server starts can never finish: fail them."""
+    count = 0
+    with session.begin() as db:
+        for table in (PlanRun, WhatIfRun):
+            for run in db.scalars(select(table).where(table.status.in_(("queued", "running")))):
+                run.status, run.error, run.finished_at = "failed", INTERRUPTED, utcnow()
+                count += 1
+    return count
+
 
 # Effort per what-if re-plan. Two re-plans of a 100-truck week take about 20 s.
 WHATIF_ROUNDS = 800

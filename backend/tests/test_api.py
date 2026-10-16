@@ -382,3 +382,24 @@ def test_changes_since_the_last_plan_and_excel_export(app):
     other = login(app, "dispatcher@west.test")
     assert other.get(f"/api/plans/{second['id']}/export.xlsx").status_code == 404
     assert other.get(f"/api/plans/{second['id']}/changes").status_code == 404
+
+
+def test_runs_cut_off_by_a_restart_are_failed_with_a_reason(app):
+    from freight.api.db import PlanRun
+
+    with app.state.database.session.begin() as db:
+        user = db.query(User).filter_by(email="dispatcher@east.test").one()
+        db.add(
+            PlanRun(
+                id="stuck",
+                company_id="east",
+                created_by=user.id,
+                settings='{"seconds": 15}',
+                snapshot="{}",
+                status="running",
+            )
+        )
+    client = login(app, "dispatcher@east.test")  # starting the app runs the clean-up
+    run = client.get("/api/plans/stuck").json()
+    assert run["status"] == "failed"
+    assert "server restarted" in run["error"]

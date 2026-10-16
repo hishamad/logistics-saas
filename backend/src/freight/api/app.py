@@ -35,7 +35,7 @@ from freight.api.db import (
     new_id,
     utcnow,
 )
-from freight.api.runner import INPUT_PROBLEMS, Runner
+from freight.api.runner import Runner, fail_interrupted, is_safe_error
 from freight.api.security import hash_token, new_token, verify_password
 from freight.board import board_data
 from freight.domain.models import AssignmentLock, Job, Plan, Rule, Snapshot
@@ -135,6 +135,7 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        fail_interrupted(database.session)
         pool = executor or ProcessPoolExecutor(max_workers=settings.plan_workers)
         app.state.runner = Runner(pool, database.session)
         yield
@@ -196,7 +197,7 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             "summary": json.loads(run.summary) if run.summary else None,
             "error": (
                 run.error
-                if run.error and run.error.startswith(INPUT_PROBLEMS)
+                if is_safe_error(run.error)
                 else "The planning engine failed; see the server log."
                 if run.error
                 else None
@@ -418,7 +419,7 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             "result": json.loads(run.result) if run.result else None,
             "error": (
                 run.error
-                if run.error and run.error.startswith(INPUT_PROBLEMS)
+                if is_safe_error(run.error)
                 else "The what-if could not be computed; see the server log."
                 if run.error
                 else None

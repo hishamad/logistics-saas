@@ -97,9 +97,9 @@ p { margin: 0 0 12px; }
 .badge-amber { background: var(--amber-light); color: var(--amber); }
 .badge-red { background: var(--red-light); color: var(--red); }
 @media (max-width: 900px) {
-  .shell { grid-template-columns: 1fr; }
-  .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
-  .nav { grid-auto-flow: column; overflow-x: auto; }
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; min-width: 0; }
+  .nav { grid-auto-flow: column; overflow-x: auto; min-width: 0; max-width: 100%; }
   .nav-label, .company, .user { display: none; }
   .sidebar-foot { margin: 0; grid-auto-flow: column; }
   .main { padding: 20px 16px 40px; }
@@ -272,3 +272,10 @@ table.compact { margin-bottom: 10px; }
 tr.picked td { background: var(--teal-light); }
 .row-actions { display: inline-flex; gap: 12px; align-items: center; }
 td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.nav a { white-space: nowrap; }
+@media (max-width: 600px) {
+  .tiles, .board-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tile { padding: 10px 12px; }
+  .tile .value, .board-tiles .value { font-size: 19px; }
+  h1 { font-size: 24px; }
+}
