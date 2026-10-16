@@ -242,25 +242,30 @@ function TruckPanel({ board, runId, teamId, editable }: { board: Board; runId: s
 function WhatIf({ runId, change, label, input }: { runId: string; change: WhatIfChange | null; label: string; input?: ReactNode }) {
   const { t } = useI18n();
   const [run, setRun] = useState<WhatIfRun | null>(null);
+  const [estimate, setEstimate] = useState<WhatIfRun | null>(null);
   const [error, setError] = useState("");
-  const working = run?.status === "queued" || run?.status === "running";
+  const working = estimate?.status === "queued" || estimate?.status === "running";
 
+  // The full re-plan estimate runs in the background; poll it.
   useEffect(() => {
-    if (!run || !working) return;
+    if (!estimate || !working) return;
     const poll = setInterval(() => {
       api
-        .get<WhatIfRun>(`/api/whatif/${run.id}`)
-        .then(setRun)
+        .get<WhatIfRun>(`/api/whatif/${estimate.id}`)
+        .then(setEstimate)
         .catch((caught: Error) => setError(caught.message));
     }, 1500);
     return () => clearInterval(poll);
-  }, [run, working]);
+  }, [estimate, working]);
 
-  async function start() {
+  async function start(method: "repair" | "replan") {
     if (!change) return;
     setError("");
+    if (method === "repair") setEstimate(null);
     try {
-      setRun(await api.post<WhatIfRun>(`/api/plans/${runId}/whatif`, change));
+      const answer = await api.post<WhatIfRun>(`/api/plans/${runId}/whatif`, { ...change, method });
+      if (method === "repair") setRun(answer);
+      else setEstimate(answer);
     } catch (caught) {
       setError((caught as Error).message);
     }
@@ -271,24 +276,42 @@ function WhatIf({ runId, change, label, input }: { runId: string; change: WhatIf
       <div className="whatif-ask">
         {label && <span>{label}</span>}
         {input}
-        <button className="btn" onClick={start} disabled={!change || working}>
+        <button className="btn" onClick={() => void start("repair")} disabled={!change}>
           {t("wiRun")}
         </button>
       </div>
       {error && <div className="alert alert-error">{error}</div>}
+      {run?.status === "failed" && <div className="alert alert-error">{run.error ?? t("wiFailed")}</div>}
+      {run?.status === "done" && run.result && (
+        <>
+          <WhatIfAnswer result={run.result} />
+          {!run.result.impossible && !estimate && (
+            <button className="btn btn-ghost small" onClick={() => void start("replan")}>
+              {t("wiTryReplan")}
+            </button>
+          )}
+        </>
+      )}
       {working && (
         <p className="muted">
           <span className="spinner" aria-hidden /> {t("wiWorking")}
         </p>
       )}
-      {run?.status === "failed" && <div className="alert alert-error">{t("wiFailed")}</div>}
-      {run?.status === "done" && run.result && <WhatIfAnswer result={run.result} />}
+      {estimate?.status === "failed" && <div className="alert alert-error">{estimate.error ?? t("wiFailed")}</div>}
+      {estimate?.status === "done" && estimate.result && <WhatIfAnswer result={estimate.result} />}
     </div>
   );
 }
 
 function WhatIfAnswer({ result }: { result: NonNullable<WhatIfRun["result"]> }) {
   const { t, lang, number, money } = useI18n();
+  if (result.impossible || !result.facts) {
+    return (
+      <div className="alert alert-warn" dir="auto">
+        {result.text[lang]}
+      </div>
+    );
+  }
   const f = result.facts;
   const rows: { key: keyof WhatIfNumbers; label: StringKey; money?: boolean }[] = [
     { key: "contract_jobs_served", label: "mContract" },
@@ -338,7 +361,7 @@ function WhatIfAnswer({ result }: { result: NonNullable<WhatIfRun["result"]> }) 
           {t("wiGained")} {f.jobs_newly_served.join(", ")}
         </p>
       )}
-      <p className="muted small">{t("wiNoise")}</p>
+      <p className="muted small">{f.method === "replan" ? t("wiNoise") : t("wiExact")}</p>
     </div>
   );
 }

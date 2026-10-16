@@ -1,6 +1,7 @@
 """Request bodies the API accepts."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -68,6 +69,9 @@ class InterpretRequest(BaseModel):
 
 class WhatIfRequest(BaseModel):
     kind: str
+    # "repair": the least change to the current plan (instant, exact for that plan);
+    # "replan": what a fresh re-plan might add (an estimate, tens of seconds).
+    method: Literal["repair", "replan"] = "repair"
     job: str | None = None
     team: str | None = None
     start: datetime | None = None

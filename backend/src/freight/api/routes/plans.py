@@ -8,8 +8,9 @@ from fastapi import APIRouter, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from freight.api.db import Operation, PlanRun, User, WhatIfRun
+from freight.api.db import Operation, PlanRun, User, WhatIfRun, utcnow
 from freight.api.deps import Db, Dispatcher, Me
+from freight.api.runner import INPUT_PROBLEMS, compute_whatif
 from freight.api.schemas import PlanRequest, WhatIfRequest
 from freight.api.store import (
     RIYADH,
@@ -26,7 +27,7 @@ from freight.api.store import (
 )
 from freight.board import board_data
 from freight.domain.models import Plan, Snapshot
-from freight.explain import narrate, why
+from freight.explain import WhatIfRefused, narrate, why
 from freight.handover import export_workbook, plan_changes
 from freight.planning.engine import routes_of
 from freight.rolling import planning_view
@@ -187,18 +188,28 @@ def start_whatif(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown job or truck")
     if body.start and body.end and (body.start.tzinfo is None or body.end <= body.start):
         raise unprocessable("Bad time window")
-    change = body.model_dump(mode="json", exclude_none=True)
+    change = body.model_dump(mode="json", exclude_none=True, exclude={"method"})
     question = WhatIfRun(
         company_id=user.company_id,
         plan_run_id=run.id,
         created_by=user.id,
-        change=json.dumps(change),
+        change=json.dumps(change | {"method": body.method}),
     )
     session.add(question)
     session.flush()
-    audit(session, user, "plan.whatif", change)
-    session.commit()
-    request.app.state.runner.submit_whatif(question.id, run.snapshot, run.plan, change)
+    audit(session, user, "plan.whatif", change | {"method": body.method})
+    if body.method == "repair":
+        # Instant and exact for this plan: answer within the request.
+        try:
+            question.result = compute_whatif(run.snapshot, run.plan or "", change, "repair")
+            question.status = "done"
+        except WhatIfRefused as refused:
+            question.status, question.error = "failed", INPUT_PROBLEMS + str(refused)
+        question.finished_at = utcnow()
+        session.commit()
+    else:
+        session.commit()
+        request.app.state.runner.submit_whatif(question.id, run.snapshot, run.plan, change)
     session.refresh(question)
     return whatif_view(question)
 

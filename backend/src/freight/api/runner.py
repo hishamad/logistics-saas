@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from freight.api.db import PlanRun, WhatIfRun, utcnow
 from freight.domain.models import Finding, Plan, Snapshot
-from freight.explain import WhatIfRefused, narrate, what_if
+from freight.explain import WhatIfImpossible, WhatIfRefused, narrate, what_if
 from freight.planning.engine import plan_lns
 from freight.planning.lookahead import plan_with_lookahead
 from freight.rolling import release_impossible_locks
@@ -70,11 +70,30 @@ def fail_interrupted(session: sessionmaker) -> int:  # type: ignore[type-arg]
 WHATIF_ROUNDS = 800
 
 
-def compute_whatif(snapshot_json: str, plan_json: str, change: dict[str, Any]) -> str:
-    """Runs in a worker process. Returns the facts and their text in both languages (JSON)."""
+def compute_whatif(
+    snapshot_json: str, plan_json: str, change: dict[str, Any], method: str = "replan"
+) -> str:
+    """Facts and their text in both languages (JSON); a re-plan runs in a worker process."""
     snapshot = Snapshot.model_validate_json(snapshot_json)
     plan = Plan.model_validate_json(plan_json)
-    facts, _, _ = what_if(snapshot, plan, change, rounds=WHATIF_ROUNDS)
+    try:
+        facts, _, _ = what_if(
+            snapshot,
+            plan,
+            change,
+            method="repair" if method == "repair" else "replan",
+            rounds=WHATIF_ROUNDS,
+        )
+    except WhatIfImpossible as impossible:
+        return json.dumps(
+            {
+                "impossible": True,
+                "facts": None,
+                "source": "engine",
+                "text": {"en": impossible.english, "ar": impossible.arabic},
+            },
+            ensure_ascii=False,
+        )
     texts = {"en": narrate(facts, "en"), "ar": narrate(facts, "ar")}
     return json.dumps(
         {

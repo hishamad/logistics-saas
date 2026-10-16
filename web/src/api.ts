@@ -234,6 +234,7 @@ export type WhatIfNumbers = {
 };
 
 export type WhatIfFacts = {
+  method: "repair" | "replan";
   before: WhatIfNumbers;
   after: WhatIfNumbers;
   difference: Partial<WhatIfNumbers>;
@@ -254,7 +255,7 @@ export type WhatIfRun = {
   status: "queued" | "running" | "done" | "failed";
   created_at: string;
   change: WhatIfChange;
-  result: { facts: WhatIfFacts; text: { en: string; ar: string }; source: string } | null;
+  result: { facts: WhatIfFacts | null; impossible?: boolean; text: { en: string; ar: string }; source: string } | null;
   error: string | null;
 };
 

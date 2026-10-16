@@ -17,8 +17,9 @@ from openai import OpenAI, OpenAIError, omit
 
 from freight.domain.models import AssignmentLock, Plan, Rule, Snapshot, Window
 from freight.planning.diff import diff_plans
-from freight.planning.engine import Engine, Search, plan_lns, routes_of
+from freight.planning.engine import Engine, Search, materialize, plan_lns, routes_of
 from freight.settings import get_settings
+from freight.validation.validator import validate_plan
 
 RIYADH = ZoneInfo("Asia/Riyadh")
 Language = Literal["en", "ar"]
@@ -124,21 +125,16 @@ class WhatIfRefused(ValueError):
     """The engine refused the changed situation; the message gives its reasons."""
 
 
-def what_if(
-    snapshot: Snapshot,
-    plan: Plan,
-    change: dict[str, Any],
-    *,
-    rounds: int = 3000,
-    seed: int = 1,
-    change_penalty_minor: int = 30_000,
-) -> tuple[dict[str, Any], Snapshot, Plan]:
-    """Re-plan under a hypothetical change and compare with the current plan.
+class WhatIfImpossible(ValueError):
+    """The change cannot be carried out at all; explained in English and Arabic."""
 
-    Two re-plans with the same effort, both starting from the current plan and
-    penalizing moved jobs (so only what is necessary moves): a control without
-    the change, and one with it. The reported effect is change minus control,
-    so it isolates the change from any unrelated improvement the extra search finds.
+    def __init__(self, english: str, arabic: str) -> None:
+        super().__init__(english)
+        self.english, self.arabic = english, arabic
+
+
+def changed_situation(snapshot: Snapshot, change: dict[str, Any]) -> tuple[Snapshot, str, str]:
+    """The snapshot with a hypothetical change applied, and its description (en, ar).
 
     change: {"kind": "drop", "job": id}
             {"kind": "unavailable", "team": id, "start": datetime, "end": datetime}
@@ -155,9 +151,12 @@ def what_if(
         # A cancelled job cannot stay frozen on its truck.
         locks = tuple(lock for lock in snapshot.locks if lock.job_id != change["job"])
         modified = snapshot.model_copy(update={"jobs": jobs, "locks": locks})
-        description = f"Job {refs[change['job']]} is cancelled"
-        description_ar = f"أُلغيت الشحنة {refs[change['job']]}"
-    elif kind == "unavailable":
+        return (
+            modified,
+            f"Job {refs[change['job']]} is cancelled",
+            f"أُلغيت الشحنة {refs[change['job']]}",
+        )
+    if kind == "unavailable":
         team = next(t for t in snapshot.teams if t.id == change["team"])
         window = Window(start=change["start"], end=change["end"])
         rule = Rule(
@@ -168,31 +167,108 @@ def what_if(
             source_text="What-if",
         )
         modified = snapshot.model_copy(update={"rules": (*snapshot.rules, rule)})
-        description = (
-            f"{team.name} is unavailable from {_when(window.start)} to {_when(window.end)} (Riyadh)"
-        )
-        description_ar = (
+        return (
+            modified,
+            f"{team.name} is unavailable from {_when(window.start)} to {_when(window.end)} (Riyadh)",
             f"أصبحت {team.name} غير متاحة من {_numeric(window.start)} إلى {_numeric(window.end)} "
-            "(بتوقيت الرياض)"
+            "(بتوقيت الرياض)",
         )
-    elif kind == "assign":
+    if kind == "assign":
         locks = tuple(lock for lock in snapshot.locks if lock.job_id != change["job"])
         lock = AssignmentLock(job_id=change["job"], team_id=change["team"])
         modified = snapshot.model_copy(update={"locks": (*locks, lock)})
-        description = f"Job {refs[change['job']]} must go to {names[change['team']]}"
-        description_ar = f"يجب إسناد الشحنة {refs[change['job']]} إلى {names[change['team']]}"
+        return (
+            modified,
+            f"Job {refs[change['job']]} must go to {names[change['team']]}",
+            f"يجب إسناد الشحنة {refs[change['job']]} إلى {names[change['team']]}",
+        )
+    raise ValueError(f"Unknown what-if: {kind}")
+
+
+def _time(value: Any) -> datetime:
+    return value if isinstance(value, datetime) else datetime.fromisoformat(value)
+
+
+def repair(modified: Snapshot, plan: Plan, change: dict[str, Any]) -> Plan:
+    """The smallest sensible change to ``plan`` under ``modified``: deterministic.
+
+    Every route is kept; jobs the change makes impossible come off their truck
+    (for an unavailable truck: only the jobs overlapping that time), and those,
+    plus any contract job the freed capacity can now take, are inserted where
+    they cost least. Spot loads are only put back if the plan had taken them.
+    """
+    routes = routes_of(plan)
+    if change["kind"] == "unavailable":
+        start, end = _time(change["start"]), _time(change["end"])
+        clashing = {
+            a.job_id
+            for a in plan.assignments
+            if a.team_id == change["team"] and a.pickup_at < end and a.released_at > start
+        }
+        routes[change["team"]] = [j for j in routes.get(change["team"], []) if j not in clashing]
+    engine = Engine(modified, 1)
+    search = Search(engine)
+    search.load(routes)
+    taken = {a.job_id for a in plan.assignments}
+    search.recreate([j for j in search.confirmed if j not in search.solution.where])
+    search.recreate([j for j in search.offered if j in taken and j not in search.solution.where])
+    return validate_plan(modified, materialize(engine, search.solution))
+
+
+def what_if(
+    snapshot: Snapshot,
+    plan: Plan,
+    change: dict[str, Any],
+    *,
+    method: Literal["repair", "replan"] = "repair",
+    rounds: int = 3000,
+    seed: int = 1,
+    change_penalty_minor: int = 30_000,
+) -> tuple[dict[str, Any], Snapshot, Plan]:
+    """Compare the current plan with the plan under a hypothetical change.
+
+    "repair" (default, deterministic, about a second): the current plan with the
+    least change that makes it work, compared with the current plan itself.
+
+    "replan" (an estimate, tens of seconds): two re-plans with the same effort,
+    both starting from the current plan and penalizing moved jobs; a control
+    without the change and one with it. The difference isolates the change from
+    unrelated improvement, but search noise remains (about one job or a few
+    hundred riyals on a 100-truck week).
+    """
+    names = {t.id: t.name for t in snapshot.teams}
+    refs = {j.id: j.reference for j in snapshot.jobs}
+    modified, description, description_ar = changed_situation(snapshot, change)
+    if method == "repair":
+        before, after, before_snapshot = plan, repair(modified, plan, change), snapshot
     else:
-        raise ValueError(f"Unknown what-if: {kind}")
-    current = {a.job_id: a.team_id for a in plan.assignments}
-    steady = {"previous": current, "change_penalty_minor": change_penalty_minor}
-    control_snapshot = snapshot.model_copy(update=steady)
-    modified = modified.model_copy(update=steady)
-    control = plan_lns(control_snapshot, seed=seed, rounds=rounds, initial=routes_of(plan))
-    after = plan_lns(modified, seed=seed, rounds=rounds, initial=routes_of(plan))
-    for planned in (control, after):
+        current = {a.job_id: a.team_id for a in plan.assignments}
+        steady = {"previous": current, "change_penalty_minor": change_penalty_minor}
+        before_snapshot = snapshot.model_copy(update=steady)
+        modified = modified.model_copy(update=steady)
+        before = plan_lns(before_snapshot, seed=seed, rounds=rounds, initial=routes_of(plan))
+        after = plan_lns(modified, seed=seed, rounds=rounds, initial=routes_of(plan))
+    for planned in (before, after):
         if planned.outcome == "model_invalid":
             raise WhatIfRefused("; ".join(f.message for f in planned.findings[:3]))
-    changes = diff_plans(control, after)
+    if change["kind"] == "assign" and not any(
+        a.job_id == change["job"] and a.team_id == change["team"] for a in after.assignments
+    ):
+        raise WhatIfImpossible(
+            f"{names[change['team']]} cannot take {refs[change['job']]}, even with its other "
+            "unfrozen work moved to other trucks: the time windows, its days off or the "
+            "driving-hours rules leave no room.",
+            f"لا تستطيع {names[change['team']]} تنفيذ الشحنة {refs[change['job']]} حتى بعد نقل "
+            "أعمالها غير المثبّتة إلى شاحنات أخرى: النوافذ الزمنية أو أيام إجازتها أو قواعد "
+            "ساعات القيادة لا تسمح بذلك.",
+        )
+    if not after.valid:
+        reasons = "; ".join(f.message for f in after.findings[:3])
+        raise WhatIfImpossible(
+            f"No valid plan exists with this change: {reasons}",
+            f"لا توجد خطة صالحة مع هذا التغيير: {reasons}",
+        )
+    changes = diff_plans(before, after)
 
     def numbers(snap: Snapshot, p: Plan) -> dict[str, Any]:
         confirmed = {j.id for j in snap.jobs if j.state == "confirmed"}
@@ -211,11 +287,12 @@ def what_if(
             "empty_km": round(c.empty_distance_m / 1000) if c else None,
         }
 
-    before_numbers, after_numbers = numbers(control_snapshot, control), numbers(modified, after)
-    was_served = {a.job_id for a in control.assignments}
+    before_numbers, after_numbers = numbers(before_snapshot, before), numbers(modified, after)
+    was_served = {a.job_id for a in before.assignments}
     now_served = {a.job_id for a in after.assignments}
     facts = {
         "question": "what_if",
+        "method": method,
         "change": description,
         "change_ar": description_ar,
         "before": before_numbers,
@@ -244,6 +321,8 @@ INSTRUCTIONS = """You explain a computed freight plan to a Saudi truck dispatche
 Use ONLY the facts in the JSON input. Quote numbers exactly as given; never estimate,
 add or invent costs, savings, reasons or causes. If the facts do not answer something,
 say so briefly. Money is in SAR. Keep it under 120 words, plain and practical, no headings.
+For a what-if, "method" says how it was computed: "repair" is the least change to the
+current plan (exact), "replan" a fresh re-plan (an estimate with some search noise); say which.
 Write in {language}. In Arabic use clear Modern Standard Arabic and the Arabic site names
 given in the facts where present."""
 
@@ -320,17 +399,20 @@ def template(facts: dict[str, Any], language: Language = "en") -> str:
             lines.append(f"Other trucks cannot take it: {details}.")
         return " ".join(lines)
     d, after = facts["difference"], facts["after"]
+    repaired = facts.get("method", "repair") == "repair"
     if ar:
+        lead = "بأقل تعديل على الخطة الحالية" if repaired else "بإعادة تخطيط كاملة (تقدير)"
         return (
-            f"إذا {facts['change_ar']}: يتغير هامش المساهمة بمقدار {d.get('contribution_sar', 0)} ريال، "
+            f"{lead}، إذا {facts['change_ar']}: يتغير هامش المساهمة بمقدار {d.get('contribution_sar', 0)} ريال، "
             f"وعدد الشحنات المتعاقد عليها المنفذة بمقدار {d.get('contract_jobs_served', 0)}. "
             f"تنتقل {facts['jobs_moved_count']} شحنة إلى شاحنات أخرى، وتتغير خطط "
             f"{facts['trucks_whose_plan_changes']} شاحنة."
         )
     lost = facts["jobs_no_longer_served"]
     total = after.get("contribution_sar")
+    lead = "With the least change to today's plan" if repaired else "With a full re-plan (estimate)"
     return (
-        f"If {facts['change'][0].lower() + facts['change'][1:]}: contribution changes by SAR "
+        f"{lead}, if {facts['change'][0].lower() + facts['change'][1:]}: contribution changes by SAR "
         f"{d.get('contribution_sar', 0):,}{f' (to SAR {total:,})' if total is not None else ''}, contract jobs "
         f"served by {d.get('contract_jobs_served', 0)}. {facts['jobs_moved_count']} "
         f"{'job moves' if facts['jobs_moved_count'] == 1 else 'jobs move'} to another truck and "

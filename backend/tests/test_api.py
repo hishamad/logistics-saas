@@ -208,7 +208,9 @@ def test_what_if_runs_in_the_background(app):
     run = done_plan(client)
     job = client.get("/api/steering").json()["jobs"][0]["id"]
     started = client.post(
-        f"/api/plans/{run['id']}/whatif", json={"kind": "drop", "job": job}, headers=WRITE
+        f"/api/plans/{run['id']}/whatif",
+        json={"kind": "drop", "job": job, "method": "replan"},
+        headers=WRITE,
     )
     assert started.status_code == 202, started.text
     for _ in range(400):
@@ -446,3 +448,23 @@ def test_a_freeze_that_became_impossible_is_released_not_fatal(app):
     assert second["summary"]["valid"], second["summary"]
     assert second["summary"]["released_locks"] == [board["jobs"][job]["ref"]]
     assert client.get(f"/api/plans/{second['id']}/board").json()["released"] == [job]
+
+
+def test_a_repair_what_if_is_answered_at_once_and_the_same_every_time(app):
+    client = login(app, "dispatcher@east.test")
+    run = done_plan(client)
+    job = next(
+        act[3]
+        for team in client.get(f"/api/plans/{run['id']}/board").json()["teams"]
+        for act in team["acts"]
+        if act[3]
+    )
+    answers = [
+        client.post(
+            f"/api/plans/{run['id']}/whatif", json={"kind": "drop", "job": job}, headers=WRITE
+        ).json()
+        for _ in range(2)
+    ]
+    assert [a["status"] for a in answers] == ["done", "done"]
+    assert answers[0]["result"]["facts"] == answers[1]["result"]["facts"]
+    assert answers[0]["result"]["facts"]["method"] == "repair"
