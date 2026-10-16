@@ -260,3 +260,51 @@ def test_a_warm_start_never_keeps_a_job_where_a_new_lock_forbids_it():
     again = plan_lns(locked, rounds=200, seed=1, initial=routes_of(first))
     assert again.valid
     assert all(a.team_id == target for a in again.assignments if a.job_id == moved.job_id)
+
+
+def test_a_tired_driver_rests_before_finishing_a_short_trip():
+    # 8 h 20 min driven today and stopped only an hour ago: 40 minutes of driving left.
+    from freight.domain.models import DriverHours
+
+    tired = DriverHours(
+        driving_since_break_minutes=0,
+        driving_today_minutes=500,
+        workday_started_at=hours(-10),
+        last_work_ended_at=hours(-1),
+    )
+    snapshot = two_site_snapshot(
+        [job("short", "a", "b", (0, 2), (0, 30))],
+        return_to_start=False,
+        driving_rules=DrivingRules(),
+        driver_hours={"team": tired},
+    )
+    plan = plan_lns(snapshot, seconds=1)
+    assert plan.valid, plan.findings
+    loaded = next(a for a in plan.activities if a.kind == "loaded")
+    assert [p.kind for p in loaded.pauses] == ["rest"]
+    rested = snapshot.model_copy(update={"driver_hours": {}})
+    fresh = next(a for a in plan_lns(rested, seconds=1).activities if a.kind == "loaded")
+    assert not fresh.pauses
+
+
+def test_a_carried_over_workday_is_not_stretched_by_leaving_later():
+    # 11 h into yesterday's workday: 4 h of duty span left for the first job. A much
+    # later second job tempts the engine to leave later; that must not push the first
+    # job's work past the span (found in the 7-day simulation, 16 Oct 2026).
+    from freight.domain.models import DriverHours
+
+    tired = DriverHours(
+        driving_since_break_minutes=36,
+        driving_today_minutes=36,
+        workday_started_at=hours(-11),
+        last_work_ended_at=hours(-1),
+    )
+    snapshot = two_site_snapshot(
+        [job("first", "a", "b", (0, 8), (0, 12)), job("later", "a", "b", (18, 20), (18, 30))],
+        return_to_start=False,
+        driving_rules=DrivingRules(),
+        driver_hours={"team": tired},
+    )
+    plan = plan_lns(snapshot, rounds=50, seed=1)
+    assert plan.valid, plan.findings
+    assert {a.job_id for a in plan.assignments} == {"first", "later"}

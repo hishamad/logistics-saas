@@ -7,8 +7,8 @@ Then the day is executed exactly as planned (no disruptions yet) and the clock
 moves on.
 
 Known simplifications, to revisit with real data:
-- Drivers start each morning's plan rested; driving hours are not carried
-  across planning days.
+- Driving hours are carried from one morning to the next (break, daily
+  driving, workday start), so a driver who drove late starts tired.
 - Execution follows the plan exactly; breakdowns and delays come later.
 """
 
@@ -17,9 +17,19 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from freight.costing import calculate_cost
-from freight.domain.models import Activity, Assignment, AssignmentLock, Plan, Snapshot, Window
+from freight.domain.models import (
+    Activity,
+    Assignment,
+    AssignmentLock,
+    DriverHours,
+    DrivingRules,
+    Plan,
+    Snapshot,
+    Window,
+)
 from freight.planning.diff import PlanDiff, diff_plans
 from freight.planning.engine import plan_lns
+from freight.validation.validator import hours_sweep
 
 # (snapshot, seconds, seed, rounds) -> (snapshot actually planned, plan)
 Planner = Callable[[Snapshot, float, int, int | None], tuple[Snapshot, Plan]]
@@ -37,6 +47,7 @@ def myopic(
 class Fleet:
     site: dict[str, str]  # team -> where it is, or will be when free
     free_at: dict[str, datetime]  # team -> when it can take new work
+    hours: dict[str, DriverHours] = field(default_factory=dict)  # driving hours so far
 
 
 @dataclass
@@ -114,11 +125,18 @@ def morning(
             "previous": {j: a.team_id for j, a in before.items() if j in open_ids},
             "change_penalty_minor": change_penalty_minor,
             "end_values": {},
+            "driver_hours": dict(fleet.hours) if base.driving_rules else {},
         }
     )
 
 
-def execute(plan: Plan, until: datetime, fleet: Fleet, week: Week) -> None:
+def execute(
+    plan: Plan,
+    until: datetime,
+    fleet: Fleet,
+    week: Week,
+    rules: DrivingRules | None = None,
+) -> None:
     """Carry out everything that starts before ``until``; a started job runs to the end."""
     by_team: dict[str, list[Activity]] = {}
     for activity in plan.activities:
@@ -139,6 +157,11 @@ def execute(plan: Plan, until: datetime, fleet: Fleet, week: Week) -> None:
         week.activities.extend(done)
         fleet.site[team_id] = done[-1].to_site_id
         fleet.free_at[team_id] = done[-1].end
+        if rules is not None:
+            # Carry the driver's hours into tomorrow's plan.
+            after = hours_sweep(rules, done, fleet.hours.get(team_id))[1]
+            if after is not None:
+                fleet.hours[team_id] = after
     for assignment in plan.assignments:
         if assignment.job_id in started:
             week.executed[assignment.job_id] = assignment
@@ -196,7 +219,7 @@ def simulate(
         )
         if on_morning is not None:
             on_morning(len(week.days) - 1, snapshot, plan, changes)
-        execute(plan, tomorrow, fleet, week)
+        execute(plan, tomorrow, fleet, week, base.driving_rules)
         week.days[-1]["jobs_done"] = len(week.executed) - done_before
         previous, now = plan, tomorrow
     week_end = base.horizon.start + timedelta(days=days)

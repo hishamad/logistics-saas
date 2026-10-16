@@ -226,6 +226,20 @@ class DrivingRules(Model):
         return t
 
 
+class DriverHours(Model):
+    """Where a driver stands on driving hours when the plan starts (e.g. after yesterday)."""
+
+    driving_since_break_minutes: int = Field(default=0, ge=0, le=1440)
+    driving_today_minutes: int = Field(default=0, ge=0, le=1440)
+    workday_started_at: datetime | None = None
+    last_work_ended_at: datetime
+
+    @field_validator("workday_started_at", "last_work_ended_at")
+    @classmethod
+    def aware_times(cls, value: datetime | None) -> datetime | None:
+        return Window.timezone_required(value) if value else None
+
+
 class AssignmentLock(Model):
     job_id: Identifier
     team_id: Identifier
@@ -257,6 +271,8 @@ class Snapshot(Model):
     # Calendar exceptions (weekly rest, workshop) must be spent at the home depot.
     rest_at_home: bool = False
     driving_rules: DrivingRules | None = None
+    # Driving-hours state per team at the plan start; teams not listed start rested.
+    driver_hours: dict[str, DriverHours] = {}
     # Value (minor units) of the 1st, 2nd, ... truck ending the plan at a site, from a
     # look-ahead model; the last value repeats. Planning credit only, never cash.
     end_values: dict[str, tuple[int, ...]] = {}
@@ -321,6 +337,8 @@ class Snapshot(Model):
         for lock in self.locks:
             if lock.job_id not in jobs or lock.team_id not in teams:
                 raise ValueError("Unknown lock reference")
+        if set(self.driver_hours) - teams:
+            raise ValueError("Driver hours refer to unknown teams")
         if any(team not in teams for team in self.previous.values()):
             raise ValueError("Previous assignments refer to unknown teams")
         return self

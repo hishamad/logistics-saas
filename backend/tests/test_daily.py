@@ -71,3 +71,19 @@ def test_plan_diff_names_moves_drops_and_retimes():
     assert d.retimed and d.retimed[0][:2] == ("b", "t1")
     assert d.added == [("d", "t1")] and d.dropped == [("c", "t2")]
     assert d.teams_to_notify == {"t1", "t2"}
+
+
+def test_driving_hours_carry_into_the_next_morning():
+    from freight.domain.models import DrivingRules
+
+    base = realistic_demo().model_copy(update={"driving_rules": DrivingRules()})
+    now = base.horizon.start
+    fleet, week = start_fleet(base), Week()
+    first = plan_lns(morning(base, now, fleet, week, None), seconds=1)
+    later = now + timedelta(hours=12)
+    execute(first, later, fleet, week, base.driving_rules)
+    worked = {a.team_id for a in first.activities if a.start < later and a.kind != "rest"}
+    assert worked and worked <= set(fleet.hours)
+    second = morning(base, later, fleet, week, first)
+    assert second.driver_hours == fleet.hours
+    assert plan_lns(second, seconds=1).valid

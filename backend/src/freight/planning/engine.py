@@ -45,6 +45,7 @@ class State:
     duty: int = 0  # paid minutes
     room: int = FOREVER  # how much later everything so far could have happened
     frozen: bool = False  # an exception was met; the day so far can no longer slide
+    span_fixed: bool = False  # the working day began before this plan; its start cannot move
 
     def copy(self) -> State:
         return State(
@@ -59,6 +60,7 @@ class State:
             self.duty,
             self.room,
             self.frozen,
+            self.span_fixed,
         )
 
 
@@ -72,6 +74,8 @@ class TeamInfo:
     end_limit: int
     available_until: int
     blocks: tuple[tuple[int, int, bool], ...]  # (start, end, must be spent at home)
+    # Driving-hours state at the start: (since break, today, workday start, last work end).
+    hours: tuple[int, int, int | None, int] | None = None
 
 
 @dataclass
@@ -172,7 +176,19 @@ class Engine:
             else:
                 merged.append([s, e, home])
         until = min(minute_down(resources[r].availability.end, origin) for r in team.resource_ids)
+        known = self.snapshot.driver_hours.get(team.id)
+        hours = (
+            (
+                known.driving_since_break_minutes,
+                known.driving_today_minutes,
+                minute_down(known.workday_started_at, origin) if known.workday_started_at else None,
+                minute_up(known.last_work_ended_at, origin),
+            )
+            if known and self.rules
+            else None
+        )
         return TeamInfo(
+            hours=hours,
             id=team.id,
             start=start,
             ready=ready,
@@ -181,6 +197,21 @@ class Engine:
             end_limit=end_limit,
             available_until=until,
             blocks=tuple((int(s), int(e), bool(h)) for s, e, h in merged),
+        )
+
+    def initial(self, info: TeamInfo) -> State:
+        """The team's notebook at the plan start, carrying over yesterday's driving hours."""
+        if info.hours is None:
+            return State(t=info.ready, loc=info.start)
+        cont, day, span, last_work = info.hours
+        return State(
+            t=info.ready,
+            loc=info.start,
+            cont=cont,
+            day=day,
+            span=span,
+            idle=max(0, info.ready - last_work),
+            span_fixed=span is not None,
         )
 
     def lane(self, a: str, b: str) -> tuple[int, int]:
@@ -208,13 +239,15 @@ class Engine:
         if s.idle >= self.brk:
             s.cont = 0
         if s.idle >= self.rest:
-            s.day, s.span = 0, None
+            s.day, s.span, s.span_fixed = 0, None, False
 
     def _idle(self, s: State, minutes: int, kind: str, rec: Recorder | None) -> None:
         if minutes <= 0:
             return
         if not s.started:
             s.t += minutes
+            if s.idle < FOREVER:
+                s.idle += minutes  # time before the first activity is rest too
             return
         if rec is not None:
             rec.activities.append((kind, s.loc, s.loc, s.t, s.t + minutes, None, 0, []))
@@ -241,6 +274,15 @@ class Engine:
                 length -= self._slide(s, length, rec)
             self._idle(s, length, kind, rec)
 
+    def _cap_fixed_day(self, s: State) -> None:
+        """Work in a workday that began before the plan cannot be moved past its duty span.
+
+        A later slide shifts everything done so far, including this work, but the day's
+        start stays where it was, so cap how far it may go.
+        """
+        if s.span_fixed and s.span is not None:
+            s.room = min(s.room, max(0, s.span + self.max_span - s.t))
+
     def _slide(self, s: State, wait: int, rec: Recorder | None) -> int:
         """Turn paid waiting into unpaid time at the depot by leaving later.
 
@@ -248,8 +290,8 @@ class Engine:
         state is unchanged) and is allowed while each earlier deadline still holds.
         The part of the wait a driver needs as a legal break or rest is kept.
         """
-        if s.frozen or s.room <= 0:
-            return 0
+        if s.frozen or s.room <= 0 or s.span_fixed:
+            return 0  # a carried-over working day would only get longer
         shift = min(wait, s.room)
         if self.rules is not None:
             total = s.idle + wait
@@ -329,6 +371,7 @@ class Engine:
             rec.activities.append((kind, s.loc, s.loc, start, start + minutes, job_id, 0, []))
         s.t += minutes
         s.duty += minutes
+        self._cap_fixed_day(s)
         return start
 
     def _drive(
@@ -396,6 +439,7 @@ class Engine:
             s.t += chunk
             s.duty += chunk
             remaining -= chunk
+            self._cap_fixed_day(s)
         if rec is not None:
             rec.activities.append((kind, s.loc, dest, start, s.t, job_id, distance, pauses))
         s.loc = dest
@@ -461,6 +505,8 @@ class Engine:
                 drive = self.elapsed(self.lane(s.loc, job.pickup_site_id)[0])
                 depart = max(s.t, pickup_open - drive)
                 if not any(b[0] < pickup_open and b[1] > s.t for b in info.blocks):
+                    if s.idle < FOREVER:
+                        s.idle += depart - s.t
                     s.t = depart
             self._drive(info, s, job.pickup_site_id, "empty", None, rec)
         if s.t > pickup_close:
@@ -540,7 +586,7 @@ class Engine:
         return self.cost(s), s.loc
 
     def prefixes(self, info: TeamInfo, route: list[str]) -> tuple[list[State], float, str] | None:
-        s = State(t=info.ready, loc=info.start)
+        s = self.initial(info)
         states = [s.copy()]
         try:
             for job_id in route:
@@ -571,9 +617,7 @@ class Search:
         self.free = [t for t, info in engine.teams.items() if info.end_site is None]
         for team_id, info in engine.teams.items():
             computed = engine.prefixes(info, [])
-            states, cost, end = (
-                computed if computed else ([State(t=info.ready, loc=info.start)], 0.0, info.start)
-            )
+            states, cost, end = computed if computed else ([engine.initial(info)], 0.0, info.start)
             self.solution.routes[team_id] = []
             self.solution.states[team_id] = states
             self.solution.costs[team_id] = cost
@@ -723,7 +767,11 @@ class Search:
             while route and computed is None:
                 sol.where.pop(route.pop(), None)
                 computed = self.e.prefixes(self.e.teams[team_id], route)
-        assert computed is not None
+        if computed is None:
+            # Even an idle day breaks the rules (e.g. a tired driver cannot reach home before
+            # a day off). Keep the team idle; the validator reports the problem plainly.
+            info = self.e.teams[team_id]
+            computed = ([self.e.initial(info)], 0.0, info.start)
         sol.states[team_id], sol.costs[team_id], sol.ends[team_id] = computed
 
     def recreate(
@@ -1051,7 +1099,7 @@ def materialize(engine: Engine, solution: Solution) -> Plan:
     for team_id, route in solution.routes.items():
         info = engine.teams[team_id]
         recorder = Recorder(team_id, [], [])
-        if engine.run(info, State(t=info.ready, loc=info.start), route, recorder) is None:
+        if engine.run(info, engine.initial(info), route, recorder) is None:
             if route:
                 raise RuntimeError(f"Route for {team_id} no longer simulates")
             # Even an idle team cannot meet its rules (e.g. it is too far from home for its

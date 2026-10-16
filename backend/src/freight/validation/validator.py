@@ -5,7 +5,14 @@ from datetime import datetime, timedelta
 from itertools import pairwise
 
 from freight.costing import calculate_cost
-from freight.domain.models import Activity, DrivingRules, Finding, Plan, Snapshot
+from freight.domain.models import (
+    Activity,
+    DriverHours,
+    DrivingRules,
+    Finding,
+    Plan,
+    Snapshot,
+)
 from freight.domain.time import overlaps
 
 
@@ -21,12 +28,16 @@ def work_intervals(activity: Activity) -> list[tuple[datetime, datetime]]:
     return [(start, end) for start, end in intervals if start < end]
 
 
-def driving_findings(rules: DrivingRules, route: list[Activity]) -> list[tuple[str, str]]:
-    """Sweep one team's ordered activities and check driving-hours limits.
+def hours_sweep(
+    rules: DrivingRules, route: list[Activity], start: DriverHours | None = None
+) -> tuple[list[tuple[str, str]], DriverHours | None]:
+    """Sweep one team's ordered activities like a tachograph.
 
     Contiguous non-work time (waiting, rest, pauses, gaps) of at least the
     break length resets continuous driving; at least the daily rest resets the
-    driving day and its duty span.
+    driving day and its duty span. ``start`` is the driver's state before the
+    first activity (fully rested if absent). Returns the problems found and the
+    driver's state after the last activity.
     """
     segments: list[tuple[datetime, datetime, str]] = []
     for activity in route:
@@ -45,11 +56,18 @@ def driving_findings(rules: DrivingRules, route: list[Activity]) -> list[tuple[s
     continuous = daily = 0.0
     span_start: datetime | None = None
     previous_end: datetime | None = None
-    for start, end, kind in segments:
-        if previous_end is not None and start > previous_end:
-            idle += (start - previous_end).total_seconds() / 60
-        previous_end = max(end, previous_end) if previous_end else end
-        minutes = (end - start).total_seconds() / 60
+    last_work: datetime | None = None
+    if start is not None:
+        idle = 0.0
+        continuous = start.driving_since_break_minutes
+        daily = start.driving_today_minutes
+        span_start = start.workday_started_at
+        previous_end = last_work = start.last_work_ended_at
+    for seg_start, seg_end, kind in segments:
+        if previous_end is not None and seg_start > previous_end:
+            idle += (seg_start - previous_end).total_seconds() / 60
+        previous_end = max(seg_end, previous_end) if previous_end else seg_end
+        minutes = (seg_end - seg_start).total_seconds() / 60
         if kind == "idle":
             idle += minutes
             continue
@@ -60,7 +78,8 @@ def driving_findings(rules: DrivingRules, route: list[Activity]) -> list[tuple[s
         if idle >= rules.daily_rest_minutes:
             daily, span_start = 0, None
         idle = 0
-        span_start = span_start or start
+        span_start = span_start or seg_start
+        last_work = seg_end
         if kind == "drive":
             continuous += minutes
             daily += minutes
@@ -68,9 +87,25 @@ def driving_findings(rules: DrivingRules, route: list[Activity]) -> list[tuple[s
                 problems.append(("continuous_driving", "Driving continues past the break limit."))
             if daily > rules.max_daily_driving_minutes:
                 problems.append(("daily_driving", "Daily driving exceeds the limit."))
-        if (end - span_start).total_seconds() / 60 > rules.max_duty_span_minutes:
+        if (seg_end - span_start).total_seconds() / 60 > rules.max_duty_span_minutes:
             problems.append(("duty_span", "A working day exceeds the maximum duty span."))
-    return problems
+    after = (
+        DriverHours(
+            driving_since_break_minutes=round(continuous),
+            driving_today_minutes=round(daily),
+            workday_started_at=span_start,
+            last_work_ended_at=last_work,
+        )
+        if last_work is not None
+        else None
+    )
+    return problems, after
+
+
+def driving_findings(
+    rules: DrivingRules, route: list[Activity], start: DriverHours | None = None
+) -> list[tuple[str, str]]:
+    return hours_sweep(rules, route, start)[0]
 
 
 def input_findings(snapshot: Snapshot) -> tuple[Finding, ...]:
@@ -295,7 +330,9 @@ def validate_plan(snapshot: Snapshot, plan: Plan) -> Plan:
     for team_id, member_team in teams.items():
         route = sorted(by_team.get(team_id, []), key=lambda a: (a.start, a.end))
         if snapshot.driving_rules is not None:
-            for code, message in driving_findings(snapshot.driving_rules, route):
+            for code, message in driving_findings(
+                snapshot.driving_rules, route, snapshot.driver_hours.get(team_id)
+            ):
                 fail(code, message, team_id)
         if not snapshot.rest_at_home:
             continue

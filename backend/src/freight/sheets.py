@@ -311,7 +311,6 @@ def import_jobs(snapshot: Snapshot, rows: Iterable[tuple[int, dict[str, Any]]]) 
     jobs: list[Job] = []
     seen: dict[str, int] = {}
     used_ids: set[str] = set()
-    outside = 0
     for number, values in rows:
         row = _Row(number, values, problems)
         reference = row.text("reference", required=True)
@@ -378,15 +377,6 @@ def import_jobs(snapshot: Snapshot, rows: Iterable[tuple[int, dict[str, Any]]]) 
         except ValidationError as error:
             row.problem("", "invalid", "", error.errors()[0]["msg"])
             continue
-        if job.state == "confirmed" and job.pickup_window.start >= snapshot.horizon.end:
-            # The engine refuses a plan with contract work it cannot reach; say so per row.
-            row.problem("pickup_from", "after_window", values.get("pickup_from", ""))
-            continue
-        if (
-            job.pickup_window.start >= snapshot.horizon.end
-            or job.delivery_window.end <= snapshot.horizon.start
-        ):
-            outside += 1
         jobs.append(job)
     summary = {
         "rows": len(seen),
@@ -395,7 +385,11 @@ def import_jobs(snapshot: Snapshot, rows: Iterable[tuple[int, dict[str, Any]]]) 
         "kept": sum(1 for j in jobs if j.reference in existing),
         "added": sum(1 for j in jobs if j.reference not in existing),
         "removed": len(set(existing) - set(seen)),
-        "outside_window": outside,
+        # Later orders wait for a later plan; expired ones can no longer be picked up.
+        "later": sum(j.pickup_window.start >= snapshot.horizon.end for j in jobs),
+        "expired": sum(
+            j.state == "confirmed" and j.pickup_window.end <= snapshot.horizon.start for j in jobs
+        ),
     }
     if problems:
         return Outcome(None, problems, summary)

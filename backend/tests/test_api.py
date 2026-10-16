@@ -313,16 +313,36 @@ def test_freezing_a_taken_spot_load_accepts_it_and_the_next_plan_still_works(app
     assert second["summary"]["served"] == first["summary"]["served"] + 1
 
 
-def test_a_window_that_strands_contract_work_is_refused(app):
+def test_orders_after_the_window_wait_instead_of_blocking_the_plan(app):
     client = login(app, "dispatcher@east.test")
     window = client.get("/api/data").json()["window"]
+    total = sum(client.get("/api/data").json()["jobs"][k] for k in ("contract", "spot"))
     start = datetime.fromisoformat(window["start"]) - timedelta(days=2)  # all work starts later
     earlier = client.post(
         "/api/data/window", json={"start": start.isoformat(), "days": 1}, headers=WRITE
     )
-    assert earlier.status_code == 422
-    assert "outside this decision horizon" in earlier.json()["detail"]
-    assert client.get("/api/data").json()["window"] == window
+    assert earlier.status_code == 200
+    assert client.get("/api/data").json()["jobs"]["later"] == total
+    run = done_plan(client)
+    assert run["summary"]["valid"] and run["summary"]["confirmed"] == 0
+
+
+def test_rolling_forward_to_the_next_day(app):
+    client = login(app, "dispatcher@east.test")
+    assert client.post("/api/data/roll", json={}, headers=WRITE).status_code == 409  # no plan
+    first = done_plan(client)
+    before = client.get("/api/data").json()
+    report = client.post("/api/data/roll", json={"hours": 12}, headers=WRITE).json()
+    assert report["window"]["start"] > before["window"]["start"]
+    after = client.get("/api/data").json()
+    assert after["version"] == before["version"] + 1
+    left = after["jobs"]["contract"] + after["jobs"]["spot"]
+    assert left == before["jobs"]["contract"] + before["jobs"]["spot"] - report["executed"] - len(
+        report["missed"]
+    )
+    second = done_plan(client)
+    assert second["summary"]["valid"], second
+    assert first["id"] != second["id"]
 
 
 def test_a_plan_the_engine_refuses_is_a_failed_run_with_its_reasons(app):

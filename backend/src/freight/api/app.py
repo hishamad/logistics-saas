@@ -42,6 +42,7 @@ from freight.domain.models import AssignmentLock, Job, Plan, Rule, Snapshot
 from freight.explain import narrate, why
 from freight.handover import export_workbook, plan_changes
 from freight.planning.engine import routes_of
+from freight.rolling import planning_view, roll_forward
 from freight.settings import get_settings
 from freight.sheets import (
     Kind,
@@ -119,6 +120,11 @@ class WhatIfRequest(BaseModel):
     team: str | None = None
     start: datetime | None = None
     end: datetime | None = None
+
+
+class RollRequest(BaseModel):
+    run_id: str | None = None  # default: the latest finished plan
+    hours: int = Field(default=24, ge=1, le=168)
 
 
 class WindowRequest(BaseModel):
@@ -268,7 +274,8 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
     def start_plan(
         body: PlanRequest, request: Request, session: Db, user: Annotated[User, Depends(dispatcher)]
     ) -> dict[str, Any]:
-        snapshot = operation_of(session, user.company_id)
+        # Orders whose pickup starts after the window wait in the order book.
+        snapshot, _ = planning_view(operation_of(session, user.company_id))
         initial = None
         last = latest_done(session, user.company_id) if body.stable else None
         if last is not None and last.plan is not None:
@@ -610,7 +617,7 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
 
     def save_operation(session: Session, company_id: str, snapshot: Snapshot) -> int:
         # Never store a situation the engine would refuse to plan.
-        problems = input_findings(snapshot)
+        problems = input_findings(planning_view(snapshot)[0])
         if problems:
             more = f" (+{len(problems) - 1} more)" if len(problems) > 1 else ""
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problems[0].message + more)
@@ -636,8 +643,9 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             "jobs": {
                 "contract": sum(j.state == "confirmed" for j in snapshot.jobs),
                 "spot": sum(j.state == "offered" for j in snapshot.jobs),
-                "outside_window": sum(
-                    j.pickup_window.start >= horizon.end or j.delivery_window.end <= horizon.start
+                "later": sum(j.pickup_window.start >= horizon.end for j in snapshot.jobs),
+                "expired": sum(
+                    j.state == "confirmed" and j.pickup_window.end <= horizon.start
                     for j in snapshot.jobs
                 ),
                 "customers": len({j.customer for j in snapshot.jobs}),
@@ -656,6 +664,31 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             "locks": len(snapshot.locks),
             "rules": len(snapshot.rules),
         }
+
+    @app.post("/api/data/roll")
+    def roll(
+        body: RollRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, Any]:
+        """Start the next planning day from a plan, assuming it was carried out so far."""
+        operation = operation_of(session, user.company_id)
+        run = (
+            run_of(session, user, body.run_id)
+            if body.run_id
+            else latest_done(session, user.company_id)
+        )
+        if run is None or run.plan is None or run.status != "done":
+            raise HTTPException(status.HTTP_409_CONFLICT, "Run a plan first")
+        start = operation.horizon.start + timedelta(hours=body.hours)
+        days = max(1, round((operation.horizon.end - operation.horizon.start).days))
+        try:
+            rolled, report = roll_forward(
+                operation, Plan.model_validate_json(run.plan), start, days
+            )
+        except ValueError as error:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(error)) from error
+        report["version"] = save_operation(session, user.company_id, rolled)
+        report["window"] = rolled.horizon.model_dump(mode="json")
+        return report
 
     @app.post("/api/data/window")
     def change_window(
