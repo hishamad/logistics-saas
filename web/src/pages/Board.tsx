@@ -1,9 +1,10 @@
 // The plan board: run the engine, watch it work, read the result truck by truck.
-import { Download, Lock, Play, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Download, Lock, MessageCircle, Play, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, type Board as BoardData, type ChangesAnswer, type Lock as LockRow, type PlanRun, type Steering } from "../api";
 import { ChangesView } from "../components/Changes";
+import { driverMessage } from "../components/driverMessage";
 import { useAuth } from "../auth";
 import { Drawer, type DrawerTarget } from "../components/Drawer";
 import { ACTIVITY_LABEL, Timeline, useSites } from "../components/Timeline";
@@ -204,6 +205,7 @@ export function Board() {
           <div className="board-bottom">
             <section className="panel" ref={itinerary} aria-label={t("itinerary")}>
               <Itinerary
+                key={selected ?? "none"}
                 board={board}
                 teamId={selected}
                 locks={locks}
@@ -253,8 +255,9 @@ function Itinerary({
   onClose: () => void;
   onOpen: (target: DrawerTarget) => void;
 }) {
-  const { t, number, money, date } = useI18n();
+  const { t, fill, number, money, date } = useI18n();
   const site = useSites(board);
+  const [copied, setCopied] = useState<"" | "ok" | string>("");
   const team = board.teams.find((candidate) => candidate.id === teamId);
   if (!team) {
     return (
@@ -276,6 +279,16 @@ function Itinerary({
       hourCycle: "h23",
     });
   const s = team.stats;
+  async function copyMessage(truck: NonNullable<typeof team>) {
+    const words = { header: fill("msgHeader", { truck: truck.name }), load: t("msgLoad"), unload: t("msgUnload"), none: t("msgNone") };
+    const text = driverMessage(board, truck, words, when, site);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied("ok");
+    } catch {
+      setCopied(text); // no clipboard access: show the text to copy by hand
+    }
+  }
   return (
     <>
       <div className="itinerary-head">
@@ -289,6 +302,9 @@ function Itinerary({
           </p>
         </div>
         <div className="result-actions">
+          <button className="btn" onClick={() => void copyMessage(team)}>
+            <MessageCircle size={16} aria-hidden /> {t("msgCopy")}
+          </button>
           <button className="btn" onClick={() => onOpen({ kind: "truck", id: team.id })}>
             {t("whatIf")}
           </button>
@@ -297,6 +313,8 @@ function Itinerary({
           </button>
         </div>
       </div>
+      {copied === "ok" && <div className="alert alert-ok">{t("msgCopied")}</div>}
+      {copied && copied !== "ok" && <textarea className="input message-text" readOnly rows={8} value={copied} dir="auto" />}
       <div className="table-wrap">
         <table>
           <thead>

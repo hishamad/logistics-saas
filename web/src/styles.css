@@ -310,3 +310,4 @@ td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 .review-truck { display: grid; gap: 3px; font-size: 13px; }
 .review-truck label { display: flex; gap: 6px; align-items: baseline; cursor: pointer; }
 .review-truck label.not-done span { text-decoration: line-through; color: var(--muted); }
+.message-text { width: 100%; font-family: inherit; margin-bottom: 10px; }
