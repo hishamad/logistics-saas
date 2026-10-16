@@ -1,0 +1,9 @@
+**/node_modules
+**/.venv
+**/.data
+**/__pycache__
+web/dist
+boards
+docs
+.git
+**/.env

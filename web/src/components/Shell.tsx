@@ -1,4 +1,4 @@
-import { CalendarClock, Database, Languages, LayoutDashboard, LogOut, Route, SlidersHorizontal } from "lucide-react";
+import { CalendarClock, Database, Languages, LayoutDashboard, LogOut, Route, Settings, SlidersHorizontal } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth";
 import { useI18n } from "../i18n";
@@ -29,6 +29,7 @@ export function Shell() {
     { to: "/data", label: t("navData"), icon: Database },
     { to: "/rules", label: t("navRules"), icon: SlidersHorizontal },
     { to: "/history", label: t("navHistory"), icon: CalendarClock },
+    { to: "/settings", label: t("navSettings"), icon: Settings },
   ];
   return (
     <div className="shell">

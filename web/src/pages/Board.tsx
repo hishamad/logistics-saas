@@ -19,7 +19,7 @@ const busy = (run: PlanRun | null) => run?.status === "queued" || run?.status ==
 
 export function Board() {
   const { t, lang, number, money, date } = useI18n();
-  const { me } = useAuth();
+  const { canPlan } = useAuth();
   const [params, setParams] = useSearchParams();
   const wanted = params.get("run");
   const [runs, setRuns] = useState<PlanRun[] | null>(null);
@@ -95,7 +95,7 @@ export function Board() {
     requestAnimationFrame(() => itinerary.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
   }
 
-  const dispatcher = me?.user.role === "dispatcher";
+  const dispatcher = canPlan;
   const working = busy(latest);
   const k = board?.kpis;
   const totalKm = k ? k.loaded_km + k.empty_km : 0;

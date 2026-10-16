@@ -36,6 +36,7 @@ export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body ?? {}),
   del: <T>(path: string) => request<T>("DELETE", path),
+  patch: <T>(path: string, body: unknown) => request<T>("PATCH", path, body),
   upload: <T>(path: string, file: File) => {
     const form = new FormData();
     form.append("file", file);
@@ -43,8 +44,10 @@ export const api = {
   },
 };
 
+export type Role = "admin" | "dispatcher" | "viewer";
+
 export type Me = {
-  user: { name: string; email: string; role: "dispatcher" | "viewer" };
+  user: { name: string; email: string; role: Role };
   company: { name: string };
 };
 
@@ -277,3 +280,7 @@ export type RollReport = {
   drivers_with_hours: number;
   window: { start: string; end: string };
 };
+
+export type UserRow = { id: string; email: string; name: string; role: Role; active: boolean; created_at: string };
+
+export type AuditRow = { at: string; by: string | null; action: string; detail: Record<string, unknown> };

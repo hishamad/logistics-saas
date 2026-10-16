@@ -36,10 +36,10 @@ export function useRuleText(steering: Steering | null) {
 
 export function Rules() {
   const { t } = useI18n();
-  const { me } = useAuth();
+  const { canPlan } = useAuth();
   const [steering, setSteering] = useState<Steering | null>(null);
   const [error, setError] = useState("");
-  const editable = me?.user.role === "dispatcher";
+  const editable = canPlan;
 
   const load = useCallback(() => {
     api

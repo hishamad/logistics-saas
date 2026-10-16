@@ -9,6 +9,7 @@ import { History } from "./pages/History";
 import { Login } from "./pages/Login";
 import { Overview } from "./pages/Overview";
 import { Rules } from "./pages/Rules";
+import { Settings } from "./pages/Settings";
 
 function RequireLogin({ children }: { children: ReactNode }) {
   const { me, loading } = useAuth();
@@ -35,6 +36,7 @@ export default function App() {
               <Route path="data" element={<Data />} />
               <Route path="rules" element={<Rules />} />
               <Route path="history" element={<History />} />
+              <Route path="settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

@@ -281,3 +281,14 @@ td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 }
 .next-day { grid-column: 1 / -1; }
 .window-note { margin: 12px 0 0; }
+
+/* Settings */
+.settings-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; max-width: 1100px; }
+.stack { display: grid; gap: 4px; max-width: 420px; }
+.stack .field span { font-size: 13px; color: var(--ink-2); font-weight: 550; }
+.compact-input { padding: 4px 8px; }
+.inactive-row td { color: var(--muted); }
+.add-user { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.add-user h3 { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 0 0 8px; }
+.activity { max-height: 480px; overflow-y: auto; }
+.wrap-cell { white-space: normal; min-width: 240px; }

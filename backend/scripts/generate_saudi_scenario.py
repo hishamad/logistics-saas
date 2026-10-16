@@ -16,14 +16,11 @@ import json
 import random
 from collections import Counter, defaultdict
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 from pathlib import Path
 
 from pydantic import ValidationError
 
 from freight.domain.models import (
-    CostProfile,
-    DrivingRules,
     Job,
     Lane,
     Resource,
@@ -32,6 +29,7 @@ from freight.domain.models import (
     Team,
     Window,
 )
+from freight.onboarding import DEFAULT_COSTS, DEFAULT_RULES
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "saudi"
@@ -130,14 +128,9 @@ CUSTOMERS = {
 # Money in halalas (SAR minor units). Assumptions; see data/saudi/README.md.
 HEAD_HAUL_PER_KM, BACKHAUL_PER_KM, SHORT_HAUL_PER_KM = 900, 550, 1200
 MIN_CHARGE = 70_000
-RULES = DrivingRules()
-COSTS = CostProfile(
-    # 0.72 SAR/km fuel incl. VAT + 0.35 SAR/km tyres/maintenance = 1.07 SAR/km.
-    distance_minor_per_km=Decimal("107.00"),
-    # SAR 8,000/month fully loaded driver cost over ~260 duty hours.
-    duty_minor_per_hour=Decimal("3100.00"),
-    exclusions=("Fixed overhead", "Truck depreciation and finance", "Insurance", "Tolls", "Taxes"),
-)
+# Default policies shared with real onboarding (assumptions; see data/saudi/README.md).
+RULES = DEFAULT_RULES
+COSTS = DEFAULT_COSTS
 
 
 def read_network() -> tuple[list[dict[str, str]], dict[tuple[str, str], Lane]]:

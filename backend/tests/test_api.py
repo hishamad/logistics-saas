@@ -25,7 +25,7 @@ def app(tmp_path):
             db.add(Company(id=company_id, name=name))
             db.flush()
             db.add(Operation(company_id=company_id, snapshot=snapshot))
-            for role in ("dispatcher", "viewer"):
+            for role in ("admin", "dispatcher", "viewer"):
                 db.add(
                     User(
                         company_id=company_id,

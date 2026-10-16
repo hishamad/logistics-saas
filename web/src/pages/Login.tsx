@@ -25,7 +25,8 @@ export function Login() {
       await login(email, password);
       navigate("/");
     } catch (caught) {
-      setError(caught instanceof ApiError && caught.status === 401 ? t("wrongLogin") : t("networkError"));
+      const status = caught instanceof ApiError ? caught.status : 0;
+      setError(status === 401 ? t("wrongLogin") : status === 429 ? t("tooManyLogins") : t("networkError"));
     } finally {
       setBusy(false);
     }

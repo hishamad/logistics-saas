@@ -18,6 +18,7 @@ from freight.settings import get_settings
 DEV_COMPANY = "Demo Carrier (synthetic)"
 DEV_USERS = [
     # (email, name, role, password) - local development accounts only
+    ("admin@demo.test", "Demo Admin", "admin", "demo-admin-2026"),
     ("dispatcher@demo.test", "Demo Dispatcher", "dispatcher", "demo-dispatch-2026"),
     ("viewer@demo.test", "Demo Viewer", "viewer", "demo-viewer-2026"),
 ]

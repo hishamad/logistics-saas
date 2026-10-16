@@ -14,8 +14,14 @@ backend/                 Python planning engine
     costing/             modeled cost of a plan (fuel, distance, driver time)
     planning/engine.py   the planner: route simulator with driving-hours rules + ruin-and-recreate search
     planning/            older planners kept for comparison: greedy baseline, CP-SAT
-    api/                 web API: logins, companies, background plan runs (FastAPI)
-    ai.py                turns Arabic/English dispatcher instructions into typed rules (parked)
+    api/                 web API (FastAPI): app.py assembles routes/ (auth, plans, steering, data);
+                         store.py versioned saves + audit trail; runner.py background plans
+    sheets.py            orders and fleet in and out of Excel/CSV, checked cell by cell
+    rolling.py           start the next day from a plan; orders after the window wait
+    handover.py          what changed between plans; the plan as an Excel file
+    onboarding.py        a real carrier's first operation: Saudi network + its fleet
+    admin.py             operator command: freight-admin create-company
+    ai.py                turns Arabic/English dispatcher instructions into typed rules
     board.py             plan board: renders a plan as a self-contained HTML timeline
     demo.py              carrier demo: a simulated week as a bilingual result sheet + daily boards
     explain.py           why / what-if: computed facts, explained by AI or a built-in template
@@ -44,6 +50,40 @@ Web app, from `web/` (then open http://127.0.0.1:5173):
 ```bash
 npm run dev
 ```
+
+## Run it in production
+
+One process serves everything (API, engine, web app). Build the web app once, then:
+
+```bash
+cd web && npm ci --legacy-peer-deps && npm run build
+```
+
+Set up each carrier with its own fleet file (the template from the Data page, or `workbook(..., template=True)`). The admin's first password comes from `FREIGHT_ADMIN_PASSWORD` or a prompt, never the command line:
+
+```bash
+uv run freight-admin create-company --name "Carrier name" --admin-email ops@carrier.sa --admin-name "Ops lead" --fleet fleet.xlsx --orders orders.xlsx --start "2026-10-20 06:00"
+```
+
+Start the server from `backend/` behind HTTPS:
+
+```bash
+ENVIRONMENT=production uv run uvicorn freight.api.app:create_app --factory --host 0.0.0.0 --port 8000 --proxy-headers
+```
+
+Settings (environment variables or `backend/.env`):
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `ENVIRONMENT` | `development` | `production` turns on Secure cookies and HSTS |
+| `DATABASE_URL` | SQLite file in `backend/.data/` | `postgresql+psycopg://...` with `uv sync --extra postgres` |
+| `PLAN_WORKERS` | 2 | plans and what-ifs computed at the same time |
+| `SESSION_HOURS` | 12 | how long a sign-in lasts |
+| `LOGIN_MAX_FAILURES` / `LOGIN_WINDOW_MINUTES` | 5 / 15 | sign-in throttling per email (4x per address) |
+| `FORWARDED_ALLOW_IPS` | - | the proxy's address, so throttling sees real client addresses |
+| `OPENAI_API_KEY`, `OPENAI_MODEL_RULES` | - | optional: reading rules from sentences, richer explanations |
+
+Run **one** web worker: plans run in its own process pool, and on start-up the server fails runs a previous process could not finish. Back up the database daily. A `Dockerfile` is included but was written without Docker available to test it: build and smoke-test it before relying on it. New database columns are added automatically on start-up while they have defaults; anything more needs a real migration tool (Alembic) first.
 
 ## Run it
 

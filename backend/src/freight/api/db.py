@@ -3,7 +3,19 @@
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, create_engine, event
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    create_engine,
+    event,
+    inspect,
+    text,
+    true,
+)
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
@@ -33,8 +45,9 @@ class User(Base):
     company_id: Mapped[str] = mapped_column(ForeignKey("companies.id"), index=True)
     email: Mapped[str] = mapped_column(String(254), unique=True)
     name: Mapped[str] = mapped_column(String(150))
-    role: Mapped[str] = mapped_column(String(20), default="dispatcher")  # dispatcher | viewer
+    role: Mapped[str] = mapped_column(String(20), default="dispatcher")  # admin|dispatcher|viewer
     password_hash: Mapped[str] = mapped_column(String(300))
+    active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -88,6 +101,28 @@ class WhatIfRun(Base):
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class AuditEvent(Base):
+    """Who changed what, and when: every change to a company's data or plans."""
+
+    __tablename__ = "audit_events"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    company_id: Mapped[str] = mapped_column(ForeignKey("companies.id"), index=True)
+    user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    action: Mapped[str] = mapped_column(String(40))  # e.g. "orders.upload", "rule.add"
+    detail: Mapped[str] = mapped_column(Text, default="{}")  # JSON
+
+
+class LoginFailure(Base):
+    """A failed sign-in, kept briefly to slow down password guessing."""
+
+    __tablename__ = "login_failures"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    email: Mapped[str] = mapped_column(String(254), index=True)
+    address: Mapped[str] = mapped_column(String(64), index=True)  # client IP
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
 class Database:
     def __init__(self, url: str) -> None:
         self.engine: Engine = create_engine(url, connect_args=_connect_args(url))
@@ -95,6 +130,7 @@ class Database:
             event.listen(self.engine, "connect", _sqlite_foreign_keys)
         self.session = sessionmaker(self.engine, expire_on_commit=False)
         Base.metadata.create_all(self.engine)
+        add_missing_columns(self.engine)
 
 
 def _connect_args(url: str) -> dict[str, object]:
@@ -106,3 +142,33 @@ def _sqlite_foreign_keys(connection: object, _: object) -> None:
     cursor = connection.cursor()  # type: ignore[attr-defined]
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+
+
+def add_missing_columns(engine: Engine) -> None:
+    """Add columns introduced after a table was created (with their server default).
+
+    A stand-in for full migrations while every new column has a default; switch to
+    Alembic before the first change that needs more (renames, type changes).
+    """
+    existing = inspect(engine)
+    with engine.begin() as connection:
+        for table in Base.metadata.sorted_tables:
+            if not existing.has_table(table.name):
+                continue
+            present = {c["name"] for c in existing.get_columns(table.name)}
+            for column in table.columns:
+                if column.name in present:
+                    continue
+                kind = column.type.compile(dialect=engine.dialect)
+                default = getattr(column.server_default, "arg", None)
+                clause = ""
+                if default is not None:
+                    value = (
+                        default.compile(dialect=engine.dialect)
+                        if hasattr(default, "compile")
+                        else default
+                    )
+                    clause = f" DEFAULT {value}"
+                connection.execute(
+                    text(f"ALTER TABLE {table.name} ADD COLUMN {column.name} {kind}{clause}")
+                )

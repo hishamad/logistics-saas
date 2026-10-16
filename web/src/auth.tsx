@@ -5,6 +5,8 @@ import { api, ApiError, type Me } from "./api";
 type Auth = {
   me: Me | null;
   loading: boolean;
+  canPlan: boolean; // admins and dispatchers; viewers only look
+  isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -34,7 +36,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setMe(null);
   }, []);
 
-  return <Context.Provider value={{ me, loading, login, logout }}>{children}</Context.Provider>;
+  const canPlan = !!me && me.user.role !== "viewer";
+  const isAdmin = me?.user.role === "admin";
+  return <Context.Provider value={{ me, loading, canPlan, isAdmin, login, logout }}>{children}</Context.Provider>;
 }
 
 export function useAuth(): Auth {

@@ -11,10 +11,10 @@ import { fromRiyadhInput, toRiyadhInput } from "../time";
 
 export function Data() {
   const { t, number, date } = useI18n();
-  const { me } = useAuth();
+  const { canPlan } = useAuth();
   const [data, setData] = useState<DataOverview | null>(null);
   const [error, setError] = useState("");
-  const editable = me?.user.role === "dispatcher";
+  const editable = canPlan;
 
   const load = useCallback(() => {
     api
