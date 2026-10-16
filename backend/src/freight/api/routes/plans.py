@@ -1,7 +1,7 @@
 """Plans: run the engine, read the board, explain it, ask what if, hand it over."""
 
 import json
-from datetime import UTC
+from datetime import UTC, timedelta
 from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request, Response, status
@@ -18,6 +18,7 @@ from freight.api.store import (
     done_plan_of,
     iso,
     latest_done,
+    load,
     operation_of,
     previous_done,
     run_of,
@@ -72,7 +73,8 @@ def start_plan(
     body: PlanRequest, request: Request, session: Db, user: Dispatcher
 ) -> dict[str, Any]:
     # Orders whose pickup starts after the window wait in the order book.
-    snapshot, _ = planning_view(operation_of(session, user.company_id))
+    operation, version = load(session, user.company_id)
+    snapshot, _ = planning_view(operation)
     initial = None
     last = latest_done(session, user.company_id) if body.stable else None
     if last is not None and last.plan is not None:
@@ -85,7 +87,8 @@ def start_plan(
     run = PlanRun(
         company_id=user.company_id,
         created_by=user.id,
-        settings=body.model_dump_json(),
+        # The data version planned, so the app can tell when a plan is out of date.
+        settings=json.dumps(body.model_dump() | {"operation_version": version}),
         snapshot=snapshot.model_dump_json(),
     )
     session.add(run)
@@ -220,3 +223,64 @@ def get_whatif(whatif_id: str, user: Me, session: Db) -> dict[str, Any]:
     if question is None or question.company_id != user.company_id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
     return whatif_view(question)
+
+
+@router.get("/overview")
+def overview(user: Me, session: Db) -> dict[str, Any]:
+    """The morning view: the latest plan's numbers and what needs the dispatcher."""
+    operation, version = load(session, user.company_id)
+    horizon = operation.horizon
+    last = latest_done(session, user.company_id)
+    running = session.scalar(
+        select(PlanRun)
+        .where(PlanRun.company_id == user.company_id, PlanRun.status.in_(("queued", "running")))
+        .limit(1)
+    )
+    attention: list[dict[str, Any]] = []
+    latest: dict[str, Any] | None = None
+    if last is None:
+        attention.append({"kind": "no_plan"})
+    else:
+        latest = run_view(last)
+        planned_version = latest["settings"].get("operation_version")
+        if planned_version is not None and planned_version != version:
+            attention.append({"kind": "plan_out_of_date"})
+        summary = latest["summary"] or {}
+        if not summary.get("valid", True):
+            attention.append({"kind": "plan_invalid", "findings": summary.get("findings", [])})
+        missing = summary.get("confirmed", 0) - summary.get("served", 0)
+        if missing > 0:
+            attention.append({"kind": "unserved", "count": missing})
+        if summary.get("released_locks"):
+            attention.append({"kind": "released", "refs": summary["released_locks"]})
+        _, snapshot, plan = done_plan_of(session, user, last.id)
+        busy = {a.team_id for a in plan.assignments}
+        idle = [t.name for t in snapshot.teams if t.id not in busy]
+        if idle:
+            attention.append({"kind": "idle_trucks", "count": len(idle), "names": idle[:10]})
+        changes, other = changes_between(session, user, last.id, None)
+        if changes and changes["notify"]:
+            attention.append({"kind": "notify", "count": len(changes["notify"])})
+    expired = [
+        j.reference
+        for j in operation.jobs
+        if j.state == "confirmed" and j.pickup_window.end <= horizon.start
+    ]
+    if expired:
+        attention.append({"kind": "expired", "count": len(expired), "refs": expired[:10]})
+    if horizon.start < utcnow() - timedelta(hours=24):
+        attention.append({"kind": "window_behind", "start": horizon.start.isoformat()})
+    return {
+        "operation": {
+            "name": operation.name,
+            "version": version,
+            "window": horizon.model_dump(mode="json"),
+            "trucks": len(operation.teams),
+            "contract": sum(j.state == "confirmed" for j in operation.jobs),
+            "spot": sum(j.state == "offered" for j in operation.jobs),
+            "waiting": sum(j.pickup_window.start >= horizon.end for j in operation.jobs),
+        },
+        "latest": latest,
+        "running": run_view(running) if running else None,
+        "attention": attention,
+    }

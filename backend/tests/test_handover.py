@@ -44,3 +44,18 @@ def test_export_has_every_activity_in_both_languages():
     arabic = load_workbook(io.BytesIO(export_workbook(after_snapshot, after, None, "ar")))
     assert arabic.sheetnames == ["الملخص", "التعليمات", "الشاحنات", "غير منفذة"]
     assert arabic["التعليمات"].sheet_view.rightToLeft
+
+
+def test_new_work_alone_is_not_a_change_drivers_must_be_told_about():
+    snapshot = demo_snapshot(job_count=8, team_count=4)
+    plan = plan_lns(snapshot, rounds=200, seed=1)
+    extra = plan.assignments[-1]
+    before = plan.model_copy(
+        update={
+            "assignments": tuple(a for a in plan.assignments if a.job_id != extra.job_id),
+            "activities": tuple(a for a in plan.activities if a.job_id != extra.job_id),
+        }
+    )
+    changes = plan_changes(snapshot, plan, snapshot, before)
+    assert [row["job"] for row in changes["added"]] == [extra.job_id]
+    assert changes["notify"] == [] and changes["new_work_trucks"] == 1

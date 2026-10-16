@@ -57,8 +57,6 @@ def plan_changes(
         touched[b] += 1
     for _, t, _, _ in diff.retimed:
         touched[t] += 1
-    for _, t in diff.added:
-        touched[t] += 1
     for j, t in diff.dropped:
         if j in still_open:
             touched[t] += 1
@@ -68,10 +66,13 @@ def plan_changes(
         "added": added,
         "dropped": dropped,
         "unchanged": diff.unchanged,
+        # Trucks whose already-planned work changed: their drivers must be told. New work
+        # on top (orders that entered the window) is ordinary dispatch, counted apart.
         "notify": sorted(
             ({"truck": teams.get(t, t), "changes": n} for t, n in touched.items()),
             key=lambda row: str(row["truck"]),
         ),
+        "new_work_trucks": len({t for _, t in diff.added} - set(touched)),
     }
 
 

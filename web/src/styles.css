@@ -292,3 +292,16 @@ td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 .add-user h3 { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 0 0 8px; }
 .activity { max-height: 480px; overflow-y: auto; }
 .wrap-cell { white-space: normal; min-width: 240px; }
+
+/* Overview */
+.attention { margin-bottom: 16px; }
+.attention ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.attention-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; }
+.attention-item span { flex: 1; min-width: 0; }
+.attention-item.warn { background: var(--amber-light); color: var(--amber); }
+.attention-item.info { background: var(--teal-light); color: var(--teal); }
+.attention-item .btn { flex: none; padding: 5px 12px; font-size: 13px; }
+.all-clear { display: flex; align-items: center; gap: 8px; color: var(--teal); font-weight: 550; margin: 0; }
+.overview-value { font-size: 23px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spin { animation: spin 0.9s linear infinite; vertical-align: -2px; }
+@media (max-width: 600px) { .attention-item { flex-wrap: wrap; } }

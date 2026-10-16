@@ -285,3 +285,19 @@ export type RollReport = {
 export type UserRow = { id: string; email: string; name: string; role: Role; active: boolean; created_at: string };
 
 export type AuditRow = { at: string; by: string | null; action: string; detail: Record<string, unknown> };
+
+export type Attention =
+  | { kind: "no_plan" | "plan_out_of_date" }
+  | { kind: "plan_invalid"; findings: string[] }
+  | { kind: "unserved" | "notify"; count: number }
+  | { kind: "released"; refs: string[] }
+  | { kind: "idle_trucks"; count: number; names: string[] }
+  | { kind: "expired"; count: number; refs: string[] }
+  | { kind: "window_behind"; start: string };
+
+export type OverviewData = {
+  operation: { name: string; version: number; window: { start: string; end: string }; trucks: number; contract: number; spot: number; waiting: number };
+  latest: PlanRun | null;
+  running: PlanRun | null;
+  attention: Attention[];
+};

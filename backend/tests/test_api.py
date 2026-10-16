@@ -468,3 +468,19 @@ def test_a_repair_what_if_is_answered_at_once_and_the_same_every_time(app):
     assert [a["status"] for a in answers] == ["done", "done"]
     assert answers[0]["result"]["facts"] == answers[1]["result"]["facts"]
     assert answers[0]["result"]["facts"]["method"] == "repair"
+
+
+def test_the_overview_says_what_needs_attention(app):
+    client = login(app, "dispatcher@east.test")
+    kinds = lambda: {item["kind"] for item in client.get("/api/overview").json()["attention"]}  # noqa: E731
+    assert "no_plan" in kinds()
+    assert "window_behind" in kinds()  # the fixture's window is days before today
+    done_plan(client)
+    first = client.get("/api/overview").json()
+    assert first["latest"]["settings"]["operation_version"] == first["operation"]["version"]
+    assert {"no_plan", "plan_out_of_date"}.isdisjoint(kinds())
+    sheet = client.get("/api/data/jobs.xlsx").content
+    client.post(
+        "/api/data/jobs", params={"apply": True}, files={"file": ("o.xlsx", sheet)}, headers=WRITE
+    )
+    assert "plan_out_of_date" in kinds()
