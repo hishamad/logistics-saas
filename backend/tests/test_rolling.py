@@ -77,3 +77,35 @@ def test_rolling_backwards_is_refused():
     plan = plan_lns(snapshot, rounds=50, seed=1)
     with pytest.raises(ValueError):
         roll_forward(snapshot, plan, snapshot.horizon.start, 2)
+
+
+def test_orders_that_did_not_happen_stay_open_and_do_not_move_the_truck():
+    snapshot = operation()
+    plan = plan_lns(snapshot, rounds=200, seed=1)
+    first = min(plan.assignments, key=lambda a: a.pickup_at)
+    start = first.released_at + timedelta(minutes=1)
+    # Only this truck's first job; keep the test about one truck.
+    others = {
+        a.job_id
+        for a in plan.assignments
+        if a.team_id == first.team_id and a.job_id != first.job_id
+    }
+    plan = plan.model_copy(
+        update={
+            "assignments": tuple(a for a in plan.assignments if a.job_id not in others),
+            "activities": tuple(a for a in plan.activities if a.job_id not in others),
+        }
+    )
+    done, report = roll_forward(snapshot, plan, start, 2)
+    skipped, skip_report = roll_forward(snapshot, plan, start, 2, frozenset({first.job_id}))
+    assert first.job_id not in {j.id for j in done.jobs}
+    assert first.job_id in {j.id for j in skipped.jobs} or first.job_id in {
+        m["job"] for m in skip_report["missed"]
+    }
+    assert skip_report["executed"] == report["executed"] - 1
+    team = next(t for t in snapshot.teams if t.id == first.team_id)
+    where = {r.id: r.site_id for r in skipped.resources}
+    job = next(j for j in snapshot.jobs if j.id == first.job_id)
+    assert (
+        where[team.tractor_id] != job.delivery_site_id or job.delivery_site_id == job.pickup_site_id
+    )

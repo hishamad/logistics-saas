@@ -4,13 +4,14 @@ from datetime import timedelta
 from typing import Annotated, Any
 
 from fastapi import APIRouter, File, HTTPException, Response, UploadFile, status
+from sqlalchemy.orm import Session
 
-from freight.api.db import Operation
+from freight.api.db import Operation, PlanRun, User
 from freight.api.deps import Db, Dispatcher, Me
 from freight.api.schemas import RollRequest, WindowRequest
 from freight.api.store import iso, latest_done, load, run_of, save, unprocessable
-from freight.domain.models import Plan
-from freight.rolling import roll_forward
+from freight.domain.models import Plan, Snapshot
+from freight.rolling import roll_forward, started_before
 from freight.sheets import (
     Kind,
     SheetError,
@@ -62,24 +63,75 @@ def data_overview(user: Me, session: Db) -> dict[str, Any]:
     }
 
 
-@router.post("/data/roll")
-def roll(body: RollRequest, session: Db, user: Dispatcher) -> dict[str, Any]:
-    """Start the next planning day from a plan, assuming it was carried out so far."""
-    operation, version = load(session, user.company_id)
-    run = (
-        run_of(session, user, body.run_id) if body.run_id else latest_done(session, user.company_id)
-    )
+def _plan_to_roll(session: Session, user: User, run_id: str | None, operation: Snapshot) -> PlanRun:
+    run = run_of(session, user, run_id) if run_id else latest_done(session, user.company_id)
     if run is None or run.plan is None or run.status != "done":
         raise HTTPException(status.HTTP_409_CONFLICT, "Run a plan first")
+    planned = Snapshot.model_validate_json(run.snapshot).horizon.start
+    if planned != operation.horizon.start:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            "The latest plan was made for a different planning window. "
+            "Run a plan for this window first.",
+        )
+    return run
+
+
+@router.get("/data/roll")
+def roll_preview(
+    user: Me, session: Db, hours: int = 24, run_id: str | None = None
+) -> dict[str, Any]:
+    """What the plan says was done before the next start, for the dispatcher to confirm."""
+    operation, _ = load(session, user.company_id)
+    run = _plan_to_roll(session, user, run_id, operation)
+    snapshot = Snapshot.model_validate_json(run.snapshot)
+    plan = Plan.model_validate_json(run.plan or "")
+    start = operation.horizon.start + timedelta(hours=hours)
+    jobs = {j.id: j for j in snapshot.jobs}
+    teams = {t.id: t.name for t in snapshot.teams}
+    by_job = {a.job_id: a for a in plan.assignments}
+    return {
+        "run_id": run.id,
+        "start": start.isoformat(),
+        "jobs": [
+            {
+                "job": job_id,
+                "ref": jobs[job_id].reference,
+                "customer": jobs[job_id].customer,
+                "truck": teams.get(by_job[job_id].team_id, by_job[job_id].team_id),
+                "pickup_at": by_job[job_id].pickup_at.isoformat(),
+            }
+            for job_id in started_before(plan, start)
+            if job_id in jobs
+        ],
+    }
+
+
+@router.post("/data/roll")
+def roll(body: RollRequest, session: Db, user: Dispatcher) -> dict[str, Any]:
+    """Start the next planning day from a plan, as it was actually carried out."""
+    operation, version = load(session, user.company_id)
+    run = _plan_to_roll(session, user, body.run_id, operation)
     start = operation.horizon.start + timedelta(hours=body.hours)
     days = max(1, (operation.horizon.end - operation.horizon.start).days)
     try:
-        rolled, report = roll_forward(operation, Plan.model_validate_json(run.plan), start, days)
+        rolled, report = roll_forward(
+            operation,
+            Plan.model_validate_json(run.plan or ""),
+            start,
+            days,
+            frozenset(body.not_done),
+        )
     except ValueError as error:
         raise unprocessable(str(error)) from error
     detail = {
         "from_plan": run.id,
         "executed": report["executed"],
+        # What the dispatcher marked as not done (some may since have been missed).
+        "not_done": sorted(
+            next((j.reference for j in operation.jobs if j.id == job_id), job_id)
+            for job_id in body.not_done
+        ),
         "missed": [m["ref"] for m in report["missed"]],
     }
     report["version"] = save(

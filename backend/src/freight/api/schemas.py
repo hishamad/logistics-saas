@@ -81,6 +81,8 @@ class WhatIfRequest(BaseModel):
 class RollRequest(BaseModel):
     run_id: str | None = None  # default: the latest finished plan
     hours: int = Field(default=24, ge=1, le=168)
+    # Jobs the plan had started that did not happen; they stay open.
+    not_done: list[str] = Field(default_factory=list, max_length=2000)
 
 
 class WindowRequest(BaseModel):

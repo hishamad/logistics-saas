@@ -19,20 +19,34 @@ from freight.sheets import AVAILABILITY_TAIL
 from freight.validation.validator import hours_sweep
 
 
+def started_before(plan: Plan, start: datetime) -> list[str]:
+    """Jobs the plan picks up before ``start``: what the dispatcher confirms as done."""
+    return [
+        a.job_id for a in sorted(plan.assignments, key=lambda a: a.pickup_at) if a.pickup_at < start
+    ]
+
+
 def roll_forward(
-    operation: Snapshot, plan: Plan, start: datetime, days: int
+    operation: Snapshot,
+    plan: Plan,
+    start: datetime,
+    days: int,
+    not_done: frozenset[str] = frozenset(),
 ) -> tuple[Snapshot, dict[str, Any]]:
     """The operation as it stands at ``start`` if ``plan`` was carried out until then.
 
     ``operation`` is the current order book and fleet (it may hold orders added since
-    the plan); ``plan`` is the plan being executed. Returns the new snapshot and a report.
+    the plan); ``plan`` is the plan being executed. ``not_done`` are jobs the plan had
+    started that did not happen: they stay open, and their trucks' day leaves them
+    out (the drive to their pickup too). Returns the new snapshot and a report.
     """
     if start <= operation.horizon.start:
         raise ValueError("The new start must be after the current planning window start")
     by_team: defaultdict[str, list[Activity]] = defaultdict(list)
     for activity in plan.activities:
         by_team[activity.team_id].append(activity)
-    started = {a.job_id for a in plan.assignments if a.pickup_at < start}
+    started = {a.job_id for a in plan.assignments if a.pickup_at < start} - not_done
+    pickups = {j.id: j.pickup_site_id for j in operation.jobs}
     teams = {t.id for t in operation.teams}
     site: dict[str, str] = {}
     free_at: dict[str, datetime] = {}
@@ -42,6 +56,18 @@ def roll_forward(
         if team_id not in teams:
             continue
         activities.sort(key=lambda a: a.start)
+        skipped = [a for a in activities if a.job_id in not_done]
+        if skipped:
+            # Leave out the job and the empty drive that only served to reach it.
+            gone = set(map(id, skipped))
+            for leg, then in zip(activities, activities[1:], strict=False):
+                if (
+                    id(then) in gone
+                    and leg.kind == "empty"
+                    and leg.to_site_id == pickups.get(then.job_id or "")
+                ):
+                    gone.add(id(leg))
+            activities = [a for a in activities if id(a) not in gone]
         done = [a for a in activities if a.start < start or (a.job_id in started)]
         while done and done[-1].job_id is None and done[-1].start >= start:
             done.pop()
@@ -110,8 +136,11 @@ def roll_forward(
         else {},
     }
     rolled = Snapshot.model_validate(data)
+    references = {j.id: j.reference for j in operation.jobs}
     report = {
         "executed": len(started & {j.id for j in operation.jobs}),
+        # Not done and still open; a not-done job whose pickup time passed is in "missed".
+        "not_done": sorted(references.get(j, j) for j in not_done if j in kept_ids),
         "in_progress": sorted(in_progress),
         "missed": [{"job": j.id, "ref": j.reference, "customer": j.customer} for j in missed],
         "kept": len(kept),

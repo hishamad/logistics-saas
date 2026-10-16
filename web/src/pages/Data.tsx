@@ -3,7 +3,7 @@
 import { CalendarRange, Download, FileSpreadsheet, MapPin, SunMedium, Truck, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { api, ApiError, type DataOverview, type RollReport, type SheetKind, type SheetProblem, type UploadResult } from "../api";
+import { api, ApiError, type DataOverview, type RollPreview, type RollReport, type SheetKind, type SheetProblem, type UploadResult } from "../api";
 import { useAuth } from "../auth";
 import { useI18n, type StringKey } from "../i18n";
 import { fromRiyadhInput, toRiyadhInput } from "../time";
@@ -114,16 +114,30 @@ function WindowCard({ data, editable, onChanged }: { data: DataOverview; editabl
 }
 
 function NextDay({ onChanged }: { onChanged: () => void }) {
-  const { t, number } = useI18n();
+  const { t, number, date } = useI18n();
   const [busy, setBusy] = useState(false);
+  const [review, setReview] = useState<RollPreview | null>(null);
+  const [notDone, setNotDone] = useState<Set<string>>(new Set());
   const [report, setReport] = useState<RollReport | null>(null);
   const [error, setError] = useState("");
+
+  async function begin() {
+    setError("");
+    setReport(null);
+    try {
+      setReview(await api.get<RollPreview>("/api/data/roll?hours=24"));
+      setNotDone(new Set());
+    } catch (caught) {
+      setError((caught as Error).message);
+    }
+  }
 
   async function roll() {
     setBusy(true);
     setError("");
     try {
-      setReport(await api.post<RollReport>("/api/data/roll", { hours: 24 }));
+      setReport(await api.post<RollReport>("/api/data/roll", { hours: 24, not_done: [...notDone] }));
+      setReview(null);
       onChanged();
     } catch (caught) {
       setError((caught as Error).message);
@@ -132,15 +146,69 @@ function NextDay({ onChanged }: { onChanged: () => void }) {
     }
   }
 
+  function toggle(job: string) {
+    setNotDone((current) => {
+      const next = new Set(current);
+      if (next.has(job)) next.delete(job);
+      else next.add(job);
+      return next;
+    });
+  }
+
+  const byTruck = new Map<string, RollPreview["jobs"]>();
+  for (const job of review?.jobs ?? []) byTruck.set(job.truck, [...(byTruck.get(job.truck) ?? []), job]);
+  const time = (iso: string) => date(iso, { dateStyle: undefined, timeStyle: undefined, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+
   return (
     <section className="panel next-day">
       <h2>
         <SunMedium size={18} aria-hidden /> {t("nextDayTitle")}
       </h2>
       <p className="muted small">{t("nextDayLead")}</p>
-      <button className="btn" onClick={roll} disabled={busy}>
-        {busy ? t("rolling") : t("nextDayButton")}
-      </button>
+      {!review && (
+        <button className="btn" onClick={begin}>
+          {t("nextDayButton")}
+        </button>
+      )}
+      {review && (
+        <div className="review">
+          <p>
+            <b>{t("reviewTitle")}</b> <span className="muted">{t("reviewLead")}</span>
+          </p>
+          {review.jobs.length === 0 ? (
+            <p className="empty">{t("reviewNothing")}</p>
+          ) : (
+            <div className="review-list">
+              {[...byTruck.entries()].map(([truck, jobs]) => (
+                <div key={truck} className="review-truck">
+                  <b>{truck}</b>
+                  {jobs.map((job) => (
+                    <label key={job.job} className={notDone.has(job.job) ? "not-done" : undefined}>
+                      <input type="checkbox" checked={!notDone.has(job.job)} onChange={() => toggle(job.job)} />
+                      <span>
+                        {job.ref} <span className="muted">{job.customer}</span> · {time(job.pickup_at)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="result-actions">
+            <button className="btn btn-primary" onClick={roll} disabled={busy}>
+              {busy ? t("rolling") : t("confirmNextDay")}
+            </button>
+            <button className="btn" onClick={() => setReview(null)} disabled={busy}>
+              {t("cancel")}
+            </button>
+            {notDone.size > 0 && (
+              <span className="muted small">
+                {number(notDone.size)} {t("markedNotDone")}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
       {error && <div className="alert alert-error result">{error}</div>}
       {report && (
         <div className="alert alert-ok result">
@@ -148,6 +216,11 @@ function NextDay({ onChanged }: { onChanged: () => void }) {
             <b>{number(report.executed)}</b> {t("rolledExecuted")} · <b>{number(report.in_progress.length)}</b> {t("rolledInProgress")} ·{" "}
             <b>{number(report.trucks_moved)}</b> {t("rolledAway")} · <b>{number(report.drivers_with_hours)}</b> {t("rolledDrivers")}
           </div>
+          {report.not_done.length > 0 && (
+            <div>
+              <b>{number(report.not_done.length)}</b> {t("rolledNotDone")}: {report.not_done.join(", ")}
+            </div>
+          )}
           {report.missed.length > 0 && (
             <div className="error-text">
               <b>{number(report.missed.length)}</b> {t("rolledMissed")}: {report.missed.map((m) => m.ref).join(", ")}

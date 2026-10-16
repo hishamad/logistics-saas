@@ -272,8 +272,15 @@ export type Changes = {
 
 export type ChangesAnswer = { against: { id: string; created_at: string } | null; changes: Changes | null };
 
+export type RollPreview = {
+  run_id: string;
+  start: string;
+  jobs: { job: string; ref: string; customer: string; truck: string; pickup_at: string }[];
+};
+
 export type RollReport = {
   executed: number;
+  not_done: string[];
   in_progress: string[];
   missed: { job: string; ref: string; customer: string }[];
   kept: number;

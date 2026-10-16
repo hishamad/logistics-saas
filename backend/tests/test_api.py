@@ -484,3 +484,37 @@ def test_the_overview_says_what_needs_attention(app):
         "/api/data/jobs", params={"apply": True}, files={"file": ("o.xlsx", sheet)}, headers=WRITE
     )
     assert "plan_out_of_date" in kinds()
+
+
+def test_the_dispatcher_confirms_what_was_done_before_the_next_day(app):
+    client = login(app, "dispatcher@east.test")
+    done_plan(client)
+    preview = client.get("/api/data/roll", params={"hours": 24}).json()
+    assert preview["jobs"], "the demo plan starts work in its first day"
+    skipped = preview["jobs"][0]
+    before = client.get("/api/data").json()
+    report = client.post(
+        "/api/data/roll", json={"hours": 24, "not_done": [skipped["job"]]}, headers=WRITE
+    ).json()
+    missed = {m["ref"] for m in report["missed"]}
+    assert (set(report["not_done"]) | missed) >= {skipped["ref"]}
+    assert not set(report["not_done"]) & missed  # each order reported once
+    assert report["executed"] == len(preview["jobs"]) - 1
+    open_refs = {j["reference"] for j in client.get("/api/steering").json()["jobs"]}
+    assert skipped["ref"] in open_refs | missed
+    trail = client.get("/api/audit").json()
+    assert trail[0]["action"] == "window.next_day" and trail[0]["detail"]["not_done"] == [
+        skipped["ref"]
+    ]
+    assert before["version"] + 1 == client.get("/api/data").json()["version"]
+
+
+def test_the_next_day_needs_a_plan_made_for_the_current_window(app):
+    client = login(app, "dispatcher@east.test")
+    done_plan(client)
+    window = client.get("/api/data").json()["window"]
+    moved = datetime.fromisoformat(window["start"]) + timedelta(hours=6)
+    client.post("/api/data/window", json={"start": moved.isoformat(), "days": 2}, headers=WRITE)
+    refused = client.get("/api/data/roll")
+    assert refused.status_code == 409 and "different planning window" in refused.json()["detail"]
+    assert client.post("/api/data/roll", json={}, headers=WRITE).status_code == 409
