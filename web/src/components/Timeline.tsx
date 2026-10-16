@@ -67,6 +67,7 @@ export function Timeline({
   const px = laneWidth / (end - start);
   const x = (minute: number) => (minute - start) * px;
 
+  const frozen = useMemo(() => new Set(board.frozen), [board.frozen]);
   const depots = useMemo(() => [...new Set(board.teams.map((team) => team.depot))], [board.teams]);
   const teams = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -173,6 +174,7 @@ export function Timeline({
         <span><i className="key k-handling" />{t("legendHandling")}</span>
         <span><i className="key k-waiting" />{t("legendWaiting")}</span>
         <span><i className="key k-rest" />{t("legendRest")}</span>
+        {board.frozen.length > 0 && <span><i className="key k-loaded frozen" />{t("legendFrozen")}</span>}
         <span className="tl-note">{t("nightNote")}</span>
       </div>
       <div className="tl-scroll" ref={scroller}>
@@ -209,7 +211,7 @@ export function Timeline({
                     const left = x(act[1]);
                     const w = Math.max(1.5, x(act[2]) - left - (x(act[2]) - left > 3 ? 1 : 0));
                     return (
-                      <div key={i} className={`tl-seg ${KIND_CLASS[act[0]]}${offer ? " offer" : ""}`} style={{ insetInlineStart: left, width: w }}>
+                      <div key={i} className={`tl-seg ${KIND_CLASS[act[0]]}${offer ? " offer" : ""}${act[3] && frozen.has(act[3]) ? " frozen" : ""}`} style={{ insetInlineStart: left, width: w }}>
                         {act[7].map((p, j) => (
                           <i key={j} className="tl-pause" style={{ insetInlineStart: x(p[1]) - left, width: Math.max(1, x(p[2]) - x(p[1])) }} />
                         ))}

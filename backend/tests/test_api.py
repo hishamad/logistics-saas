@@ -2,6 +2,7 @@
 
 import time
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -179,3 +180,182 @@ def test_window_moves(app):
         client.post("/api/data/window", json={"start": start, "days": 9}, headers=WRITE).status_code
         == 422
     )
+
+
+def done_plan(client: TestClient, **settings) -> dict:
+    started = client.post("/api/plans", json={"rounds": 200, **settings}, headers=WRITE)
+    assert started.status_code == 202, started.text
+    run = wait_for(client, started.json()["id"])
+    assert run["status"] == "done"
+    return run
+
+
+def test_why_explains_a_job_in_both_languages(app):
+    client = login(app, "dispatcher@east.test")
+    run = done_plan(client)
+    board = client.get(f"/api/plans/{run['id']}/board").json()
+    job = next(act[3] for team in board["teams"] for act in team["acts"] if act[3])
+    english = client.get(f"/api/plans/{run['id']}/why/{job}").json()
+    arabic = client.get(f"/api/plans/{run['id']}/why/{job}", params={"lang": "ar"}).json()
+    assert english["source"] == "template" and english["facts"]["assigned"]
+    assert board["jobs"][job]["ref"] in english["text"]
+    assert "أُسندت" in arabic["text"]
+    assert client.get(f"/api/plans/{run['id']}/why/nope").status_code == 404
+
+
+def test_what_if_runs_in_the_background(app):
+    client = login(app, "dispatcher@east.test")
+    run = done_plan(client)
+    job = client.get("/api/steering").json()["jobs"][0]["id"]
+    started = client.post(
+        f"/api/plans/{run['id']}/whatif", json={"kind": "drop", "job": job}, headers=WRITE
+    )
+    assert started.status_code == 202, started.text
+    for _ in range(400):
+        question = client.get(f"/api/whatif/{started.json()['id']}").json()
+        if question["status"] in ("done", "failed"):
+            break
+        time.sleep(0.05)
+    assert question["status"] == "done", question
+    assert set(question["result"]["text"]) == {"en", "ar"}
+    assert "difference" in question["result"]["facts"]
+    incomplete = client.post(
+        f"/api/plans/{run['id']}/whatif", json={"kind": "assign", "job": job}, headers=WRITE
+    )
+    assert incomplete.status_code == 422
+    other = login(app, "dispatcher@west.test")
+    assert other.get(f"/api/whatif/{started.json()['id']}").status_code == 404
+
+
+def test_rules_are_checked_added_and_removed(app):
+    client = login(app, "dispatcher@east.test")
+    catalog = client.get("/api/steering").json()
+    team = catalog["teams"][0]
+    window = {"start": catalog["horizon"]["start"], "end": catalog["horizon"]["end"]}
+    rule = {"kind": "resource_unavailable", "resource_id": team["tractor_id"], "window": window}
+    added = client.post("/api/rules", json=rule, headers=WRITE)
+    assert added.status_code == 200, added.text
+    assert [r["id"] for r in client.get("/api/steering").json()["rules"]] == [added.json()["id"]]
+    missing_window = client.post(
+        "/api/rules",
+        json={"kind": "resource_unavailable", "resource_id": team["tractor_id"]},
+        headers=WRITE,
+    )
+    assert missing_window.status_code == 422
+    unknown = client.post("/api/rules", json=rule | {"resource_id": "ghost"}, headers=WRITE)
+    assert unknown.status_code == 422
+    assert client.delete(f"/api/rules/{added.json()['id']}", headers=WRITE).status_code == 200
+    assert client.get("/api/steering").json()["rules"] == []
+    viewer = login(app, "viewer@east.test")
+    assert viewer.post("/api/rules", json=rule, headers=WRITE).status_code == 403
+
+
+def test_interpreting_without_ai_explains_and_changes_nothing(app):
+    client = login(app, "dispatcher@east.test")
+    version = client.get("/api/steering").json()["version"]
+    result = client.post(
+        "/api/rules/interpret", json={"text": "الشاحنة 1 في الورشة غداً"}, headers=WRITE
+    ).json()
+    assert result["status"] == "error" and result["rule"] is None
+    assert client.get("/api/steering").json()["version"] == version
+
+
+def test_freezing_and_stable_replanning(app):
+    client = login(app, "dispatcher@east.test")
+    first = done_plan(client)
+    assert first["summary"]["changed"] is None  # nothing to be stable against yet
+    frozen = client.post(
+        "/api/locks/freeze", json={"run_id": first["id"], "hours": 168}, headers=WRITE
+    ).json()
+    assert frozen["frozen"] == first["summary"]["served"] + first["summary"]["offers_taken"]
+    locks = client.get("/api/steering").json()["locks"]
+    second = done_plan(client)
+    assert second["summary"]["changed"] == 0  # every job frozen on its truck
+    board = client.get(f"/api/plans/{second['id']}/board").json()
+    assert sorted(board["frozen"]) == sorted(lock["job_id"] for lock in locks)
+    assert client.delete(f"/api/locks/{locks[0]['job_id']}", headers=WRITE).status_code == 200
+    assert len(client.get("/api/steering").json()["locks"]) == len(locks) - 1
+    bad = client.post(
+        "/api/locks", json={"job_id": "ghost", "team_id": locks[0]["team_id"]}, headers=WRITE
+    )
+    assert bad.status_code == 422
+    assert client.delete("/api/locks", headers=WRITE).status_code == 200
+    assert client.get("/api/steering").json()["locks"] == []
+
+
+def make_offer(app, company_id: str) -> str:
+    """Turn the company's first job into a well-paid spot load; return its id."""
+    from freight.domain.models import Snapshot
+
+    with app.state.database.session.begin() as db:
+        row = db.get(Operation, company_id)
+        snapshot = Snapshot.model_validate_json(row.snapshot)
+        first = snapshot.jobs[0].model_copy(update={"state": "offered", "revenue_minor": 5_000_000})
+        row.snapshot = snapshot.model_copy(
+            update={"jobs": (first, *snapshot.jobs[1:])}
+        ).model_dump_json()
+        return first.id
+
+
+def test_freezing_a_taken_spot_load_accepts_it_and_the_next_plan_still_works(app):
+    offer = make_offer(app, "east")
+    client = login(app, "dispatcher@east.test")
+    first = done_plan(client)
+    assert first["summary"]["offers_taken"] == 1
+    frozen = client.post(
+        "/api/locks/freeze", json={"run_id": first["id"], "hours": 168}, headers=WRITE
+    ).json()
+    assert frozen["accepted"] == 1
+    job = next(j for j in client.get("/api/steering").json()["jobs"] if j["id"] == offer)
+    assert job["state"] == "confirmed"
+    second = done_plan(client)
+    assert second["summary"]["valid"] is True
+    assert second["summary"]["served"] == first["summary"]["served"] + 1
+
+
+def test_a_window_that_strands_contract_work_is_refused(app):
+    client = login(app, "dispatcher@east.test")
+    window = client.get("/api/data").json()["window"]
+    start = datetime.fromisoformat(window["start"]) - timedelta(days=2)  # all work starts later
+    earlier = client.post(
+        "/api/data/window", json={"start": start.isoformat(), "days": 1}, headers=WRITE
+    )
+    assert earlier.status_code == 422
+    assert "outside this decision horizon" in earlier.json()["detail"]
+    assert client.get("/api/data").json()["window"] == window
+
+
+def test_a_plan_the_engine_refuses_is_a_failed_run_with_its_reasons(app):
+    from freight.domain.models import AssignmentLock, Snapshot
+
+    with app.state.database.session.begin() as db:  # bypass the API's guard on purpose
+        row = db.get(Operation, "east")
+        snapshot = Snapshot.model_validate_json(row.snapshot)
+        offer = snapshot.jobs[0].model_copy(update={"state": "offered"})
+        lock = AssignmentLock(job_id=offer.id, team_id=snapshot.teams[0].id)
+        jobs = (offer, *snapshot.jobs[1:])
+        row.snapshot = snapshot.model_copy(
+            update={"jobs": jobs, "locks": (lock,)}
+        ).model_dump_json()
+    client = login(app, "dispatcher@east.test")
+    started = client.post("/api/plans", json={"rounds": 50}, headers=WRITE).json()
+    run = wait_for(client, started["id"])
+    assert run["status"] == "failed"
+    assert "Only confirmed jobs can be locked" in run["error"]
+
+
+def test_what_if_cancelling_a_frozen_job_works(app):
+    client = login(app, "dispatcher@east.test")
+    run = done_plan(client)
+    client.post("/api/locks/freeze", json={"run_id": run["id"], "hours": 168}, headers=WRITE)
+    job = client.get("/api/steering").json()["locks"][0]["job_id"]
+    started = client.post(
+        f"/api/plans/{run['id']}/whatif", json={"kind": "drop", "job": job}, headers=WRITE
+    )
+    for _ in range(400):
+        question = client.get(f"/api/whatif/{started.json()['id']}").json()
+        if question["status"] in ("done", "failed"):
+            break
+        time.sleep(0.05)
+    assert question["status"] == "done", question
+    assert question["result"]["facts"]["after"]["contribution_sar"] is not None

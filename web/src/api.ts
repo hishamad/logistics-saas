@@ -35,6 +35,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body ?? {}),
+  del: <T>(path: string) => request<T>("DELETE", path),
   upload: <T>(path: string, file: File) => {
     const form = new FormData();
     form.append("file", file);
@@ -168,4 +169,85 @@ export type UploadResult = {
   problem_count?: number;
   summary: Record<string, number>;
   version?: number;
+};
+
+export type RuleKind = "resource_unavailable" | "required_end" | "customer_eligibility" | "preferred_assignment";
+
+export type Rule = {
+  id: string;
+  kind: RuleKind;
+  resource_id: string | null;
+  team_id: string | null;
+  job_id: string | null;
+  site_id: string | null;
+  customer: string | null;
+  window: { start: string; end: string } | null;
+  strength: "hard" | "soft";
+  penalty_minor: number;
+  source_text: string;
+};
+
+export type Lock = { job_id: string; team_id: string; pickup_at: string | null };
+
+export type Steering = {
+  version: number;
+  horizon: { start: string; end: string };
+  rules: Rule[];
+  locks: Lock[];
+  latest_plan: string | null;
+  teams: { id: string; name: string; depot: string; tractor_id: string; equipment: string }[];
+  jobs: { id: string; reference: string; customer: string; state: string }[];
+  sites: { id: string; name: string; name_ar: string }[];
+  customers: string[];
+  ai: boolean;
+};
+
+export type Interpretation = {
+  status: "proposed" | "clarification" | "unsupported" | "error";
+  explanation: string;
+  question?: string | null;
+  rule: Rule | null;
+};
+
+export type WhyFacts = {
+  job: { reference: string; customer: string; pickup_window_riyadh: string; price_sar: number | null; kind: string };
+  assigned?: { truck: string; extra_cost_sar: number; empty_km_to_pickup?: number; pickup_riyadh: string };
+  alternatives: { truck: string; extra_cost_sar: number; more_than_chosen_sar?: number }[];
+  other_trucks_that_could_take_it: number;
+  trucks_that_cannot_take_it: Record<string, number>;
+};
+
+export type WhyAnswer = { facts: WhyFacts; text: string; source: string };
+
+export type WhatIfNumbers = {
+  contract_jobs_served: number;
+  offers_taken: number;
+  cost_sar: number | null;
+  contribution_sar: number | null;
+  empty_km: number | null;
+};
+
+export type WhatIfFacts = {
+  before: WhatIfNumbers;
+  after: WhatIfNumbers;
+  difference: Partial<WhatIfNumbers>;
+  new_plan_valid: boolean;
+  jobs_moved_count: number;
+  jobs_no_longer_served: string[];
+  jobs_newly_served: string[];
+  trucks_whose_plan_changes: number;
+};
+
+export type WhatIfChange =
+  | { kind: "drop"; job: string }
+  | { kind: "assign"; job: string; team: string }
+  | { kind: "unavailable"; team: string; start: string; end: string };
+
+export type WhatIfRun = {
+  id: string;
+  status: "queued" | "running" | "done" | "failed";
+  created_at: string;
+  change: WhatIfChange;
+  result: { facts: WhatIfFacts; text: { en: string; ar: string }; source: string } | null;
+  error: string | null;
 };

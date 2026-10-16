@@ -243,3 +243,20 @@ def test_a_day_off_already_running_at_plan_start_is_waited_out_at_home():
     plan = plan_lns(snapshot, seconds=1)
     assert plan.valid and plan.coverage == "complete", plan.findings
     assert plan.assignments[0].pickup_at >= day_off.end
+
+
+def test_a_warm_start_never_keeps_a_job_where_a_new_lock_forbids_it():
+    from freight.domain.models import AssignmentLock
+    from freight.fixtures import demo_snapshot
+    from freight.planning.engine import plan_lns, routes_of
+
+    snapshot = demo_snapshot(job_count=8, team_count=4)
+    first = plan_lns(snapshot, rounds=200, seed=1)
+    moved = first.assignments[0]
+    target = next(t.id for t in snapshot.teams if t.id != moved.team_id)
+    locked = snapshot.model_copy(
+        update={"locks": (AssignmentLock(job_id=moved.job_id, team_id=target),)}
+    )
+    again = plan_lns(locked, rounds=200, seed=1, initial=routes_of(first))
+    assert again.valid
+    assert all(a.team_id == target for a in again.assignments if a.job_id == moved.job_id)

@@ -378,6 +378,10 @@ def import_jobs(snapshot: Snapshot, rows: Iterable[tuple[int, dict[str, Any]]]) 
         except ValidationError as error:
             row.problem("", "invalid", "", error.errors()[0]["msg"])
             continue
+        if job.state == "confirmed" and job.pickup_window.start >= snapshot.horizon.end:
+            # The engine refuses a plan with contract work it cannot reach; say so per row.
+            row.problem("pickup_from", "after_window", values.get("pickup_from", ""))
+            continue
         if (
             job.pickup_window.start >= snapshot.horizon.end
             or job.delivery_window.end <= snapshot.horizon.start

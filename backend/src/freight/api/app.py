@@ -18,15 +18,28 @@ from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from freight.api.db import Company, Database, LoginSession, Operation, PlanRun, User, utcnow
-from freight.api.runner import Runner
+from freight.ai import InterpretationError, propose_rule
+from freight.api.db import (
+    Company,
+    Database,
+    LoginSession,
+    Operation,
+    PlanRun,
+    User,
+    WhatIfRun,
+    new_id,
+    utcnow,
+)
+from freight.api.runner import INPUT_PROBLEMS, Runner
 from freight.api.security import hash_token, new_token, verify_password
 from freight.board import board_data
-from freight.domain.models import Plan, Snapshot
+from freight.domain.models import AssignmentLock, Job, Plan, Rule, Snapshot
+from freight.explain import narrate, why
+from freight.planning.engine import routes_of
 from freight.settings import get_settings
 from freight.sheets import (
     Kind,
@@ -37,6 +50,7 @@ from freight.sheets import (
     set_window,
     workbook,
 )
+from freight.validation.validator import input_findings
 
 COOKIE = "freight_session"
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
@@ -58,6 +72,50 @@ class PlanRequest(BaseModel):
     rounds: int | None = Field(default=None, ge=1, le=200_000)
     seed: int = 1
     lookahead: bool = False
+    # Start from the last plan and charge for moving a job to another truck, so a
+    # re-plan only changes instructions already sent when that is worth it.
+    stable: bool = True
+
+
+# What a moved job costs in a stable re-plan (halalas): SAR 300.
+CHANGE_PENALTY_MINOR = 30_000
+
+
+class RuleRequest(BaseModel):
+    """A rule without its id; the server assigns one."""
+
+    kind: str
+    resource_id: str | None = None
+    team_id: str | None = None
+    job_id: str | None = None
+    site_id: str | None = None
+    customer: str | None = None
+    window: dict[str, datetime] | None = None
+    strength: str = "hard"
+    penalty_minor: int = 0
+    source_text: str = Field(default="Rule form", max_length=2000)
+
+
+class LockRequest(BaseModel):
+    job_id: str
+    team_id: str
+
+
+class FreezeRequest(BaseModel):
+    run_id: str
+    hours: int = Field(ge=1, le=168)
+
+
+class InterpretRequest(BaseModel):
+    text: str = Field(min_length=2, max_length=1000)
+
+
+class WhatIfRequest(BaseModel):
+    kind: str
+    job: str | None = None
+    team: str | None = None
+    start: datetime | None = None
+    end: datetime | None = None
 
 
 class WindowRequest(BaseModel):
@@ -132,7 +190,13 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             "finished_at": iso(run.finished_at) if run.finished_at else None,
             "settings": json.loads(run.settings),
             "summary": json.loads(run.summary) if run.summary else None,
-            "error": "The planning engine failed; see the server log." if run.error else None,
+            "error": (
+                run.error
+                if run.error and run.error.startswith(INPUT_PROBLEMS)
+                else "The planning engine failed; see the server log."
+                if run.error
+                else None
+            ),
         }
 
     @app.post("/api/auth/login")
@@ -200,6 +264,15 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
         body: PlanRequest, request: Request, session: Db, user: Annotated[User, Depends(dispatcher)]
     ) -> dict[str, Any]:
         snapshot = operation_of(session, user.company_id)
+        initial = None
+        last = latest_done(session, user.company_id) if body.stable else None
+        if last is not None and last.plan is not None:
+            # Continue from the last plan and charge for moving jobs, so only changes
+            # worth more than the disruption reach drivers.
+            plan = Plan.model_validate_json(last.plan)
+            initial = routes_of(plan)
+            if not snapshot.previous:
+                snapshot = with_previous(snapshot, plan)
         run = PlanRun(
             company_id=user.company_id,
             created_by=user.id,
@@ -208,7 +281,7 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
         )
         session.add(run)
         session.commit()
-        request.app.state.runner.submit(run.id, run.snapshot, body.model_dump())
+        request.app.state.runner.submit(run.id, run.snapshot, body.model_dump(), initial)
         session.refresh(run)
         return run_view(run)
 
@@ -235,9 +308,245 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
             Snapshot.model_validate_json(run.snapshot), Plan.model_validate_json(run.plan)
         )
 
+    def latest_done(session: Session, company_id: str) -> PlanRun | None:
+        return session.scalar(
+            select(PlanRun)
+            .where(PlanRun.company_id == company_id, PlanRun.status == "done")
+            .order_by(PlanRun.created_at.desc())
+            .limit(1)
+        )
+
+    def with_previous(snapshot: Snapshot, plan: Plan) -> Snapshot:
+        jobs = {j.id for j in snapshot.jobs}
+        teams = {t.id for t in snapshot.teams}
+        previous = {
+            a.job_id: a.team_id for a in plan.assignments if a.job_id in jobs and a.team_id in teams
+        }
+        return snapshot.model_copy(
+            update={"previous": previous, "change_penalty_minor": CHANGE_PENALTY_MINOR}
+        )
+
+    # --- steering: why, what if, rules and frozen assignments -------------------------
+
+    @app.get("/api/plans/{run_id}/why/{job_id}")
+    def explain_job(
+        run_id: str, job_id: str, user: Me, session: Db, lang: str = "en"
+    ) -> dict[str, Any]:
+        run = run_of(session, user, run_id)
+        if run.status != "done" or run.plan is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, f"Plan is {run.status}")
+        snapshot = Snapshot.model_validate_json(run.snapshot)
+        if job_id not in {j.id for j in snapshot.jobs}:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Job not in this plan")
+        facts = why(snapshot, Plan.model_validate_json(run.plan), job_id)
+        text, source = narrate(facts, "ar" if lang == "ar" else "en")
+        return {"facts": facts, "text": text, "source": source}
+
+    def whatif_view(run: WhatIfRun) -> dict[str, Any]:
+        return {
+            "id": run.id,
+            "plan_run_id": run.plan_run_id,
+            "status": run.status,
+            "created_at": iso(run.created_at),
+            "change": json.loads(run.change),
+            "result": json.loads(run.result) if run.result else None,
+            "error": (
+                run.error
+                if run.error and run.error.startswith(INPUT_PROBLEMS)
+                else "The what-if could not be computed; see the server log."
+                if run.error
+                else None
+            ),
+        }
+
+    @app.post("/api/plans/{run_id}/whatif", status_code=status.HTTP_202_ACCEPTED)
+    def start_whatif(
+        run_id: str,
+        body: WhatIfRequest,
+        request: Request,
+        session: Db,
+        user: Annotated[User, Depends(dispatcher)],
+    ) -> dict[str, Any]:
+        run = run_of(session, user, run_id)
+        if run.status != "done" or run.plan is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, f"Plan is {run.status}")
+        snapshot = Snapshot.model_validate_json(run.snapshot)
+        jobs, teams = {j.id for j in snapshot.jobs}, {t.id for t in snapshot.teams}
+        needs = {
+            "drop": ("job",),
+            "assign": ("job", "team"),
+            "unavailable": ("team", "start", "end"),
+        }
+        if body.kind not in needs or any(getattr(body, f) is None for f in needs[body.kind]):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Incomplete what-if")
+        if (body.job is not None and body.job not in jobs) or (
+            body.team is not None and body.team not in teams
+        ):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Unknown job or truck")
+        if body.start and body.end and (body.start.tzinfo is None or body.end <= body.start):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Bad time window")
+        change = body.model_dump(mode="json", exclude_none=True)
+        question = WhatIfRun(
+            company_id=user.company_id,
+            plan_run_id=run.id,
+            created_by=user.id,
+            change=json.dumps(change),
+        )
+        session.add(question)
+        session.commit()
+        request.app.state.runner.submit_whatif(question.id, run.snapshot, run.plan, change)
+        session.refresh(question)
+        return whatif_view(question)
+
+    @app.get("/api/whatif/{whatif_id}")
+    def get_whatif(whatif_id: str, user: Me, session: Db) -> dict[str, Any]:
+        question = session.get(WhatIfRun, whatif_id)
+        if question is None or question.company_id != user.company_id:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
+        return whatif_view(question)
+
+    @app.get("/api/steering")
+    def steering(user: Me, session: Db) -> dict[str, Any]:
+        snapshot = operation_of(session, user.company_id)
+        trailers = {r.id: r for r in snapshot.resources if r.kind == "trailer"}
+        last = latest_done(session, user.company_id)
+        return {
+            "version": session.get_one(Operation, user.company_id).version,
+            "horizon": snapshot.horizon.model_dump(mode="json"),
+            "rules": [rule.model_dump(mode="json") for rule in snapshot.rules],
+            "locks": [lock.model_dump(mode="json") for lock in snapshot.locks],
+            "latest_plan": last.id if last else None,
+            "teams": [
+                {
+                    "id": t.id,
+                    "name": t.name,
+                    "depot": snapshot.home_of(t),
+                    "tractor_id": t.tractor_id,
+                    "equipment": trailers[t.trailer_id].equipment,
+                }
+                for t in snapshot.teams
+            ],
+            "jobs": [
+                {"id": j.id, "reference": j.reference, "customer": j.customer, "state": j.state}
+                for j in snapshot.jobs
+            ],
+            "sites": [site.model_dump() for site in snapshot.sites],
+            "customers": sorted({j.customer for j in snapshot.jobs}),
+            "ai": settings.ai_configured,
+        }
+
+    def save_checked(session: Session, company_id: str, data: dict[str, Any]) -> Snapshot:
+        """Validate the changed snapshot fields and save; 422 with the reason when invalid."""
+        snapshot = operation_of(session, company_id)
+        try:
+            changed = Snapshot.model_validate(dict(snapshot) | data)
+        except ValidationError as error:
+            reason = error.errors()[0]["msg"].removeprefix("Value error, ")
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, reason) from error
+        save_operation(session, company_id, changed)
+        return changed
+
+    @app.post("/api/rules")
+    def add_rule(
+        body: RuleRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, Any]:
+        snapshot = operation_of(session, user.company_id)
+        try:
+            rule = Rule.model_validate(body.model_dump() | {"id": new_id()})
+        except ValidationError as error:
+            reason = error.errors()[0]["msg"].removeprefix("Value error, ")
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, reason) from error
+        save_checked(session, user.company_id, {"rules": (*snapshot.rules, rule)})
+        return rule.model_dump(mode="json")
+
+    @app.delete("/api/rules/{rule_id}")
+    def delete_rule(
+        rule_id: str, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, bool]:
+        snapshot = operation_of(session, user.company_id)
+        rules = tuple(r for r in snapshot.rules if r.id != rule_id)
+        if len(rules) == len(snapshot.rules):
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Rule not found")
+        save_checked(session, user.company_id, {"rules": rules})
+        return {"ok": True}
+
+    @app.post("/api/rules/interpret")
+    def interpret_rule(
+        body: InterpretRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, Any]:
+        """Propose (never apply) a rule from an Arabic or English sentence."""
+        snapshot = operation_of(session, user.company_id)
+        try:
+            return propose_rule(snapshot, body.text)
+        except InterpretationError as error:
+            return {"status": "error", "explanation": str(error), "rule": None}
+
+    def accept_offers(snapshot: Snapshot, job_ids: set[str]) -> tuple[Job, ...]:
+        """Spot loads among ``job_ids`` become commitments: a driver is going for them."""
+        return tuple(
+            j.model_copy(update={"state": "confirmed"})
+            if j.id in job_ids and j.state == "offered"
+            else j
+            for j in snapshot.jobs
+        )
+
+    @app.post("/api/locks")
+    def add_lock(
+        body: LockRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, Any]:
+        snapshot = operation_of(session, user.company_id)
+        locks = tuple(lock for lock in snapshot.locks if lock.job_id != body.job_id)
+        lock = AssignmentLock(job_id=body.job_id, team_id=body.team_id)
+        jobs = accept_offers(snapshot, {body.job_id})
+        save_checked(session, user.company_id, {"locks": (*locks, lock), "jobs": jobs})
+        return lock.model_dump(mode="json")
+
+    @app.delete("/api/locks/{job_id}")
+    def delete_lock(
+        job_id: str, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, bool]:
+        snapshot = operation_of(session, user.company_id)
+        locks = tuple(lock for lock in snapshot.locks if lock.job_id != job_id)
+        save_checked(session, user.company_id, {"locks": locks})
+        return {"ok": True}
+
+    @app.delete("/api/locks")
+    def clear_locks(session: Db, user: Annotated[User, Depends(dispatcher)]) -> dict[str, bool]:
+        save_checked(session, user.company_id, {"locks": ()})
+        return {"ok": True}
+
+    @app.post("/api/locks/freeze")
+    def freeze(
+        body: FreezeRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
+    ) -> dict[str, int]:
+        """Freeze every job of a plan whose pickup starts in the next ``hours``."""
+        run = run_of(session, user, body.run_id)
+        if run.status != "done" or run.plan is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, f"Plan is {run.status}")
+        snapshot = operation_of(session, user.company_id)
+        jobs, teams = {j.id for j in snapshot.jobs}, {t.id for t in snapshot.teams}
+        until = snapshot.horizon.start + timedelta(hours=body.hours)
+        plan = Plan.model_validate_json(run.plan)
+        locked = {lock.job_id: lock for lock in snapshot.locks}
+        added = 0
+        for a in plan.assignments:
+            if a.pickup_at < until and a.job_id in jobs and a.team_id in teams:
+                added += a.job_id not in locked
+                locked[a.job_id] = AssignmentLock(job_id=a.job_id, team_id=a.team_id)
+        offered = {j.id for j in snapshot.jobs if j.state == "offered"}
+        accepted = len(offered & set(locked))
+        changed = {"locks": tuple(locked.values()), "jobs": accept_offers(snapshot, set(locked))}
+        save_checked(session, user.company_id, changed)
+        return {"frozen": len(locked), "added": added, "accepted": accepted}
+
     # --- data in: planning window, orders and fleet ------------------------------------
 
     def save_operation(session: Session, company_id: str, snapshot: Snapshot) -> int:
+        # Never store a situation the engine would refuse to plan.
+        problems = input_findings(snapshot)
+        if problems:
+            more = f" (+{len(problems) - 1} more)" if len(problems) > 1 else ""
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, problems[0].message + more)
         row = session.get_one(Operation, company_id)
         row.snapshot = snapshot.model_dump_json()
         row.version += 1
@@ -286,7 +595,7 @@ def create_app(database_url: str | None = None, executor: Executor | None = None
         body: WindowRequest, session: Db, user: Annotated[User, Depends(dispatcher)]
     ) -> dict[str, Any]:
         if body.start.tzinfo is None:
-            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Start needs a timezone")
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Start needs a timezone")
         snapshot = set_window(operation_of(session, user.company_id), body.start, body.days)
         return {"version": save_operation(session, user.company_id, snapshot)}
 

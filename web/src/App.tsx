@@ -7,6 +7,7 @@ import { Board } from "./pages/Board";
 import { Data } from "./pages/Data";
 import { Login } from "./pages/Login";
 import { Overview } from "./pages/Overview";
+import { Rules } from "./pages/Rules";
 
 function RequireLogin({ children }: { children: ReactNode }) {
   const { me, loading } = useAuth();
@@ -42,7 +43,7 @@ export default function App() {
               <Route index element={<Overview />} />
               <Route path="board" element={<Board />} />
               <Route path="data" element={<Data />} />
-              <Route path="rules" element={<ComingNext title="navRules" body="comingRules" />} />
+              <Route path="rules" element={<Rules />} />
               <Route path="history" element={<ComingNext title="navHistory" body="comingHistory" />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

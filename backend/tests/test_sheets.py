@@ -143,3 +143,15 @@ def test_set_window_moves_fleet_availability(snapshot: Snapshot) -> None:
     assert moved.horizon.end == start + timedelta(days=2)
     assert {r.availability.start for r in moved.resources} == {start}
     assert {r.availability.end for r in moved.resources} == {start + timedelta(days=4)}
+
+
+def test_contract_orders_after_the_window_are_refused_per_row(snapshot: Snapshot) -> None:
+    late = (snapshot.horizon.end + timedelta(hours=3)).strftime("%Y-%m-%d %H:%M")
+    later = (snapshot.horizon.end + timedelta(days=1)).strftime("%Y-%m-%d %H:%M")
+    content = csv(
+        JOB_HEADER
+        + f"SO-1,Cust,contract,riyadh,jeddah_port,{late},{later},{later},{later},dry_van,1000,\n"
+        + f"SP-1,Cust,spot,riyadh,jeddah_port,{late},{later},{later},{later},dry_van,1000,\n"
+    )
+    outcome = import_jobs(snapshot, read_rows("orders.csv", content, "jobs"))
+    assert [(p.row, p.code) for p in outcome.problems] == [(2, "after_window")]

@@ -220,3 +220,42 @@ td.num, th.num { text-align: end; font-variant-numeric: tabular-nums; }
 code { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #f1f4f1; padding: 1px 5px; border-radius: 5px; direction: ltr; unicode-bidi: isolate; }
 @media (max-width: 1000px) { .data-grid { grid-template-columns: minmax(0, 1fr); } }
 .file-name { font-weight: 650; }
+
+/* Rules page */
+.rules-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.rules-wide { grid-column: 1 / -1; }
+.ask { display: flex; gap: 10px; align-items: flex-start; }
+.ask textarea { flex: 1; resize: vertical; min-height: 44px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 12px; margin-bottom: 4px; }
+.form-grid .field span { font-size: 13px; color: var(--ink-2); font-weight: 550; }
+.form-grid .input { padding: 8px 10px; min-width: 0; }
+.rule-list { list-style: none; margin: 0 0 10px; padding: 0; }
+.rule-list li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.lock-list { max-height: 360px; overflow-y: auto; font-size: 13px; }
+.lock-list svg { vertical-align: -2px; color: var(--teal); }
+.freeze-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.freeze-row .input { padding: 6px 8px; }
+.small { font-size: 12.5px; }
+@media (max-width: 1000px) { .rules-grid { grid-template-columns: minmax(0, 1fr); } .ask { flex-direction: column; align-items: stretch; } }
+
+/* Drawer */
+.drawer-backdrop { position: fixed; inset: 0; background: #0b1f1a33; z-index: 29; }
+.drawer { position: fixed; inset-block: 0; inset-inline-end: 0; width: min(460px, 100vw); background: var(--panel); z-index: 30; box-shadow: 0 0 40px #0003; overflow-y: auto; padding: 22px 20px 32px; }
+.drawer h2 { padding-inline-end: 36px; flex-wrap: wrap; }
+.drawer h3 { display: flex; align-items: center; gap: 6px; font-size: 14px; margin: 22px 0 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+.drawer-close { position: absolute; top: 14px; inset-inline-end: 12px; padding: 6px; }
+.why p, .whatif-answer p { margin-bottom: 8px; }
+table.compact th, table.compact td { padding: 6px 8px; font-size: 13px; }
+table.compact { margin-bottom: 10px; }
+.reasons { margin: 4px 0 10px; padding-inline-start: 18px; font-size: 13px; }
+.whatif { margin-bottom: 12px; }
+.whatif-ask { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.whatif-ask .input { padding: 6px 8px; max-width: 200px; }
+.whatif-answer { background: #f7faf8; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.link { background: none; border: 0; padding: 0; color: var(--teal); font-weight: 600; cursor: pointer; }
+.link:hover { text-decoration: underline; }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--teal-light); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -1px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.frozen { box-shadow: inset 0 0 0 2px var(--dark); }
+.drawer table.compact th, .drawer table.compact td { white-space: normal; }
+.drawer table.compact td.num, .drawer table.compact th.num { white-space: nowrap; }

@@ -1,9 +1,10 @@
 // The plan board: run the engine, watch it work, read the result truck by truck.
-import { Play, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Lock, Play, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api, type Board as BoardData, type PlanRun } from "../api";
+import { api, type Board as BoardData, type Lock as LockRow, type PlanRun, type Steering } from "../api";
 import { useAuth } from "../auth";
+import { Drawer, type DrawerTarget } from "../components/Drawer";
 import { ACTIVITY_LABEL, Timeline, useSites } from "../components/Timeline";
 import { useI18n } from "../i18n";
 
@@ -27,7 +28,18 @@ export function Board() {
   const [selected, setSelected] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [, setTick] = useState(0);
+  const [drawer, setDrawer] = useState<DrawerTarget | null>(null);
+  const [locks, setLocks] = useState<LockRow[]>([]);
   const itinerary = useRef<HTMLElement>(null);
+
+  // Current frozen jobs (they apply to the next plan; the board shows those of its own plan).
+  const loadLocks = useCallback(() => {
+    api
+      .get<Steering>("/api/steering")
+      .then((steering) => setLocks(steering.locks))
+      .catch(() => setLocks([]));
+  }, []);
+  useEffect(loadLocks, [loadLocks]);
 
   const refresh = useCallback(() => {
     api
@@ -159,10 +171,27 @@ export function Board() {
 
           <div className="board-bottom">
             <section className="panel" ref={itinerary} aria-label={t("itinerary")}>
-              <Itinerary board={board} teamId={selected} onClose={() => setSelected(null)} />
+              <Itinerary
+                board={board}
+                teamId={selected}
+                locks={locks}
+                onClose={() => setSelected(null)}
+                onOpen={setDrawer}
+              />
             </section>
-            <Unserved board={board} />
+            <Unserved board={board} onOpen={setDrawer} />
           </div>
+          {drawer && (
+            <Drawer
+              board={board}
+              runId={shown.id}
+              target={drawer}
+              locks={locks}
+              editable={dispatcher}
+              onLocksChanged={loadLocks}
+              onClose={() => setDrawer(null)}
+            />
+          )}
         </>
       )}
     </>
@@ -179,7 +208,19 @@ function Tile({ label, value, sub, warn }: { label: string; value: string; sub?:
   );
 }
 
-function Itinerary({ board, teamId, onClose }: { board: BoardData; teamId: string | null; onClose: () => void }) {
+function Itinerary({
+  board,
+  teamId,
+  locks,
+  onClose,
+  onOpen,
+}: {
+  board: BoardData;
+  teamId: string | null;
+  locks: LockRow[];
+  onClose: () => void;
+  onOpen: (target: DrawerTarget) => void;
+}) {
   const { t, number, money, date } = useI18n();
   const site = useSites(board);
   const team = board.teams.find((candidate) => candidate.id === teamId);
@@ -215,9 +256,14 @@ function Itinerary({ board, teamId, onClose }: { board: BoardData; teamId: strin
             {number(s.empty_km)} {t("kmEmpty")}
           </p>
         </div>
-        <button className="btn btn-ghost" onClick={onClose}>
-          {t("close")}
-        </button>
+        <div className="result-actions">
+          <button className="btn" onClick={() => onOpen({ kind: "truck", id: team.id })}>
+            {t("whatIf")}
+          </button>
+          <button className="btn btn-ghost" onClick={onClose}>
+            {t("close")}
+          </button>
+        </div>
       </div>
       <div className="table-wrap">
         <table>
@@ -248,7 +294,11 @@ function Itinerary({ board, teamId, onClose }: { board: BoardData; teamId: strin
                   <td>
                     {job ? (
                       <>
-                        {job.ref} <span className="muted">{job.customer}</span>
+                        <button className="link" onClick={() => onOpen({ kind: "job", id: act[3]! })}>
+                          {job.ref}
+                        </button>{" "}
+                        {locks.some((l) => l.job_id === act[3]) && <Lock size={12} aria-label={t("frozenBadge")} />}{" "}
+                        <span className="muted">{job.customer}</span>
                         {job.offer && <span className="badge badge-amber small">{t("spot")}</span>}
                       </>
                     ) : (
@@ -265,10 +315,10 @@ function Itinerary({ board, teamId, onClose }: { board: BoardData; teamId: strin
   );
 }
 
-function Unserved({ board }: { board: BoardData }) {
+function Unserved({ board, onOpen }: { board: BoardData; onOpen: (target: DrawerTarget) => void }) {
   const { t, number } = useI18n();
   const site = useSites(board);
-  const jobs = board.unserved.map((id) => board.jobs[id]).filter((job) => job && !job.offer);
+  const jobs = board.unserved.filter((id) => board.jobs[id] && !board.jobs[id].offer).map((id) => ({ id, ...board.jobs[id] }));
   return (
     <section className="panel" aria-label={t("unservedTitle")}>
       <h2>
@@ -280,7 +330,10 @@ function Unserved({ board }: { board: BoardData }) {
         <ul className="unserved">
           {jobs.map((job) => (
             <li key={job.ref}>
-              <b>{job.ref}</b> <span className="muted">{job.customer}</span>
+              <button className="link" onClick={() => onOpen({ kind: "job", id: job.id })}>
+                <b>{job.ref}</b>
+              </button>{" "}
+              <span className="muted">{job.customer}</span>
               <div>
                 {site(job.from)} → {site(job.to)} · {job.tonnes} {t("tonnes")}
               </div>

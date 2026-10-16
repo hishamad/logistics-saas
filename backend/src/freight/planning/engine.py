@@ -935,10 +935,13 @@ class Search:
         return stats
 
     def load(self, routes: dict[str, list[str]]) -> None:
-        """Start from given routes (e.g. an earlier plan); unknown jobs are skipped."""
+        """Start from given routes (e.g. an earlier plan). Jobs that are unknown, or that
+        rules, locks or equipment no longer allow on that team, are left for re-insertion."""
         for team_id, route in routes.items():
             if team_id in self.solution.routes:
-                self.solution.routes[team_id] = [j for j in route if j in self.e.jobs]
+                self.solution.routes[team_id] = [
+                    j for j in route if j in self.e.jobs and team_id in self.e.eligible[j]
+                ]
                 for job_id in self.solution.routes[team_id]:
                     self.solution.where[job_id] = team_id
                 self._refresh(team_id)

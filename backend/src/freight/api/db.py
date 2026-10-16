@@ -72,6 +72,22 @@ class PlanRun(Base):
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class WhatIfRun(Base):
+    """A "what if?" question about one plan, answered by two re-plans in the background."""
+
+    __tablename__ = "whatif_runs"
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    company_id: Mapped[str] = mapped_column(ForeignKey("companies.id"), index=True)
+    plan_run_id: Mapped[str] = mapped_column(ForeignKey("plan_runs.id"), index=True)
+    created_by: Mapped[str] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="queued")  # queued|running|done|failed
+    change: Mapped[str] = mapped_column(Text)  # JSON
+    result: Mapped[str | None] = mapped_column(Text, nullable=True)  # JSON: facts and texts
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 class Database:
     def __init__(self, url: str) -> None:
         self.engine: Engine = create_engine(url, connect_args=_connect_args(url))

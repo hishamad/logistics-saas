@@ -120,6 +120,10 @@ def why(snapshot: Snapshot, plan: Plan, job_id: str) -> dict[str, Any]:
     return facts
 
 
+class WhatIfRefused(ValueError):
+    """The engine refused the changed situation; the message gives its reasons."""
+
+
 def what_if(
     snapshot: Snapshot,
     plan: Plan,
@@ -148,7 +152,9 @@ def what_if(
             j.model_copy(update={"state": "cancelled"}) if j.id == change["job"] else j
             for j in snapshot.jobs
         )
-        modified = snapshot.model_copy(update={"jobs": jobs})
+        # A cancelled job cannot stay frozen on its truck.
+        locks = tuple(lock for lock in snapshot.locks if lock.job_id != change["job"])
+        modified = snapshot.model_copy(update={"jobs": jobs, "locks": locks})
         description = f"Job {refs[change['job']]} is cancelled"
         description_ar = f"أُلغيت الشحنة {refs[change['job']]}"
     elif kind == "unavailable":
@@ -183,6 +189,9 @@ def what_if(
     modified = modified.model_copy(update=steady)
     control = plan_lns(control_snapshot, seed=seed, rounds=rounds, initial=routes_of(plan))
     after = plan_lns(modified, seed=seed, rounds=rounds, initial=routes_of(plan))
+    for planned in (control, after):
+        if planned.outcome == "model_invalid":
+            raise WhatIfRefused("; ".join(f.message for f in planned.findings[:3]))
     changes = diff_plans(control, after)
 
     def numbers(snap: Snapshot, p: Plan) -> dict[str, Any]:
@@ -319,9 +328,10 @@ def template(facts: dict[str, Any], language: Language = "en") -> str:
             f"{facts['trucks_whose_plan_changes']} شاحنة."
         )
     lost = facts["jobs_no_longer_served"]
+    total = after.get("contribution_sar")
     return (
         f"If {facts['change'][0].lower() + facts['change'][1:]}: contribution changes by SAR "
-        f"{d.get('contribution_sar', 0):,} (to SAR {after['contribution_sar']:,}), contract jobs "
+        f"{d.get('contribution_sar', 0):,}{f' (to SAR {total:,})' if total is not None else ''}, contract jobs "
         f"served by {d.get('contract_jobs_served', 0)}. {facts['jobs_moved_count']} "
         f"{'job moves' if facts['jobs_moved_count'] == 1 else 'jobs move'} to another truck and "
         f"{facts['trucks_whose_plan_changes']} trucks' plans change."

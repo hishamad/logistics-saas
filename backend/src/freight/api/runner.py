@@ -7,14 +7,19 @@ from typing import Any
 
 from sqlalchemy.orm import sessionmaker
 
-from freight.api.db import PlanRun, utcnow
+from freight.api.db import PlanRun, WhatIfRun, utcnow
 from freight.domain.models import Plan, Snapshot
+from freight.explain import WhatIfRefused, narrate, what_if
 from freight.planning.engine import plan_lns
 from freight.planning.lookahead import plan_with_lookahead
 
 
-def compute_plan(snapshot_json: str, settings: dict[str, Any]) -> tuple[str, str]:
-    """Runs in a worker process. Returns (planned snapshot JSON, plan JSON)."""
+def compute_plan(
+    snapshot_json: str, settings: dict[str, Any], initial: dict[str, list[str]] | None = None
+) -> tuple[str, str]:
+    """Runs in a worker process. Returns (planned snapshot JSON, plan JSON).
+
+    ``initial`` (team -> job ids) continues from an earlier plan instead of starting empty."""
     snapshot = Snapshot.model_validate_json(snapshot_json)
     seconds = float(settings.get("seconds", 30))
     seed = int(settings.get("seed", 1))
@@ -22,8 +27,31 @@ def compute_plan(snapshot_json: str, settings: dict[str, Any]) -> tuple[str, str
     if settings.get("lookahead"):
         snapshot, plan = plan_with_lookahead(snapshot, seconds=seconds, seed=seed)
     else:
-        plan = plan_lns(snapshot, seconds=seconds, seed=seed, rounds=rounds)
+        plan = plan_lns(snapshot, seconds=seconds, seed=seed, rounds=rounds, initial=initial)
     return snapshot.model_dump_json(), plan.model_dump_json()
+
+
+# Errors starting with this are safe to show: they describe the user's own data.
+INPUT_PROBLEMS = "The engine refused these inputs: "
+
+# Effort per what-if re-plan. Two re-plans of a 100-truck week take about 20 s.
+WHATIF_ROUNDS = 800
+
+
+def compute_whatif(snapshot_json: str, plan_json: str, change: dict[str, Any]) -> str:
+    """Runs in a worker process. Returns the facts and their text in both languages (JSON)."""
+    snapshot = Snapshot.model_validate_json(snapshot_json)
+    plan = Plan.model_validate_json(plan_json)
+    facts, _, _ = what_if(snapshot, plan, change, rounds=WHATIF_ROUNDS)
+    texts = {"en": narrate(facts, "en"), "ar": narrate(facts, "ar")}
+    return json.dumps(
+        {
+            "facts": facts,
+            "text": {language: text for language, (text, _) in texts.items()},
+            "source": texts["en"][1],
+        },
+        ensure_ascii=False,
+    )
 
 
 def summarize(snapshot: Snapshot, plan: Plan) -> dict[str, Any]:
@@ -44,6 +72,14 @@ def summarize(snapshot: Snapshot, plan: Plan) -> dict[str, Any]:
         "cost_minor": c.total_minor if c else None,
         "revenue_minor": c.revenue_minor if c else None,
         "runtime_s": round(plan.runtime_ms / 1000, 1),
+        # Jobs on a different truck than in the previous plan (instructions to re-send).
+        "changed": sum(
+            1
+            for a in plan.assignments
+            if a.job_id in snapshot.previous and snapshot.previous[a.job_id] != a.team_id
+        )
+        if snapshot.previous
+        else None,
     }
 
 
@@ -52,12 +88,41 @@ class Runner:
         self.executor = executor
         self.session = session
 
-    def submit(self, run_id: str, snapshot_json: str, settings: dict[str, Any]) -> Future:  # type: ignore[type-arg]
+    def submit(
+        self,
+        run_id: str,
+        snapshot_json: str,
+        settings: dict[str, Any],
+        initial: dict[str, list[str]] | None = None,
+    ) -> Future:  # type: ignore[type-arg]
         with self.session.begin() as db:
             db.get_one(PlanRun, run_id).status = "running"
-        future = self.executor.submit(compute_plan, snapshot_json, settings)
+        future = self.executor.submit(compute_plan, snapshot_json, settings, initial)
         future.add_done_callback(lambda done: self._finish(run_id, done))
         return future
+
+    def submit_whatif(
+        self, run_id: str, snapshot_json: str, plan_json: str, change: dict[str, Any]
+    ) -> Future:  # type: ignore[type-arg]
+        with self.session.begin() as db:
+            db.get_one(WhatIfRun, run_id).status = "running"
+        future = self.executor.submit(compute_whatif, snapshot_json, plan_json, change)
+        future.add_done_callback(lambda done: self._finish_whatif(run_id, done))
+        return future
+
+    def _finish_whatif(self, run_id: str, future: Future) -> None:  # type: ignore[type-arg]
+        with self.session.begin() as db:
+            run = db.get_one(WhatIfRun, run_id)
+            run.finished_at = utcnow()
+            try:
+                run.result = future.result()
+                run.status = "done"
+            except WhatIfRefused as refused:
+                run.status = "failed"
+                run.error = INPUT_PROBLEMS + str(refused)
+            except Exception:
+                run.status = "failed"
+                run.error = traceback.format_exc(limit=3)
 
     def _finish(self, run_id: str, future: Future) -> None:  # type: ignore[type-arg]
         with self.session.begin() as db:
@@ -71,6 +136,10 @@ class Runner:
                 return
             snapshot = Snapshot.model_validate_json(snapshot_json)
             plan = Plan.model_validate_json(plan_json)
+            if plan.outcome == "model_invalid":  # the engine refused the inputs
+                run.status = "failed"
+                run.error = INPUT_PROBLEMS + "; ".join(f.message for f in plan.findings[:3])
+                return
             run.snapshot, run.plan = snapshot_json, plan_json
             run.summary = json.dumps(summarize(snapshot, plan))
             run.status = "done"

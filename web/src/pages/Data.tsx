@@ -6,11 +6,8 @@ import { Link } from "react-router-dom";
 import { api, ApiError, type DataOverview, type SheetKind, type SheetProblem, type UploadResult } from "../api";
 import { useAuth } from "../auth";
 import { useI18n, type StringKey } from "../i18n";
+import { fromRiyadhInput, toRiyadhInput } from "../time";
 
-const RIYADH_MS = 3 * 3600 * 1000; // UTC+3, no daylight saving
-
-// "2026-10-18T03:00:00Z" -> "2026-10-18T06:00" for <input type="datetime-local">, in Riyadh time.
-const toLocalInput = (iso: string) => new Date(new Date(iso).getTime() + RIYADH_MS).toISOString().slice(0, 16);
 
 export function Data() {
   const { t, number, date } = useI18n();
@@ -57,15 +54,15 @@ export function Data() {
 function WindowCard({ data, editable, onChanged }: { data: DataOverview; editable: boolean; onChanged: () => void }) {
   const { t, number } = useI18n();
   const days = Math.round((new Date(data.window.end).getTime() - new Date(data.window.start).getTime()) / 86400000);
-  const [start, setStart] = useState(toLocalInput(data.window.start));
+  const [start, setStart] = useState(toRiyadhInput(data.window.start));
   const [length, setLength] = useState(days);
   const [state, setState] = useState<"idle" | "saving" | "saved" | string>("idle");
-  const changed = start !== toLocalInput(data.window.start) || length !== days;
+  const changed = start !== toRiyadhInput(data.window.start) || length !== days;
 
   async function save() {
     setState("saving");
     try {
-      await api.post("/api/data/window", { start: `${start}:00+03:00`, days: length });
+      await api.post("/api/data/window", { start: fromRiyadhInput(start), days: length });
       setState("saved");
       onChanged();
     } catch (caught) {
