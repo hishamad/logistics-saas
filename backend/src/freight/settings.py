@@ -45,3 +45,32 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def key_override_warning(files: tuple[Path, ...] = LOCAL_ENV_FILES) -> str | None:
+    """Warn when an OPENAI_API_KEY environment variable hides a different key in .env.
+
+    Environment variables win over .env files (right for servers), which silently keeps
+    an old key in use after someone updates .env. Only fingerprints are reported.
+    """
+    import hashlib
+    import os
+
+    from dotenv import dotenv_values
+
+    from_env = os.environ.get("OPENAI_API_KEY")
+    if not from_env:
+        return None
+    for file in files:
+        in_file = dotenv_values(file).get("OPENAI_API_KEY") if file.exists() else None
+        if in_file and in_file != from_env:
+
+            def mark(key: str) -> str:
+                return hashlib.sha256(key.encode()).hexdigest()[:8]
+
+            return (
+                f"OPENAI_API_KEY from the environment (key {mark(from_env)}) overrides a "
+                f"different key in {file} (key {mark(in_file)}). Remove or update the "
+                "environment variable if the .env key is the one to use."
+            )
+    return None

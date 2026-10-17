@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from freight.api.db import Operation, PlanRun, User, WhatIfRun, utcnow
 from freight.api.deps import Db, Dispatcher, Me
-from freight.api.runner import INPUT_PROBLEMS, compute_whatif
+from freight.api.runner import INPUT_PROBLEMS, compute_whatif, fail_interrupted
 from freight.api.schemas import PlanRequest, WhatIfRequest
 from freight.api.store import (
     RIYADH,
@@ -101,7 +101,8 @@ def start_plan(
 
 
 @router.get("/plans")
-def list_plans(user: Me, session: Db) -> list[dict[str, Any]]:
+def list_plans(request: Request, user: Me, session: Db) -> list[dict[str, Any]]:
+    fail_interrupted(request.app.state.database.session)  # clear runs that died
     runs = session.scalars(
         select(PlanRun)
         .where(PlanRun.company_id == user.company_id)

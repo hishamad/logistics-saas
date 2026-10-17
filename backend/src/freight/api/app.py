@@ -8,6 +8,7 @@ change something must carry the header ``X-Requested-With: freight`` (a simple
 defence against cross-site request forgery for a same-origin web app).
 """
 
+import logging
 from collections.abc import AsyncIterator
 from concurrent.futures import Executor, ProcessPoolExecutor
 from contextlib import asynccontextmanager
@@ -20,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from freight.api.db import Database
 from freight.api.routes import auth, data, plans, steering
 from freight.api.runner import Runner, fail_interrupted
-from freight.settings import get_settings
+from freight.settings import get_settings, key_override_warning
 
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
@@ -35,6 +36,8 @@ SECURITY_HEADERS = {
 
 def create_app(database_url: str | None = None, executor: Executor | None = None) -> FastAPI:
     settings = get_settings()
+    if warning := key_override_warning():
+        logging.getLogger("freight").warning(warning)
     url = database_url or settings.database_url
     if url.startswith("sqlite:///"):
         Path(url.removeprefix("sqlite:///")).parent.mkdir(parents=True, exist_ok=True)

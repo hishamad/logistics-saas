@@ -325,6 +325,11 @@ INSTRUCTIONS = """You explain a computed freight plan to a Saudi truck dispatche
 Use ONLY the facts in the JSON input. Quote numbers exactly as given; never estimate,
 add or invent costs, savings, reasons or causes. If the facts do not answer something,
 say so briefly. Money is in SAR. Keep it under 120 words, plain and practical, no headings.
+For a "why": the planner picks the combination with the lowest total cost, so a cheaper truck
+is the reason it was chosen. Say which truck has the job and its extra cost; name the best
+alternative and how much more it would cost (more_than_chosen_sar); then give every reason in
+trucks_that_cannot_take_it with its count (for example "26 have the wrong trailer, 43 are busy
+with other work"). If no truck has the job, say why the trucks cannot take it, with counts.
 For a what-if, "method" says how it was computed: "repair" is the least change to the
 current plan (exact), "replan" a fresh re-plan (an estimate with some search noise); say which.
 Write in {language}. In Arabic use clear Modern Standard Arabic and the Arabic site names

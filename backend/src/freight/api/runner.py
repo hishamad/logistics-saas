@@ -3,6 +3,7 @@
 import json
 import traceback
 from concurrent.futures import Executor, Future
+from datetime import UTC, timedelta
 from typing import Any
 
 from sqlalchemy import select
@@ -47,7 +48,7 @@ def compute_plan(
 # Errors starting with this are safe to show: they describe the user's own data.
 INPUT_PROBLEMS = "The engine refused these inputs: "
 
-INTERRUPTED = "Stopped because the server restarted. Run it again."
+INTERRUPTED = "Stopped: the server restarted or the run took far too long. Run it again."
 
 
 def is_safe_error(error: str | None) -> bool:
@@ -55,14 +56,32 @@ def is_safe_error(error: str | None) -> bool:
     return bool(error) and (error.startswith(INPUT_PROBLEMS) or error == INTERRUPTED)  # type: ignore[union-attr]
 
 
+# A run still unfinished this long after its start can no longer finish (its process is
+# gone): a plan stops after its search time; a what-if re-plan takes well under this.
+PLAN_GRACE = timedelta(minutes=3)
+WHATIF_LIMIT = timedelta(minutes=10)
+
+
 def fail_interrupted(session: sessionmaker) -> int:  # type: ignore[type-arg]
-    """Runs still queued or running when the server starts can never finish: fail them."""
+    """Fail runs that are unfinished long past the time they could take.
+
+    Judged by age, not by which process asks: a second server starting on the same
+    database (a restart overlap, a double start) must not fail runs that are alive.
+    """
+    now = utcnow()
     count = 0
     with session.begin() as db:
         for table in (PlanRun, WhatIfRun):
             for run in db.scalars(select(table).where(table.status.in_(("queued", "running")))):
-                run.status, run.error, run.finished_at = "failed", INTERRUPTED, utcnow()
-                count += 1
+                started = run.created_at.replace(tzinfo=run.created_at.tzinfo or UTC)
+                if table is PlanRun:
+                    seconds = float(json.loads(run.settings).get("seconds", 300))
+                    deadline = started + timedelta(seconds=seconds) + PLAN_GRACE
+                else:
+                    deadline = started + WHATIF_LIMIT
+                if now > deadline:
+                    run.status, run.error, run.finished_at = "failed", INTERRUPTED, now
+                    count += 1
     return count
 
 

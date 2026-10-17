@@ -84,7 +84,7 @@ export function Rules() {
 }
 
 function Ask({ steering, onAdd }: { steering: Steering; onAdd: (rule: NewRule) => Promise<boolean> }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const describe = useRuleText(steering);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -94,7 +94,7 @@ function Ask({ steering, onAdd }: { steering: Steering; onAdd: (rule: NewRule) =
     setBusy(true);
     setAnswer(null);
     try {
-      setAnswer(await api.post<Interpretation>("/api/rules/interpret", { text }));
+      setAnswer(await api.post<Interpretation>("/api/rules/interpret", { text, lang }));
     } catch (caught) {
       setAnswer({ status: "error", explanation: (caught as Error).message, rule: null });
     } finally {

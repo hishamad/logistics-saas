@@ -65,6 +65,7 @@ class FreezeRequest(BaseModel):
 
 class InterpretRequest(BaseModel):
     text: str = Field(min_length=2, max_length=1000)
+    lang: Literal["en", "ar"] = "en"  # the dispatcher's screen language, for the reply
 
 
 class WhatIfRequest(BaseModel):

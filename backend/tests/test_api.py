@@ -406,25 +406,32 @@ def test_changes_since_the_last_plan_and_excel_export(app):
     assert other.get(f"/api/plans/{second['id']}/changes").status_code == 404
 
 
-def test_runs_cut_off_by_a_restart_are_failed_with_a_reason(app):
-    from freight.api.db import PlanRun
+def test_only_runs_that_cannot_still_be_alive_are_failed(app, tmp_path):
+    """A second server on the same database must not fail a plan that is still running."""
+    from freight.api.db import PlanRun, utcnow
 
     with app.state.database.session.begin() as db:
         user = db.query(User).filter_by(email="dispatcher@east.test").one()
-        db.add(
-            PlanRun(
-                id="stuck",
-                company_id="east",
-                created_by=user.id,
-                settings='{"seconds": 15}',
-                snapshot="{}",
-                status="running",
+        for run_id, age in (("dead", timedelta(minutes=20)), ("alive", timedelta(seconds=5))):
+            db.add(
+                PlanRun(
+                    id=run_id,
+                    company_id="east",
+                    created_by=user.id,
+                    created_at=utcnow() - age,
+                    settings='{"seconds": 15}',
+                    snapshot="{}",
+                    status="running",
+                )
             )
-        )
-    client = login(app, "dispatcher@east.test")  # starting the app runs the clean-up
-    run = client.get("/api/plans/stuck").json()
-    assert run["status"] == "failed"
-    assert "server restarted" in run["error"]
+    url = str(app.state.database.engine.url)
+    second = create_app(url, ThreadPoolExecutor(1))  # e.g. a restart overlap
+    with TestClient(second):
+        pass
+    client = login(app, "dispatcher@east.test")
+    dead, alive = client.get("/api/plans/dead").json(), client.get("/api/plans/alive").json()
+    assert dead["status"] == "failed" and "server restarted" in dead["error"]
+    assert alive["status"] == "running"
 
 
 def test_a_freeze_that_became_impossible_is_released_not_fatal(app):

@@ -77,7 +77,7 @@ def interpret_rule(body: InterpretRequest, session: Db, user: Dispatcher) -> dic
     """Propose (never apply) a rule from an Arabic or English sentence."""
     snapshot = operation_of(session, user.company_id)
     try:
-        return propose_rule(snapshot, body.text)
+        return propose_rule(snapshot, body.text, body.lang)
     except InterpretationError as error:
         return {"status": "error", "explanation": str(error), "rule": None}
 

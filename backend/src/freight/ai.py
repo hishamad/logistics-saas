@@ -56,11 +56,14 @@ required_end: team_id, site_id, start=planning horizon start, end=explicit deadl
 customer_eligibility: team_id and exact customer, hard. Restricts that team exclusively to that customer; does NOT dedicate every job of that customer to the team.
 preferred_assignment: team_id and job_id, hard when required. Soft preferences need an explicitly stated tradeoff penalty in SAR (convert to halalas) or clarification; do not choose a penalty.
 All fields unused by the chosen type must be null. Hard rules have penalty_minor=0. No driving-hour, multi-depot, swapping teams, cargo, legal, route avoidance, publication, cancellation, or multiple-rule support. Requests requiring those are unsupported. For an ambiguous time or entity ask a short specific question in the user's language. Do not make an approximate rule. Do not claim feasibility, costs, savings, or successful assignment: those require the deterministic planner.
-explanation must state the operational interpretation in the user's language. question is null only when no clarification is needed."""
+explanation and question must be written in reply_language (the language of the dispatcher's screen), whatever language the instruction or catalog uses. question is null only when no clarification is needed."""
 
 
 def validate_interpretation(
-    snapshot: Snapshot, text: str, interpretation: RuleInterpretation
+    snapshot: Snapshot,
+    text: str,
+    interpretation: RuleInterpretation,
+    language: Literal["en", "ar"] = "en",
 ) -> dict[str, Any]:
     output = interpretation.model_dump()
     if interpretation.status != "proposed":
@@ -79,7 +82,7 @@ def validate_interpretation(
         and interpretation.strength == "soft"
         and interpretation.penalty_minor is None
     ):
-        arabic = any("\u0600" <= character <= "\u06ff" for character in text)
+        arabic = language == "ar"
         return {
             "status": "clarification",
             "explanation": "يتطلب التفضيل عقوبة تحسين محددة. لم تُطبّق أي قاعدة."
@@ -131,7 +134,10 @@ def validate_interpretation(
     }
 
 
-def propose_rule(snapshot: Snapshot, text: str) -> dict[str, Any]:
+def propose_rule(
+    snapshot: Snapshot, text: str, language: Literal["en", "ar"] = "en"
+) -> dict[str, Any]:
+    """One proposed rule (never applied) from an instruction; texts in ``language``."""
     settings = get_settings()
     if not settings.ai_configured or settings.openai_api_key is None:
         raise InterpretationError(
@@ -156,7 +162,12 @@ def propose_rule(snapshot: Snapshot, text: str) -> dict[str, Any]:
                 model=settings.openai_model_rules,
                 instructions=SYSTEM_PROMPT,
                 input=json.dumps(
-                    {"catalog": catalog, "dispatcher_instruction": text}, ensure_ascii=False
+                    {
+                        "catalog": catalog,
+                        "dispatcher_instruction": text,
+                        "reply_language": "Arabic" if language == "ar" else "English",
+                    },
+                    ensure_ascii=False,
                 ),
                 text_format=RuleInterpretation,
                 store=False,
@@ -171,7 +182,7 @@ def propose_rule(snapshot: Snapshot, text: str) -> dict[str, Any]:
             raise InterpretationError(
                 "The AI did not return a complete supported interpretation (it may have declined the request). No rule was applied."
             )
-        result = validate_interpretation(snapshot, text, response.output_parsed)
+        result = validate_interpretation(snapshot, text, response.output_parsed, language)
         return result | {
             "model": response.model,
             "latency_ms": round((perf_counter() - started) * 1000),
