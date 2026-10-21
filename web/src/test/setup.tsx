@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 import { AuthProvider } from "../auth";
 import { I18nProvider, type Language } from "../i18n";
+import { ThemeProvider } from "../theme";
 
 type Reply = { status?: number; body: unknown };
 
@@ -32,10 +33,12 @@ export const ME = (role: "admin" | "dispatcher" | "viewer" = "dispatcher") => ({
 export function show(ui: ReactElement, language: Language = "en", path = "/") {
   localStorage.setItem("lang", language);
   return render(
-    <I18nProvider>
-      <AuthProvider>
-        <MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>
-      </AuthProvider>
-    </I18nProvider>,
+    <ThemeProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>
+        </AuthProvider>
+      </I18nProvider>
+    </ThemeProvider>,
   );
 }

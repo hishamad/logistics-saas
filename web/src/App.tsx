@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth";
 import { Shell } from "./components/Shell";
 import { I18nProvider } from "./i18n";
+import { ThemeProvider } from "./theme";
 import { Board } from "./pages/Board";
 import { Data } from "./pages/Data";
 import { History } from "./pages/History";
@@ -19,6 +20,7 @@ function RequireLogin({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
+    <ThemeProvider>
     <I18nProvider>
       <AuthProvider>
         <BrowserRouter>
@@ -43,5 +45,6 @@ export default function App() {
         </BrowserRouter>
       </AuthProvider>
     </I18nProvider>
+    </ThemeProvider>
   );
 }
