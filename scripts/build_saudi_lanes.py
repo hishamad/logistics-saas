@@ -16,6 +16,38 @@ import json
 import urllib.request
 from pathlib import Path
 
+# Short city names for map labels (several sites can share a city).
+MAP_LABELS = {
+    "riyadh": ("Riyadh", "الرياض"),
+    "riyadh_ind2": ("Riyadh", "الرياض"),
+    "riyadh_dryport": ("Riyadh", "الرياض"),
+    "kharj": ("Al-Kharj", "الخرج"),
+    "sudair": ("Sudair", "سدير"),
+    "dammam_port": ("Dammam", "الدمام"),
+    "dammam_ind2": ("Dammam", "الدمام"),
+    "jubail": ("Jubail", "الجبيل"),
+    "hofuf": ("Al-Ahsa", "الأحساء"),
+    "causeway": ("Causeway", "الجسر"),
+    "batha": ("Al-Batha", "البطحاء"),
+    "hafr": ("Hafr Al-Batin", "حفر الباطن"),
+    "jeddah_port": ("Jeddah", "جدة"),
+    "jeddah_ind": ("Jeddah", "جدة"),
+    "kaec_port": ("KAEC", "مدينة الملك عبدالله"),
+    "rabigh": ("Rabigh", "رابغ"),
+    "makkah": ("Makkah", "مكة"),
+    "taif": ("Taif", "الطائف"),
+    "madinah": ("Madinah", "المدينة"),
+    "yanbu": ("Yanbu", "ينبع"),
+    "khamis": ("Khamis Mushait", "خميس مشيط"),
+    "jazan": ("Jazan", "جازان"),
+    "najran": ("Najran", "نجران"),
+    "buraydah": ("Buraydah", "بريدة"),
+    "hail": ("Hail", "حائل"),
+    "tabuk": ("Tabuk", "تبوك"),
+    "sakaka": ("Sakaka", "سكاكا"),
+    "arar": ("Arar", "عرعر"),
+}
+
 # id, English name, Arabic name, kind, latitude, longitude
 SITES = [
     ("riyadh", "Riyadh city", "الرياض", "city", 24.7136, 46.6753),
@@ -75,9 +107,9 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     with (out / "sites.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["id", "name", "name_ar", "kind", "lat", "lon", "snapped_road_m"])
+        writer.writerow(["id", "name", "name_ar", "kind", "lat", "lon", "snapped_road_m", "city", "city_ar"])
         for site, snapped in zip(SITES, table["sources"], strict=True):
-            writer.writerow([*site, round(snapped["distance"])])
+            writer.writerow([*site, round(snapped["distance"]), *MAP_LABELS[site[0]]])
     source = f"OSRM/OpenStreetMap car route; truck time = car x {args.truck_factor}"
     with (out / "lanes.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)

@@ -1,29 +1,29 @@
-id,name,name_ar,kind,lat,lon,snapped_road_m
-riyadh,Riyadh city,الرياض,city,24.7136,46.6753,3
-riyadh_ind2,Riyadh 2nd Industrial City,المدينة الصناعية الثانية بالرياض,industrial,24.56,46.87,20
-riyadh_dryport,Riyadh Dry Port,ميناء الرياض الجاف,port,24.67,46.77,23
-kharj,Al-Kharj,الخرج,city,24.15,47.3,3
-sudair,Sudair Industrial City,مدينة سدير للصناعة,industrial,25.67,45.62,570
-dammam_port,"King Abdulaziz Port, Dammam",ميناء الملك عبدالعزيز بالدمام,port,26.49,50.2,26
-dammam_ind2,Dammam 2nd Industrial City,المدينة الصناعية الثانية بالدمام,industrial,26.3,50.03,43
-jubail,Jubail Industrial City,الجبيل الصناعية,industrial,27.0,49.62,12
-hofuf,Al-Ahsa (Hofuf),الأحساء,city,25.38,49.59,28
-causeway,King Fahd Causeway (Saudi side),جسر الملك فهد,border,26.18,50.33,95
-batha,Al-Batha border crossing (UAE),منفذ البطحاء,border,24.18,51.55,1733
-hafr,Hafr Al-Batin,حفر الباطن,city,28.43,45.97,22
-jeddah_port,Jeddah Islamic Port,ميناء جدة الإسلامي,port,21.47,39.17,12
-jeddah_ind,Jeddah Industrial City,المدينة الصناعية بجدة,industrial,21.39,39.24,978
-kaec_port,King Abdullah Port,ميناء الملك عبدالله,port,22.52,39.08,685
-rabigh,Rabigh,رابغ,industrial,22.8,39.03,42
-makkah,Makkah,مكة المكرمة,city,21.42,39.83,45
-taif,Taif,الطائف,city,21.27,40.42,11
-madinah,Madinah,المدينة المنورة,city,24.47,39.61,17
-yanbu,Yanbu,ينبع,port,24.09,38.06,8
-khamis,Khamis Mushait,خميس مشيط,city,18.3,42.73,16
-jazan,Jazan,جازان,port,16.89,42.57,22
-najran,Najran,نجران,city,17.49,44.13,7
-buraydah,Buraydah (Qassim),بريدة,city,26.33,43.97,3
-hail,Hail,حائل,city,27.52,41.69,35
-tabuk,Tabuk,تبوك,city,28.38,36.57,1
-sakaka,Sakaka (Al-Jouf),سكاكا,city,29.97,40.21,16
-arar,Arar,عرعر,city,30.98,41.04,21
+id,name,name_ar,kind,lat,lon,snapped_road_m,city,city_ar
+riyadh,Riyadh city,الرياض,city,24.7136,46.6753,3,Riyadh,الرياض
+riyadh_ind2,Riyadh 2nd Industrial City,المدينة الصناعية الثانية بالرياض,industrial,24.56,46.87,20,Riyadh,الرياض
+riyadh_dryport,Riyadh Dry Port,ميناء الرياض الجاف,port,24.67,46.77,23,Riyadh,الرياض
+kharj,Al-Kharj,الخرج,city,24.15,47.3,3,Al-Kharj,الخرج
+sudair,Sudair Industrial City,مدينة سدير للصناعة,industrial,25.67,45.62,570,Sudair,سدير
+dammam_port,"King Abdulaziz Port, Dammam",ميناء الملك عبدالعزيز بالدمام,port,26.49,50.2,26,Dammam,الدمام
+dammam_ind2,Dammam 2nd Industrial City,المدينة الصناعية الثانية بالدمام,industrial,26.3,50.03,43,Dammam,الدمام
+jubail,Jubail Industrial City,الجبيل الصناعية,industrial,27.0,49.62,12,Jubail,الجبيل
+hofuf,Al-Ahsa (Hofuf),الأحساء,city,25.38,49.59,28,Al-Ahsa,الأحساء
+causeway,King Fahd Causeway (Saudi side),جسر الملك فهد,border,26.18,50.33,95,Causeway,الجسر
+batha,Al-Batha border crossing (UAE),منفذ البطحاء,border,24.18,51.55,1733,Al-Batha,البطحاء
+hafr,Hafr Al-Batin,حفر الباطن,city,28.43,45.97,22,Hafr Al-Batin,حفر الباطن
+jeddah_port,Jeddah Islamic Port,ميناء جدة الإسلامي,port,21.47,39.17,12,Jeddah,جدة
+jeddah_ind,Jeddah Industrial City,المدينة الصناعية بجدة,industrial,21.39,39.24,978,Jeddah,جدة
+kaec_port,King Abdullah Port,ميناء الملك عبدالله,port,22.52,39.08,685,KAEC,مدينة الملك عبدالله
+rabigh,Rabigh,رابغ,industrial,22.8,39.03,42,Rabigh,رابغ
+makkah,Makkah,مكة المكرمة,city,21.42,39.83,45,Makkah,مكة
+taif,Taif,الطائف,city,21.27,40.42,11,Taif,الطائف
+madinah,Madinah,المدينة المنورة,city,24.47,39.61,17,Madinah,المدينة
+yanbu,Yanbu,ينبع,port,24.09,38.06,8,Yanbu,ينبع
+khamis,Khamis Mushait,خميس مشيط,city,18.3,42.73,16,Khamis Mushait,خميس مشيط
+jazan,Jazan,جازان,port,16.89,42.57,22,Jazan,جازان
+najran,Najran,نجران,city,17.49,44.13,7,Najran,نجران
+buraydah,Buraydah (Qassim),بريدة,city,26.33,43.97,3,Buraydah,بريدة
+hail,Hail,حائل,city,27.52,41.69,35,Hail,حائل
+tabuk,Tabuk,تبوك,city,28.38,36.57,1,Tabuk,تبوك
+sakaka,Sakaka (Al-Jouf),سكاكا,city,29.97,40.21,16,Sakaka,سكاكا
+arar,Arar,عرعر,city,30.98,41.04,21,Arar,عرعر

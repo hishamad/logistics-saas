@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 from datetime import datetime, timedelta
 from decimal import Decimal
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,24 @@ def saudi_network(folder: Path = NETWORK) -> tuple[tuple[Site, ...], tuple[Lane,
             for r in csv.DictReader(f)
         )
     return sites, lanes
+
+
+@lru_cache
+def site_geography(folder: Path = NETWORK) -> dict[str, tuple[float, float, str, str]]:
+    """Latitude, longitude and city (English, Arabic) of each network site, for maps.
+
+    Sites outside the network have none. Several sites can share a city (a port and an
+    industrial city in Dammam), so maps label the city once."""
+    with (folder / "sites.csv").open(encoding="utf-8") as f:
+        return {
+            r["id"]: (
+                float(r["lat"]),
+                float(r["lon"]),
+                r.get("city") or r["name"],
+                r.get("city_ar") or r["name_ar"],
+            )
+            for r in csv.DictReader(f)
+        }
 
 
 class OnboardingError(ValueError):

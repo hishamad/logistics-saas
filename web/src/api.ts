@@ -296,7 +296,8 @@ export type AuditRow = { at: string; by: string | null; action: string; detail: 
 export type Attention =
   | { kind: "no_plan" | "plan_out_of_date" }
   | { kind: "plan_invalid"; findings: string[] }
-  | { kind: "unserved" | "notify"; count: number }
+  | { kind: "unserved"; count: number; refs?: string[] }
+  | { kind: "notify"; count: number }
   | { kind: "released"; refs: string[] }
   | { kind: "idle_trucks"; count: number; names: string[] }
   | { kind: "expired"; count: number; refs: string[] }
@@ -307,4 +308,9 @@ export type OverviewData = {
   latest: PlanRun | null;
   running: PlanRun | null;
   attention: Attention[];
+};
+
+export type Network = {
+  sites: { id: string; name: string; name_ar: string; city: string; city_ar: string; lat: number; lon: number; trucks: number }[];
+  lanes: { from: string; to: string; loaded: boolean; trips: number }[];
 };

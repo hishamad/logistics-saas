@@ -525,3 +525,24 @@ def test_the_next_day_needs_a_plan_made_for_the_current_window(app):
     refused = client.get("/api/data/roll")
     assert refused.status_code == 409 and "different planning window" in refused.json()["detail"]
     assert client.post("/api/data/roll", json={}, headers=WRITE).status_code == 409
+
+
+def test_the_network_map_has_real_sites_and_the_lanes_the_plan_drives(app):
+    from pathlib import Path
+
+    pilot = Path(__file__).parents[2] / "data" / "saudi" / "scenarios" / "pilot" / "snapshot.json"
+    with app.state.database.session.begin() as db:
+        db.get(Operation, "east").snapshot = pilot.read_text(encoding="utf-8")
+    client = login(app, "dispatcher@east.test")
+    before = client.get("/api/network").json()
+    riyadh = next(s for s in before["sites"] if s["id"] == "riyadh")
+    assert 24 < riyadh["lat"] < 25 and 46 < riyadh["lon"] < 47
+    assert before["lanes"] == []  # no plan yet
+    done_plan(client)
+    after = client.get("/api/network").json()
+    assert after["lanes"] and all(lane["trips"] >= 1 for lane in after["lanes"])
+    ids = {s["id"] for s in after["sites"]}
+    assert all(lane["from"] in ids and lane["to"] in ids for lane in after["lanes"])
+    assert sum(s["trucks"] for s in after["sites"]) > 0
+    west = login(app, "dispatcher@west.test").get("/api/network").json()
+    assert west["sites"] == []  # the other company's demo sites have no map position

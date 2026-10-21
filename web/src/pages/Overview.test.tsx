@@ -1,6 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { OverviewData } from "../api";
+import type { Network, OverviewData } from "../api";
 import { fakeApi, ME, show } from "../test/setup";
 import { Overview } from "./Overview";
 
@@ -11,9 +11,20 @@ const data: OverviewData = {
   attention: [{ kind: "unserved", count: 3 }, { kind: "expired", count: 1, refs: ["SO-9"] }, { kind: "plan_out_of_date" }],
 };
 
+// Two Riyadh sites (one city, labelled once with both cities' trucks) and Dammam.
+const network: Network = {
+  sites: [
+    { id: "ry1", name: "Riyadh dry port", name_ar: "ميناء الرياض الجاف", city: "Riyadh", city_ar: "الرياض", lat: 24.7, lon: 46.8, trucks: 3 },
+    { id: "ry2", name: "Riyadh 2nd Industrial City", name_ar: "المدينة الصناعية الثانية", city: "Riyadh", city_ar: "الرياض", lat: 24.55, lon: 46.9, trucks: 2 },
+    { id: "dm", name: "Dammam port", name_ar: "ميناء الدمام", city: "Dammam", city_ar: "الدمام", lat: 26.5, lon: 50.2, trucks: 0 },
+  ],
+  lanes: [{ from: "ry1", to: "dm", loaded: true, trips: 2 }],
+};
+const NETWORK = { "/api/network": { body: network } };
+
 describe("overview", () => {
   it("lists what needs attention with a way to act on each", async () => {
-    fakeApi({ "/api/me": ME("dispatcher"), "/api/overview": { body: data } });
+    fakeApi({ "/api/me": ME("dispatcher"), "/api/overview": { body: data }, ...NETWORK });
     show(<Overview />);
     await waitFor(() => expect(screen.getByText("3 contract orders have no truck in the latest plan.")).toBeTruthy());
     expect(screen.getByText(/pickup time that already passed: SO-9/)).toBeTruthy();
@@ -22,7 +33,7 @@ describe("overview", () => {
   });
 
   it("does not offer viewers actions they cannot take", async () => {
-    fakeApi({ "/api/me": ME("viewer"), "/api/overview": { body: data } });
+    fakeApi({ "/api/me": ME("viewer"), "/api/overview": { body: data }, ...NETWORK });
     show(<Overview />);
     await waitFor(() => expect(screen.getByText(/have no truck/)).toBeTruthy());
     await waitFor(() => expect(screen.getByRole("link", { name: "Open the board" })).toBeTruthy());
@@ -31,8 +42,27 @@ describe("overview", () => {
   });
 
   it("says all is clear when nothing needs attention", async () => {
-    fakeApi({ "/api/me": ME(), "/api/overview": { body: { ...data, attention: [] } } });
+    fakeApi({ "/api/me": ME(), "/api/overview": { body: { ...data, attention: [] } }, ...NETWORK });
     show(<Overview />, "ar");
     await waitFor(() => expect(screen.getByText(/كل شيء على ما يرام/)).toBeTruthy());
+  });
+
+  it("draws the network with each city labelled once", async () => {
+    fakeApi({ "/api/me": ME(), "/api/overview": { body: data }, ...NETWORK });
+    const { container } = show(<Overview />);
+    await waitFor(() => expect(screen.getByRole("img", { name: /Map of the network/ })).toBeTruthy());
+    const labels = [...container.querySelectorAll(".network-map text")].map((n) => n.textContent);
+    expect(labels.filter((l) => l === "Riyadh")).toHaveLength(1);
+    expect(labels).toContain("Dammam");
+    expect(labels).toContain("5 trucks");
+    expect(container.querySelectorAll(".network-map .lane")).toHaveLength(1);
+  });
+
+  it("labels the map in Arabic but keeps geography left to right", async () => {
+    fakeApi({ "/api/me": ME(), "/api/overview": { body: data }, ...NETWORK });
+    const { container } = show(<Overview />, "ar");
+    await waitFor(() => expect(container.querySelector(".network-map")).toBeTruthy());
+    expect(container.querySelector(".network-map")!.getAttribute("dir")).toBe("ltr");
+    expect([...container.querySelectorAll(".network-map text")].map((n) => n.textContent)).toContain("الدمام");
   });
 });

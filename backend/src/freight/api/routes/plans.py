@@ -1,6 +1,7 @@
 """Plans: run the engine, read the board, explain it, ask what if, hand it over."""
 
 import json
+from collections import Counter
 from datetime import UTC, timedelta
 from typing import Any, Literal
 
@@ -30,6 +31,7 @@ from freight.board import board_data
 from freight.domain.models import Plan, Snapshot
 from freight.explain import WhatIfRefused, narrate, why
 from freight.handover import export_workbook, plan_changes
+from freight.onboarding import site_geography
 from freight.planning.engine import routes_of
 from freight.rolling import planning_view
 
@@ -251,7 +253,10 @@ def overview(user: Me, session: Db) -> dict[str, Any]:
             attention.append({"kind": "plan_invalid", "findings": summary.get("findings", [])})
         missing = summary.get("confirmed", 0) - summary.get("served", 0)
         if missing > 0:
-            attention.append({"kind": "unserved", "count": missing})
+            _, planned, result = done_plan_of(session, user, last.id)
+            confirmed = {j.id: j.reference for j in planned.jobs if j.state == "confirmed"}
+            refs = [confirmed[j] for j in result.unserved_job_ids if j in confirmed][:5]
+            attention.append({"kind": "unserved", "count": missing, "refs": refs})
         if summary.get("released_locks"):
             attention.append({"kind": "released", "refs": summary["released_locks"]})
         _, snapshot, plan = done_plan_of(session, user, last.id)
@@ -285,3 +290,38 @@ def overview(user: Me, session: Db) -> dict[str, Any]:
         "running": run_view(running) if running else None,
         "attention": attention,
     }
+
+
+@router.get("/network")
+def network(user: Me, session: Db) -> dict[str, Any]:
+    """Sites with coordinates and trucks based there, and the lanes the latest plan drives."""
+    operation = operation_of(session, user.company_id)
+    where = site_geography()
+    homes = Counter(operation.home_of(team) for team in operation.teams)
+    sites = [
+        {
+            "id": s.id,
+            "name": s.name,
+            "name_ar": s.name_ar,
+            "lat": where[s.id][0],
+            "lon": where[s.id][1],
+            "city": where[s.id][2],
+            "city_ar": where[s.id][3],
+            "trucks": homes.get(s.id, 0),
+        }
+        for s in operation.sites
+        if s.id in where
+    ]
+    lanes: list[dict[str, Any]] = []
+    last = latest_done(session, user.company_id)
+    if last is not None and last.plan is not None:
+        trips: Counter[tuple[str, str, bool]] = Counter()
+        for a in Plan.model_validate_json(last.plan).activities:
+            if a.kind in ("loaded", "empty") and a.from_site_id != a.to_site_id:
+                trips[(a.from_site_id, a.to_site_id, a.kind == "loaded")] += 1
+        lanes = [
+            {"from": a, "to": b, "loaded": loaded, "trips": n}
+            for (a, b, loaded), n in trips.most_common(40)
+            if a in where and b in where
+        ]
+    return {"sites": sites, "lanes": lanes}
