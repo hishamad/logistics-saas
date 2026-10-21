@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Interpretation, Rule } from "../api";
+import { useAuth } from "../auth";
 import { fakeApi, ME, show } from "../test/setup";
 import { AskBar } from "./AskBar";
 
@@ -20,6 +21,12 @@ const rule: Rule = {
 
 const steering = { jobs: [{ id: "j1", reference: "SA-26255", customer: "Almarai", state: "confirmed" }] };
 
+// The app shows pages only once it knows who is signed in; so do these tests.
+function Signed({ runId, suggestions = [] }: { runId: string; suggestions?: string[] }) {
+  const { me } = useAuth();
+  return me ? <AskBar runId={runId} suggestions={suggestions} /> : null;
+}
+
 function ask(text: string) {
   fireEvent.change(screen.getByLabelText("Ask Madar", { selector: "input" }), { target: { value: text } });
   fireEvent.click(screen.getByRole("button", { name: "Send" }));
@@ -32,7 +39,7 @@ describe("ask Madar", () => {
       "/api/steering": { body: steering },
       "/api/plans/run1/why/j1": { body: { facts: {}, text: "No truck was free in time.", source: "facts" } },
     });
-    show(<AskBar runId="run1" suggestions={[]} />);
+    show(<Signed runId="run1" />);
     await waitFor(() => expect(screen.getByRole("button", { name: "Send" })).toBeTruthy());
     ask("why is sa-26255 not planned?");
     await waitFor(() => expect(screen.getByText("No truck was free in time.")).toBeTruthy());
@@ -48,7 +55,7 @@ describe("ask Madar", () => {
       "/api/rules/interpret": { body: reply },
       "/api/rules": { body: rule },
     });
-    show(<AskBar runId="run1" suggestions={["DMM-034 is in the workshop tomorrow until 14:00"]} />);
+    show(<Signed runId="run1" suggestions={["DMM-034 is in the workshop tomorrow until 14:00"]} />);
     await waitFor(() => expect(screen.getByRole("button", { name: /workshop/ })).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: /workshop/ }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Add this rule" })).toBeTruthy());
@@ -61,7 +68,7 @@ describe("ask Madar", () => {
 
   it("does not offer viewers rules", async () => {
     const calls = fakeApi({ "/api/me": ME("viewer") });
-    show(<AskBar runId="run1" suggestions={[]} />);
+    show(<Signed runId="run1" />);
     await waitFor(() => expect(screen.getByRole("button", { name: "Send" })).toBeTruthy());
     ask("Truck 4 is off tomorrow");
     await waitFor(() => expect(screen.getByText(/Rules are for dispatchers/)).toBeTruthy());
