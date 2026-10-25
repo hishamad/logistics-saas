@@ -109,6 +109,8 @@ export type BoardTeam = {
   depot: string;
   equipment: string;
   acts: BoardActivity[];
+  // When the truck cannot work: [start minute, end minute, from a rule or its calendar]
+  blocks: [number, number, "rule" | "calendar"][];
   stats: { jobs: number; offers: number; loaded_km: number; empty_km: number; revenue: number; driving_h: number };
 };
 
@@ -150,6 +152,7 @@ export type Board = {
   };
   emptyReasons: Record<string, number>;
   frozen: string[];
+  geo: Record<string, [number, number, string, string]>; // latitude, longitude, city, city in Arabic
 };
 
 export type SheetKind = "jobs" | "fleet";

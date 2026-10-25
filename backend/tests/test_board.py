@@ -33,3 +33,28 @@ def test_customer_text_cannot_close_the_script_element():
     html = render_board(snapshot, plan_lns(snapshot, seconds=1))
     assert html.count("</script>") == 1  # only the template's own closing tag
     assert embedded(html)["jobs"][jobs[0].id]["customer"] == hostile
+
+
+def test_the_board_shows_when_a_truck_cannot_work():
+    from datetime import timedelta
+
+    from freight.board import board_data
+    from freight.domain.models import Rule, Window
+
+    snapshot = demo_snapshot()
+    team = snapshot.teams[0]
+    start = snapshot.horizon.start
+    workshop = Rule(
+        id="r1",
+        kind="resource_unavailable",
+        resource_id=team.tractor_id,
+        window=Window(start=start + timedelta(hours=8), end=start + timedelta(hours=14)),
+    )
+    snapshot = snapshot.model_copy(update={"rules": (workshop,)})
+    data = board_data(snapshot, plan_lns(snapshot, seconds=1))
+    blocks = {t["id"]: t["blocks"] for t in data["teams"]}
+    assert blocks[team.id] == [(8 * 60, 14 * 60, "rule")]
+    assert all(not b for tid, b in blocks.items() if tid != team.id)
+    # The plan respects it: no work for that truck inside the window.
+    acts = next(t["acts"] for t in data["teams"] if t["id"] == team.id)
+    assert all(a[2] <= 8 * 60 or a[1] >= 14 * 60 for a in acts if a[0] != 4)

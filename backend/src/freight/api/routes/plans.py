@@ -128,7 +128,12 @@ def get_plan(run_id: str, user: Me, session: Db) -> dict[str, Any]:
 @router.get("/plans/{run_id}/board")
 def get_board(run_id: str, user: Me, session: Db) -> dict[str, object]:
     _, snapshot, plan = done_plan_of(session, user, run_id)
-    return board_data(snapshot, plan)
+    data = board_data(snapshot, plan)
+    # Map position and city of the sites the network knows (a company's own sites have
+    # none yet): latitude, longitude, city, city in Arabic.
+    where = site_geography()
+    data["geo"] = {s.id: where[s.id] for s in snapshot.sites if s.id in where}
+    return data
 
 
 def changes_between(

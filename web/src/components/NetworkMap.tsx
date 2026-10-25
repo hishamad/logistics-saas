@@ -7,7 +7,7 @@ import { useI18n } from "../i18n";
 const WIDTH = 620;
 const HEIGHT = 490;
 // Equirectangular over Saudi Arabia: about 30 px per degree.
-const project = (lat: number, lon: number): [number, number] => [Math.round((lon - 35.5) * 30), Math.round((32.3 - lat) * 30)];
+export const project = (lat: number, lon: number): [number, number] => [Math.round((lon - 35.5) * 30), Math.round((32.3 - lat) * 30)];
 
 function arc([ax, ay]: [number, number], [bx, by]: [number, number]): string {
   const cx = Math.round((ax + bx) / 2 - (by - ay) * 0.16);
@@ -16,7 +16,7 @@ function arc([ax, ay]: [number, number], [bx, by]: [number, number]): string {
 }
 
 export function NetworkMap({ network }: { network: Network }) {
-  const { t, lang, number } = useI18n();
+  const { t, lang, count } = useI18n();
   const drawn = useMemo(() => {
     const at = new Map(network.sites.map((s) => [s.id, project(s.lat, s.lon)]));
     const busy = new Set(network.lanes.flatMap((l) => [l.from, l.to]));
@@ -91,7 +91,7 @@ export function NetworkMap({ network }: { network: Network }) {
             )}
             {labelled && trucks > 0 && (
               <text x={right ? x + 11 : x - 11} y={y + 19} textAnchor={right ? "start" : "end"} fontSize="11" fill="var(--accent-text)">
-                {number(trucks)} {t("trucksShort")}
+                {count("trucks", trucks)}
               </text>
             )}
           </g>

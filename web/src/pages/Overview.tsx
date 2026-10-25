@@ -24,7 +24,7 @@ const ACTIONS: Record<Attention["kind"], { to: string; label: StringKey; level: 
 };
 
 export function Overview() {
-  const { t, fill, date } = useI18n();
+  const { t, fill, date, count } = useI18n();
   const { me } = useAuth();
   const [data, setData] = useState<OverviewData | null>(null);
   const [network, setNetwork] = useState<Network | null>(null);
@@ -93,7 +93,7 @@ export function Overview() {
               <div>
                 <h2>{t("networkTitle")}</h2>
                 <span className="muted small">
-                  {fill("networkSub", { trucks: String(data.operation.trucks), orders: String(data.operation.contract + data.operation.spot) })}
+                  {count("trucks", data.operation.trucks)} · {count("orders", data.operation.contract + data.operation.spot)}
                 </span>
               </div>
               <div className="map-legend">

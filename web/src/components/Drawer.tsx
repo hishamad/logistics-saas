@@ -118,7 +118,7 @@ function JobPanel({
       </p>
       {error && <div className="alert alert-error">{error}</div>}
       {editable && team && (
-        <button className="btn" onClick={toggleLock}>
+        <button className="text-btn" onClick={toggleLock}>
           {lock ? <Unlock size={16} aria-hidden /> : <Lock size={16} aria-hidden />} {lock ? t("unfreeze") : job.offer ? t("freezeAccepts") : t("freezeOnTruck")}
         </button>
       )}
@@ -201,7 +201,7 @@ function Why({ answer }: { answer: WhyAnswer }) {
 }
 
 function TruckPanel({ board, runId, teamId, editable }: { board: Board; runId: string; teamId: string; editable: boolean }) {
-  const { t, number, money } = useI18n();
+  const { t, money, count } = useI18n();
   const site = useSites(board);
   const team = board.teams.find((x) => x.id === teamId)!;
   const [from, setFrom] = useState(toRiyadhInput(board.origin));
@@ -211,7 +211,7 @@ function TruckPanel({ board, runId, teamId, editable }: { board: Board; runId: s
     <>
       <h2>{team.name}</h2>
       <p className="muted">
-        {site(team.depot)} · {number(team.stats.jobs)} {t("jobsCount")} · {money(team.stats.revenue)}
+        {site(team.depot)} · {count("jobs", team.stats.jobs)} · {money(team.stats.revenue)}
       </p>
       {editable ? (
         <>
@@ -276,8 +276,8 @@ function WhatIf({ runId, change, label, input }: { runId: string; change: WhatIf
       <div className="whatif-ask">
         {label && <span>{label}</span>}
         {input}
-        <button className="btn" onClick={() => void start("repair")} disabled={!change}>
-          {t("wiRun")}
+        <button className="text-btn" onClick={() => void start("repair")} disabled={!change}>
+          {t("wiRun")} <span className="arrow flip-rtl" aria-hidden="true">→</span>
         </button>
       </div>
       {error && <div className="alert alert-error">{error}</div>}
@@ -286,7 +286,7 @@ function WhatIf({ runId, change, label, input }: { runId: string; change: WhatIf
         <>
           <WhatIfAnswer result={run.result} />
           {!run.result.impossible && !estimate && (
-            <button className="btn btn-ghost small" onClick={() => void start("replan")}>
+            <button className="text-btn quiet" onClick={() => void start("replan")}>
               {t("wiTryReplan")}
             </button>
           )}

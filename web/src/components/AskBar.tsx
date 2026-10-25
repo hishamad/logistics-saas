@@ -4,7 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { api, type Interpretation, type Rule, type Steering, type WhyAnswer } from "../api";
 import { useAuth } from "../auth";
 import { useI18n } from "../i18n";
-import { useStream } from "../motion";
+import { Answer } from "./Answer";
 import { OrbitMark } from "./Shell";
 
 type Answer = { kind: "why" | "rule" | "note" | "error"; title: string; text: string; rule?: Rule };
@@ -95,36 +95,25 @@ export function AskBar({ runId, suggestions }: { runId: string | null; suggestio
         </div>
       )}
       {busy && <p className="muted small breathe">{t("thinking")}</p>}
-      {answer && <AnswerCard answer={answer} onAdd={addRule} onClose={() => setAnswer(null)} />}
-    </section>
-  );
-}
-
-function AnswerCard({ answer, onAdd, onClose }: { answer: Answer; onAdd: (rule: Rule) => void; onClose: () => void }) {
-  const { t } = useI18n();
-  const { shown, done } = useStream(answer.text);
-  return (
-    <div className={`answer-card rise ${answer.kind}`} role="status">
-      <OrbitMark size={22} />
-      <div>
-        <div className="answer-title">{answer.title}</div>
-        <p dir="auto">
-          {shown}
-          {!done && <span className="caret" aria-hidden="true" />}
-        </p>
-        {done && (
-          <div className="result-actions fade">
-            {answer.kind === "rule" && answer.rule && (
-              <button type="button" className="btn btn-primary" onClick={() => onAdd(answer.rule!)}>
-                {t("addThisRule")}
+      {answer && (
+        <Answer
+          title={answer.title}
+          text={answer.text}
+          tone={answer.kind}
+          actions={
+            <>
+              {answer.kind === "rule" && answer.rule && (
+                <button type="button" className="btn btn-primary" onClick={() => void addRule(answer.rule!)}>
+                  {t("addThisRule")}
+                </button>
+              )}
+              <button type="button" className="text-btn" style={{ color: "var(--muted)" }} onClick={() => setAnswer(null)}>
+                {answer.kind === "rule" ? t("discard") : t("close")}
               </button>
-            )}
-            <button type="button" className="text-btn" style={{ color: "var(--muted)" }} onClick={onClose}>
-              {answer.kind === "rule" ? t("discard") : t("close")}
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+            </>
+          }
+        />
+      )}
+    </section>
   );
 }

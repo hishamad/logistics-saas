@@ -83,6 +83,15 @@ def board_data(
     for activity in plan.activities:
         by_team[activity.team_id].append(activity)
     assigned = {a.job_id for a in plan.assignments}
+    # When each resource cannot work: its calendar (weekly rest, leave) and the
+    # dispatcher's rules (a truck in the workshop).
+    blocked: defaultdict[str, list[tuple[datetime, datetime, str]]] = defaultdict(list)
+    for resource in snapshot.resources:
+        for window in resource.unavailable:
+            blocked[resource.id].append((window.start, window.end, "calendar"))
+    for rule in snapshot.rules:
+        if rule.kind == "resource_unavailable" and rule.window:
+            blocked[rule.resource_id or ""].append((rule.window.start, rule.window.end, "rule"))
     teams = []
     for team in snapshot.teams:
         activities = sorted(by_team.get(team.id, []), key=lambda a: a.start)
@@ -113,6 +122,14 @@ def board_data(
                     ]
                     for a in activities
                 ],
+                "blocks": sorted(
+                    {
+                        (max(0, minute(start)), minute(end), source)
+                        for resource_id in team.resource_ids
+                        for start, end, source in blocked[resource_id]
+                        if end > origin and start < snapshot.horizon.end
+                    }
+                ),
                 "stats": {
                     "jobs": len(team_jobs),
                     "offers": len(team_jobs & offers),

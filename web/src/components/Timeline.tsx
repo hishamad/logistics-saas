@@ -1,10 +1,11 @@
-// The truck timeline: one row per truck, its activities as coloured bars over time.
+// The truck timeline: one row per truck, its activities as bars over time.
 // Positions use inline-start, so in Arabic time runs right-to-left.
-import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
+import { Search } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import type { Board, BoardActivity, BoardTeam } from "../api";
 import { useI18n, type StringKey } from "../i18n";
 
-const LABEL_WIDTH = 210;
+const LABEL_WIDTH = 168;
 const RIYADH_OFFSET = 180; // minutes; Saudi Arabia has no daylight saving
 // Intl rejects dateStyle/timeStyle mixed with weekday/hour, so clear the defaults.
 const PLAIN = { dateStyle: undefined, timeStyle: undefined } as const;
@@ -30,6 +31,14 @@ export function useSites(board: Board) {
   };
 }
 
+/** Weekday and time in Riyadh, for a minute counted from the plan's start. */
+export function useClock(board: Board) {
+  const { date } = useI18n();
+  const origin = new Date(board.origin).getTime();
+  return (minute: number) =>
+    date(new Date(origin + minute * 60000).toISOString(), { ...PLAIN, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+}
+
 export function Timeline({
   board,
   selected,
@@ -39,17 +48,17 @@ export function Timeline({
   selected: string | null;
   onSelect: (teamId: string) => void;
 }) {
-  const { t, lang, number, date } = useI18n();
+  const { t, lang, number, date, count } = useI18n();
   const site = useSites(board);
+  const clock = useClock(board);
   const origin = useMemo(() => new Date(board.origin).getTime(), [board.origin]);
   const at = (minute: number) => new Date(origin + minute * 60000).toISOString();
-  const clock = (minute: number) => date(at(minute), { ...PLAIN, weekday: "short", hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
 
   const [search, setSearch] = useState("");
   const [depot, setDepot] = useState("");
   const [sort, setSort] = useState<Sort>("depot");
   const [zoom, setZoom] = useState<"week" | "detail">("week");
-  const [hover, setHover] = useState<{ x: number; y: number; team: BoardTeam; act: BoardActivity; minute: number } | null>(null);
+  const [hover, setHover] = useState<{ act: BoardActivity; minute: number } | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(900);
 
@@ -63,12 +72,15 @@ export function Timeline({
 
   const start = 0;
   const end = Math.ceil(board.end / 1440) * 1440;
-  const laneWidth = zoom === "week" ? Math.max(560, width - LABEL_WIDTH - 2) : ((end - start) / 60) * 22;
+  const laneWidth = zoom === "week" ? Math.max(420, width - LABEL_WIDTH - 2) : ((end - start) / 60) * 22;
   const px = laneWidth / (end - start);
   const x = (minute: number) => (minute - start) * px;
 
   const frozen = useMemo(() => new Set(board.frozen), [board.frozen]);
   const depots = useMemo(() => [...new Set(board.teams.map((team) => team.depot))], [board.teams]);
+  // A depot goes by its city ("Dammam") unless two depots share one.
+  const city = (id: string) => board.geo?.[id]?.[lang === "ar" ? 3 : 2] ?? site(id);
+  const depotName = (id: string) => (depots.filter((d) => city(d) === city(id)).length > 1 ? site(id) : city(id));
   const teams = useMemo(() => {
     const needle = search.trim().toLowerCase();
     const matches = (team: BoardTeam) => {
@@ -136,29 +148,50 @@ export function Timeline({
         distance = d;
       }
     }
-    setHover(best ? { x: event.clientX, y: event.clientY, team, act: best, minute } : null);
+    setHover(best ? { act: best, minute } : null);
   }
+
+  const pick = (teamId: string) => (event: KeyboardEvent) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    onSelect(teamId);
+  };
+  const hasBlocks = board.teams.some((team) => team.blocks?.length);
 
   let group: string | null = null;
   return (
     <section className="panel tl" aria-label={t("boardTitle")}>
       <div className="tl-controls">
-        <input className="input tl-search" type="search" placeholder={t("search")} aria-label={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} />
-        <select className="input" aria-label={t("allDepots")} value={depot} onChange={(e) => setDepot(e.target.value)}>
-          <option value="">{t("allDepots")}</option>
-          {depots.map((d) => (
-            <option key={d} value={d}>
-              {site(d)}
-            </option>
-          ))}
-        </select>
+        <label className="search-field tl-search">
+          <Search size={16} aria-hidden />
+          <span className="visually-hidden">{t("search")}</span>
+          <input type="search" placeholder={t("search")} value={search} onChange={(e) => setSearch(e.target.value)} />
+        </label>
+        {depots.length <= 4 ? (
+          <div className="seg" role="group" aria-label={t("allDepots")}>
+            {["", ...depots].map((d) => (
+              <button key={d || "all"} type="button" aria-pressed={depot === d} onClick={() => setDepot(d)}>
+                {d ? depotName(d) : t("all")}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <select className="input" aria-label={t("allDepots")} value={depot} onChange={(e) => setDepot(e.target.value)}>
+            <option value="">{t("allDepots")}</option>
+            {depots.map((d) => (
+              <option key={d} value={d}>
+                {depotName(d)}
+              </option>
+            ))}
+          </select>
+        )}
         <select className="input" aria-label={t("sortDepot")} value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
           <option value="depot">{t("sortDepot")}</option>
           <option value="empty">{t("sortEmpty")}</option>
           <option value="revenue">{t("sortRevenue")}</option>
           <option value="idle">{t("sortIdle")}</option>
         </select>
-        <div className="segmented" role="group">
+        <div className="seg" role="group">
           <button type="button" aria-pressed={zoom === "week"} onClick={() => setZoom("week")}>
             {t("week")}
           </button>
@@ -167,15 +200,8 @@ export function Timeline({
           </button>
         </div>
       </div>
-      <div className="tl-legend">
-        <span><i className="key k-loaded" />{t("legendLoaded")}</span>
-        <span><i className="key k-loaded offer" />{t("legendOffer")}</span>
-        <span><i className="key k-empty" />{t("legendEmpty")}</span>
-        <span><i className="key k-handling" />{t("legendHandling")}</span>
-        <span><i className="key k-waiting" />{t("legendWaiting")}</span>
-        <span><i className="key k-rest" />{t("legendRest")}</span>
-        {board.frozen.length > 0 && <span><i className="key k-loaded frozen" />{t("legendFrozen")}</span>}
-        <span className="tl-note">{t("nightNote")}</span>
+      <div className="tl-status" aria-live="polite">
+        {hover ? <Status board={board} act={hover.act} minute={hover.minute} clock={clock} /> : <span className="muted">{t("hoverHint")}</span>}
       </div>
       <div className="tl-scroll" ref={scroller}>
         <div className="tl-axis">
@@ -192,26 +218,49 @@ export function Timeline({
           </div>
         </div>
         {teams.length === 0 && <p className="empty">{t("noMatches")}</p>}
-        {teams.map((team) => {
+        {teams.map((team, row) => {
           const heading = sort === "depot" && team.depot !== group ? (group = team.depot) : null;
+          const delay = Math.min(row, 14) * 45;
           return (
             <div key={team.id}>
-              {heading && <div className="tl-group">{site(heading)}</div>}
-              <div className={`tl-row${selected === team.id ? " selected" : ""}`} onClick={() => onSelect(team.id)}>
+              {heading && <div className="tl-group">{depotName(heading)}</div>}
+              <div
+                className={`tl-row${selected === team.id ? " selected" : ""}`}
+                role="button"
+                tabIndex={0}
+                aria-pressed={selected === team.id}
+                onClick={() => onSelect(team.id)}
+                onKeyDown={pick(team.id)}
+              >
                 <div className="tl-who">
                   <b>{team.name}</b>
                   <span>
-                    {team.equipment.replace("_", " ")} · {number(team.stats.jobs)} {t("jobsCount")}
+                    {team.equipment.replace("_", " ")} · {count("jobs", team.stats.jobs)}
                   </span>
                 </div>
                 <div className="tl-lane" style={{ width: laneWidth }} onMouseMove={(e) => locate(e, team)} onMouseLeave={() => setHover(null)}>
                   {background}
+                  {team.blocks?.map(([a, b, source]) => {
+                    const left = x(Math.max(start, a));
+                    const w = x(Math.min(end, b)) - left;
+                    const label = t(source === "rule" ? "blockRule" : "blockCalendar");
+                    return (
+                      <div key={`${a}-${b}`} className="tl-block" style={{ insetInlineStart: left, width: w }} title={`${label} · ${clock(a)} → ${clock(b)}`}>
+                        {w > 70 && label}
+                      </div>
+                    );
+                  })}
+                  {team.acts.length === 0 && <span className="tl-idle">{t("idleRow")}</span>}
                   {team.acts.map((act, i) => {
                     const offer = act[0] === 0 && act[3] && board.jobs[act[3]].offer;
                     const left = x(act[1]);
                     const w = Math.max(1.5, x(act[2]) - left - (x(act[2]) - left > 3 ? 1 : 0));
                     return (
-                      <div key={i} className={`tl-seg ${KIND_CLASS[act[0]]}${offer ? " offer" : ""}${act[3] && frozen.has(act[3]) ? " frozen" : ""}`} style={{ insetInlineStart: left, width: w }}>
+                      <div
+                        key={i}
+                        className={`tl-seg ${KIND_CLASS[act[0]]}${offer ? " offer" : ""}${act[3] && frozen.has(act[3]) ? " frozen" : ""}`}
+                        style={{ insetInlineStart: left, width: w, animationDelay: `${delay + i * 12}ms` }}
+                      >
                         {act[7].map((p, j) => (
                           <i key={j} className="tl-pause" style={{ insetInlineStart: x(p[1]) - left, width: Math.max(1, x(p[2]) - x(p[1])) }} />
                         ))}
@@ -224,46 +273,47 @@ export function Timeline({
           );
         })}
       </div>
-      {hover && (
-        <div className="tl-tip" style={{ left: Math.min(hover.x + 14, window.innerWidth - 330), top: Math.min(hover.y + 14, window.innerHeight - 180) }} role="tooltip">
-          <Tip board={board} act={hover.act} minute={hover.minute} clock={clock} />
-        </div>
-      )}
+      <div className="tl-legend">
+        <span><i className="key k-loaded" />{t("legendLoaded")}</span>
+        <span><i className="key k-loaded offer" />{t("legendOffer")}</span>
+        <span><i className="key k-empty" />{t("legendEmpty")}</span>
+        <span><i className="key k-handling" />{t("legendHandling")}</span>
+        <span><i className="key k-rest" />{t("legendRest")}</span>
+        {hasBlocks && <span><i className="key tl-block" />{t("legendBlocked")}</span>}
+        {board.frozen.length > 0 && <span><i className="key k-loaded frozen" />{t("legendFrozen")}</span>}
+        <span className="tl-note">{t("nightNote")}</span>
+      </div>
     </section>
   );
 }
 
-function Tip({ board, act, minute, clock }: { board: Board; act: BoardActivity; minute: number; clock: (m: number) => string }) {
+/** The hovered activity in one line: what, where, when, and the order behind it. */
+function Status({ board, act, minute, clock }: { board: Board; act: BoardActivity; minute: number; clock: (m: number) => string }) {
   const { t, number, money, span } = useI18n();
   const site = useSites(board);
   const job = act[3] ? board.jobs[act[3]] : null;
   const pause = act[7].find((p) => minute >= p[1] && minute <= p[2]);
-  const duration = act[2] - act[1];
   const breaks = act[7].filter((p) => p[0] === "break").length;
   const rests = act[7].length - breaks;
+  const parts = [
+    act[4] === act[5] ? site(act[4]) : `${site(act[4])} → ${site(act[5])}`,
+    `${clock(act[1])} → ${clock(act[2])} (${span(act[2] - act[1])})`,
+    act[6] ? `${number(act[6])} ${t("colKm")}` : "",
+    job ? `${job.customer} · ${job.tonnes} ${t("tonnes")} · ${money(job.revenue)}` : "",
+    breaks ? `${breaks} ${t("breaks")}` : "",
+    rests ? `${rests} ${t("rests")}` : "",
+    pause ? `${pause[0] === "rest" ? t("actRest") : t("breaks")} → ${clock(pause[2])}` : "",
+  ].filter(Boolean);
   return (
-    <>
+    <span className="fade" key={`${act[1]}-${act[3]}`}>
       <b>
         {t(ACTIVITY_LABEL[act[8]])}
         {job ? ` · ${job.ref}` : ""}
         {job?.offer ? ` (${t("spot")})` : ""}
       </b>
-      <div>{act[4] === act[5] ? site(act[4]) : `${site(act[4])} → ${site(act[5])}`}</div>
-      <div className="muted">
-        {clock(act[1])} → {clock(act[2])} · {span(duration)}
-        {act[6] ? ` · ${number(act[6])} ${t("colKm")}` : ""}
-      </div>
-      {act[7].length > 0 && (
-        <div className="muted">
-          {breaks > 0 && `${breaks} ${t("breaks")}`} {rests > 0 && `${rests} ${t("rests")}`}
-          {pause ? ` (${pause[0] === "rest" ? t("actRest") : t("breaks")}: ${clock(pause[2])})` : ""}
-        </div>
-      )}
-      {job && (
-        <div className="muted">
-          {job.customer} · {job.tonnes} {t("tonnes")} · {money(job.revenue)}
-        </div>
-      )}
-    </>
+      {parts.map((part) => (
+        <span key={part}> · {part}</span>
+      ))}
+    </span>
   );
 }

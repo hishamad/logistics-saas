@@ -12,6 +12,7 @@ const team = (id: string, name: string, depot: string, acts: BoardActivity[]) =>
   depot,
   equipment: "dry_van",
   acts,
+  blocks: [],
   stats: { jobs: acts.filter((a) => a[3]).length, offers: 0, loaded_km: 10, empty_km: 5, revenue: 1000, driving_h: 2 },
 });
 
@@ -30,6 +31,7 @@ const board: Board = {
   kpis: { confirmed: 1, served: 1, offered: 0, accepted: 0, loaded_km: 10, empty_km: 5, cost: 100, revenue: 1000, trucks: 3, days: 2, runtime_s: 1 },
   emptyReasons: {},
   frozen: ["j1"],
+  geo: {},
 };
 
 function show(language: "en" | "ar", onSelect = vi.fn()) {
@@ -76,5 +78,18 @@ describe("truck timeline", () => {
     expect(bar.style.left).toBe("");
     expect(bar.classList.contains("frozen")).toBe(true);
     expect(document.querySelector(".tl-group")?.textContent).toBe("الرياض");
+  });
+});
+
+describe("counting in both languages", () => {
+  it("uses every plural form Arabic has", async () => {
+    const { renderHook } = await import("@testing-library/react");
+    const { useI18n } = await import("../i18n");
+    localStorage.setItem("lang", "ar");
+    const { result } = renderHook(() => useI18n(), { wrapper: I18nProvider });
+    expect([1, 2, 5, 11, 100].map((n) => result.current.count("orders", n))).toEqual(["طلب واحد", "طلبان", "5 طلبات", "11 طلباً", "100 طلب"]);
+    localStorage.setItem("lang", "en");
+    const english = renderHook(() => useI18n(), { wrapper: I18nProvider }).result.current;
+    expect([1, 3].map((n) => english.count("trucks", n))).toEqual(["1 truck", "3 trucks"]);
   });
 });

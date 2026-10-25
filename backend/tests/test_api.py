@@ -86,6 +86,7 @@ def test_a_plan_runs_in_the_background_and_its_board_loads(app):
     assert run["summary"]["valid"] and run["summary"]["served"] == run["summary"]["confirmed"]
     board = client.get(f"/api/plans/{run['id']}/board").json()
     assert board["valid"] and len(board["teams"]) == 4
+    assert isinstance(board["geo"], dict) and all("blocks" in t for t in board["teams"])
     assert [r["id"] for r in client.get("/api/plans").json()] == [run["id"]]
 
 

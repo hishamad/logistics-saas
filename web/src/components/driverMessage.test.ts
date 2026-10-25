@@ -17,6 +17,7 @@ const team: BoardTeam = {
     act(2, 400, "j2", "loading", "c", "c"),
     act(2, 600, "j2", "unloading", "a", "a"),
   ],
+  blocks: [],
   stats: { jobs: 2, offers: 0, loaded_km: 0, empty_km: 0, revenue: 0, driving_h: 0 },
 };
 

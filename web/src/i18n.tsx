@@ -83,7 +83,7 @@ export const STRINGS = {
     legendRest: "Rest / day off",
     nightNote: "Shaded = night (18:00–06:00 Riyadh)",
     trucksShown: "trucks shown",
-    unservedTitle: "Unserved contract jobs",
+    unservedTitle: "Orders without a truck",
     unservedNone: "Every contract job has a truck.",
     itinerary: "Itinerary",
     clickTruck: "Click a truck to see its itinerary.",
@@ -114,6 +114,27 @@ export const STRINGS = {
     noMatches: "No trucks match these filters.",
     spot: "spot load",
     tonnes: "t",
+    "passedAll": "Passed every independent check",
+    "all": "All",
+    "exportShort": "Export",
+    "depthSeconds": "{n} s",
+    "hoverHint": "Hover a bar for details · choose a truck to see its day",
+    "idleRow": "No work in this plan",
+    "blockRule": "Unavailable",
+    "blockCalendar": "Day off",
+    "legendBlocked": "Unavailable",
+    "routeMap": "This truck’s route",
+    "whyShort": "Why",
+    "details": "Details",
+    "everyStep": "Every step",
+    "idlePanel": "This truck has no work in this plan.",
+    "msgCopiedShort": "Copied for WhatsApp",
+    "olderPlan": "You are looking at an older plan.",
+    "backToLatest": "Back to the latest",
+    "selectedTruck": "Selected truck",
+    "planNumbers": "Plan numbers",
+    "drivingLine": "{h} h driving · {loaded} km loaded · {empty} km empty",
+    "atWhen": "{what} · {where} · {when}",
     "send": "Send",
     "dayLabel": "Today’s steps",
     "greetMorning": "Good morning, {name}.",
@@ -137,11 +158,9 @@ export const STRINGS = {
     "thinking": "Thinking…",
     "ruleAdded": "Rule added. It applies to the next plan you run.",
     "networkTitle": "Network",
-    "networkSub": "{trucks} trucks · {orders} orders",
     "networkNone": "These sites have no map positions yet.",
     "networkNoPlan": "Lanes appear after the first plan.",
     "mapAlt": "Map of the network with the lanes of the latest plan",
-    "trucksShort": "trucks",
     "planTitleShort": "Plan",
     "planKickerHours": "Next {hours} hours",
     "planReady": "Ready to plan",
@@ -513,7 +532,7 @@ export const STRINGS = {
     legendRest: "راحة / إجازة",
     nightNote: "المظلل = الليل (18:00–06:00 بتوقيت الرياض)",
     trucksShown: "شاحنة معروضة",
-    unservedTitle: "شحنات متعاقد عليها لم تُنفذ",
+    unservedTitle: "طلبات بلا شاحنة",
     unservedNone: "كل الشحنات المتعاقد عليها لها شاحنة.",
     itinerary: "مسار الرحلة",
     clickTruck: "اضغط على شاحنة لعرض مسار رحلتها.",
@@ -544,6 +563,27 @@ export const STRINGS = {
     noMatches: "لا توجد شاحنات مطابقة لهذه المرشحات.",
     spot: "حمولة فورية",
     tonnes: "طن",
+    "passedAll": "اجتازت كل الفحوصات المستقلة",
+    "all": "الكل",
+    "exportShort": "تصدير",
+    "depthSeconds": "{n} ث",
+    "hoverHint": "مرّر على أي شريط للتفاصيل · اختر شاحنة لترى يومها",
+    "idleRow": "بلا عمل في هذه الخطة",
+    "blockRule": "غير متاحة",
+    "blockCalendar": "يوم راحة",
+    "legendBlocked": "غير متاحة",
+    "routeMap": "مسار هذه الشاحنة",
+    "whyShort": "لماذا",
+    "details": "التفاصيل",
+    "everyStep": "كل الخطوات",
+    "idlePanel": "لا عمل لهذه الشاحنة في هذه الخطة.",
+    "msgCopiedShort": "نُسخت لواتساب",
+    "olderPlan": "أنت تنظر إلى خطة سابقة.",
+    "backToLatest": "العودة إلى أحدث خطة",
+    "selectedTruck": "الشاحنة المختارة",
+    "planNumbers": "أرقام الخطة",
+    "drivingLine": "{h} س قيادة · {loaded} كم محمّلة · {empty} كم فارغة",
+    "atWhen": "{what} · {where} · {when}",
     "send": "إرسال",
     "dayLabel": "خطوات اليوم",
     "greetMorning": "صباح الخير يا {name}.",
@@ -567,11 +607,9 @@ export const STRINGS = {
     "thinking": "جارٍ التفكير…",
     "ruleAdded": "أُضيفت القاعدة. تُطبّق على الخطة القادمة التي تشغّلها.",
     "networkTitle": "الشبكة",
-    "networkSub": "{trucks} شاحنة · {orders} طلباً",
     "networkNone": "لا توجد مواقع على الخريطة لهذه المواقع بعد.",
     "networkNoPlan": "تظهر المسارات بعد أول خطة.",
     "mapAlt": "خريطة الشبكة مع مسارات أحدث خطة",
-    "trucksShort": "شاحنة",
     "planTitleShort": "الخطة",
     "planKickerHours": "الـ{hours} ساعة القادمة",
     "planReady": "جاهز للتخطيط",
@@ -877,6 +915,7 @@ type I18n = {
   date: (iso: string, options?: Intl.DateTimeFormatOptions) => string;
   span: (minutes: number) => string;
   fill: (key: StringKey, values: Record<string, string>) => string;
+  count: (what: Counted, n: number) => string;
 };
 
 const Context = createContext<I18n | null>(null);
@@ -888,6 +927,31 @@ function initialLanguage(): Language {
     return "en";
   }
 }
+
+// Counted things, in every plural form the language has ({n} is the number).
+// Arabic has one, two, few (3-10), many (11-99) and other; English has one and other.
+type Forms = { other: string } & Partial<Record<Intl.LDMLPluralRule, string>>;
+export type Counted = "jobs" | "orders" | "trucks" | "contractOrders";
+const PLURALS: Record<Language, Record<Counted, Forms>> = {
+  en: {
+    jobs: { one: "{n} job", other: "{n} jobs" },
+    orders: { one: "{n} order", other: "{n} orders" },
+    trucks: { one: "{n} truck", other: "{n} trucks" },
+    contractOrders: { one: "{n} contract order", other: "{n} contract orders" },
+  },
+  ar: {
+    jobs: { one: "شحنة واحدة", two: "شحنتان", few: "{n} شحنات", many: "{n} شحنة", other: "{n} شحنة" },
+    orders: { one: "طلب واحد", two: "طلبان", few: "{n} طلبات", many: "{n} طلباً", other: "{n} طلب" },
+    trucks: { one: "شاحنة واحدة", two: "شاحنتان", few: "{n} شاحنات", many: "{n} شاحنة", other: "{n} شاحنة" },
+    contractOrders: {
+      one: "طلب متعاقد عليه واحد",
+      two: "طلبان متعاقد عليهما",
+      few: "{n} طلبات متعاقد عليها",
+      many: "{n} طلباً متعاقداً عليه",
+      other: "{n} طلب متعاقد عليه",
+    },
+  },
+};
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Language>(initialLanguage);
@@ -921,6 +985,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
           ...options,
         }).format(new Date(iso)),
       fill: (key, values) => STRINGS[lang][key].replace(/\{(\w+)\}/g, (_, name: string) => values[name] ?? ""),
+      count: (what, n) => {
+        const forms = PLURALS[lang][what];
+        const form = forms[new Intl.PluralRules(lang).select(n)] ?? forms.other;
+        return form.replace("{n}", new Intl.NumberFormat(locale).format(n));
+      },
       span: (minutes) => {
         const [h, m] = [Math.floor(minutes / 60), Math.round(minutes % 60)];
         return lang === "ar" ? `${h} س ${m} د` : `${h}h ${m}m`;
