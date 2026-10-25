@@ -1,11 +1,10 @@
 // The truck timeline: one row per truck, its activities as bars over time.
 // Positions use inline-start, so in Arabic time runs right-to-left.
 import { Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import type { Board, BoardActivity, BoardTeam } from "../api";
 import { useI18n, type StringKey } from "../i18n";
 
-const LABEL_WIDTH = 168;
 const RIYADH_OFFSET = 180; // minutes; Saudi Arabia has no daylight saving
 // Intl rejects dateStyle/timeStyle mixed with weekday/hour, so clear the defaults.
 const PLAIN = { dateStyle: undefined, timeStyle: undefined } as const;
@@ -72,7 +71,9 @@ export function Timeline({
 
   const start = 0;
   const end = Math.ceil(board.end / 1440) * 1440;
-  const laneWidth = zoom === "week" ? Math.max(420, width - LABEL_WIDTH - 2) : ((end - start) / 60) * 22;
+  // Truck names take less room on a phone, so the lanes keep most of it.
+  const labelWidth = width < 560 ? 112 : 168;
+  const laneWidth = zoom === "week" ? Math.max(width < 560 ? 260 : 420, width - labelWidth - 2) : ((end - start) / 60) * 22;
   const px = laneWidth / (end - start);
   const x = (minute: number) => (minute - start) * px;
 
@@ -160,7 +161,7 @@ export function Timeline({
 
   let group: string | null = null;
   return (
-    <section className="panel tl" aria-label={t("boardTitle")}>
+    <section className="panel tl" aria-label={t("boardTitle")} style={{ "--label-width": `${labelWidth}px` } as CSSProperties}>
       <div className="tl-controls">
         <label className="search-field tl-search">
           <Search size={16} aria-hidden />

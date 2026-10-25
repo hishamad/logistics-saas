@@ -19,7 +19,12 @@ const rule: Rule = {
   source_text: "DMM-034 is in the workshop",
 };
 
-const steering = { jobs: [{ id: "j1", reference: "SA-26255", customer: "Almarai", state: "confirmed" }] };
+const steering = {
+  ai: true,
+  jobs: [{ id: "j1", reference: "SA-26255", customer: "Almarai", state: "confirmed" }],
+  teams: [{ id: "team1", name: "DMM-034", depot: "dmm", tractor_id: "t1", equipment: "dry_van" }],
+  sites: [],
+};
 
 // The app shows pages only once it knows who is signed in; so do these tests.
 function Signed({ runId, suggestions = [] }: { runId: string; suggestions?: string[] }) {
@@ -59,6 +64,8 @@ describe("ask Madar", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /workshop/ })).toBeTruthy());
     fireEvent.click(screen.getByRole("button", { name: /workshop/ }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Add this rule" })).toBeTruthy());
+    // The exact rule, from the rule itself rather than the model's wording.
+    expect(screen.getByText("DMM-034 unavailable 19 Oct 2026, 06:00 – 19 Oct 2026, 14:00")).toBeTruthy();
     expect(calls.some((c) => c.path === "/api/rules")).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Add this rule" }));
     await waitFor(() => expect(screen.getByText(/Rule added/)).toBeTruthy());
@@ -67,11 +74,20 @@ describe("ask Madar", () => {
   });
 
   it("does not offer viewers rules", async () => {
-    const calls = fakeApi({ "/api/me": ME("viewer") });
+    const calls = fakeApi({ "/api/me": ME("viewer"), "/api/steering": { body: steering } });
     show(<Signed runId="run1" />);
     await waitFor(() => expect(screen.getByRole("button", { name: "Send" })).toBeTruthy());
     ask("Truck 4 is off tomorrow");
     await waitFor(() => expect(screen.getByText(/Rules are for dispatchers/)).toBeTruthy());
+    expect(calls.some((c) => c.path === "/api/rules/interpret")).toBe(false);
+  });
+
+  it("says so when the AI is switched off instead of failing", async () => {
+    const calls = fakeApi({ "/api/me": ME("dispatcher"), "/api/steering": { body: { ...steering, ai: false } } });
+    show(<Signed runId="run1" />);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Send" })).toBeTruthy());
+    ask("Truck 4 is off tomorrow");
+    await waitFor(() => expect(screen.getByRole("status").textContent).toMatch(/not set up/));
     expect(calls.some((c) => c.path === "/api/rules/interpret")).toBe(false);
   });
 });

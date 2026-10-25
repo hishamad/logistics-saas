@@ -1,23 +1,33 @@
 // "Ask Madar": a question about an order gets the plan's own explanation; anything else is
 // read as an instruction and proposed as a rule, which the dispatcher must add themselves.
-import { useRef, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { api, type Interpretation, type Rule, type Steering, type WhyAnswer } from "../api";
 import { useAuth } from "../auth";
 import { useI18n } from "../i18n";
 import { Answer } from "./Answer";
+import { useRuleText } from "./ruleText";
 import { OrbitMark } from "./Shell";
 
-type Answer = { kind: "why" | "rule" | "note" | "error"; title: string; text: string; rule?: Rule };
+type Reply = { kind: "why" | "rule" | "note" | "error"; title: string; text: string; rule?: Rule };
 
 const REFERENCE = /\b[A-Za-z]{2,6}-\d{3,}\b/;
 
-export function AskBar({ runId, suggestions }: { runId: string | null; suggestions: string[] }) {
+export function AskBar({
+  runId,
+  suggestions,
+  onRuleAdded,
+}: {
+  runId: string | null;
+  suggestions: string[];
+  onRuleAdded?: () => void;
+}) {
   const { t, fill, lang } = useI18n();
   const { canPlan } = useAuth();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const [answer, setAnswer] = useState<Answer | null>(null);
-  const jobs = useRef<Steering["jobs"] | null>(null);
+  const [answer, setAnswer] = useState<Reply | null>(null);
+  const [steering, setSteering] = useState<Steering | null>(null);
+  const describe = useRuleText(steering);
 
   async function ask(question: string) {
     const q = question.trim();
@@ -26,11 +36,12 @@ export function AskBar({ runId, suggestions }: { runId: string | null; suggestio
     setBusy(true);
     setAnswer(null);
     try {
+      const known = steering ?? (await api.get<Steering>("/api/steering"));
+      setSteering(known);
       // Truck names look like order references too (DMM-034), so only a known order is a "why".
       const ref = q.match(REFERENCE)?.[0];
       if (ref) {
-        jobs.current ??= (await api.get<Steering>("/api/steering")).jobs;
-        const job = jobs.current.find((j) => j.reference.toLowerCase() === ref.toLowerCase());
+        const job = known.jobs.find((j) => j.reference.toLowerCase() === ref.toLowerCase());
         if (job) {
           if (!runId) return setAnswer({ kind: "note", title: t("askMadar"), text: t("noPlanForWhy") });
           const why = await api.get<WhyAnswer>(`/api/plans/${runId}/why/${job.id}?lang=${lang}`);
@@ -39,6 +50,7 @@ export function AskBar({ runId, suggestions }: { runId: string | null; suggestio
         if (!canPlan) return setAnswer({ kind: "note", title: t("askMadar"), text: fill("unknownRef", { ref }) });
       }
       if (!canPlan) return setAnswer({ kind: "note", title: t("askMadar"), text: t("viewerRulesNote") });
+      if (!known.ai) return setAnswer({ kind: "note", title: t("askMadar"), text: t("aiOff") });
       const reply = await api.post<Interpretation>("/api/rules/interpret", { text: q, lang });
       if (reply.status === "proposed" && reply.rule) {
         return setAnswer({ kind: "rule", title: t("proposal"), text: reply.explanation, rule: reply.rule });
@@ -57,6 +69,7 @@ export function AskBar({ runId, suggestions }: { runId: string | null; suggestio
       await api.post("/api/rules", body);
       setAnswer({ kind: "note", title: t("proposal"), text: t("ruleAdded") });
       setText("");
+      onRuleAdded?.();
     } catch (caught) {
       setAnswer({ kind: "error", title: t("answerUnclear"), text: (caught as Error).message });
     }
@@ -103,11 +116,15 @@ export function AskBar({ runId, suggestions }: { runId: string | null; suggestio
           actions={
             <>
               {answer.kind === "rule" && answer.rule && (
-                <button type="button" className="btn btn-primary" onClick={() => void addRule(answer.rule!)}>
-                  {t("addThisRule")}
-                </button>
+                <>
+                  {/* The rule exactly as the planner will get it, not the model's words. */}
+                  <p className="exact-rule">{describe(answer.rule)}</p>
+                  <button type="button" className="btn btn-primary" onClick={() => void addRule(answer.rule!)}>
+                    {t("addThisRule")}
+                  </button>
+                </>
               )}
-              <button type="button" className="text-btn" style={{ color: "var(--muted)" }} onClick={() => setAnswer(null)}>
+              <button type="button" className="text-btn quiet" onClick={() => setAnswer(null)}>
                 {answer.kind === "rule" ? t("discard") : t("close")}
               </button>
             </>

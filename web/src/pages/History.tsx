@@ -1,5 +1,4 @@
 // Every plan run with its results; open one on the board, export it, or compare two.
-import { Download, GitCompare } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, type ChangesAnswer, type PlanRun } from "../api";
@@ -53,7 +52,7 @@ export function History() {
         <div className="run-controls">
           <span className="muted">{t("compareTwo")}</span>
           <button className="btn btn-primary" onClick={compare} disabled={picked.length !== 2}>
-            <GitCompare size={16} aria-hidden /> {t("compareThese")}
+            {t("compareThese")}
           </button>
         </div>
       </div>
@@ -64,71 +63,69 @@ export function History() {
           <ChangesView changes={comparison.changes} />
         </section>
       )}
-      <section className="panel">
+      <section className="panel runs-panel">
         {runs && runs.length === 0 && <p className="empty">{t("noPlans")}</p>}
         {runs && runs.length > 0 && (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th />
-                  <th>{t("created")}</th>
-                  <th>{t("colBy")}</th>
-                  <th>{t("status")}</th>
-                  <th className="num">{t("colDepth")}</th>
-                  <th className="num">{t("served")}</th>
-                  <th className="num">{t("colOffers")}</th>
-                  <th className="num">{t("emptyShare")}</th>
-                  <th className="num">{t("contribution")}</th>
-                  <th className="num">{t("colChanged")}</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {runs.map((run) => {
-                  const s = run.summary;
-                  const done = run.status === "done";
-                  return (
-                    <tr key={run.id} className={picked.includes(run.id) ? "picked" : undefined}>
-                      <td>
-                        <input type="checkbox" aria-label={t("compareThese")} disabled={!done} checked={picked.includes(run.id)} onChange={() => pick(run.id)} />
-                      </td>
-                      <td>{date(run.created_at)}</td>
-                      <td>{run.created_by ?? "—"}</td>
-                      <td>
-                        <span className={`badge ${run.status === "failed" ? "badge-red" : done ? (s?.valid ? "" : "badge-red") : "badge-amber"}`}>
-                          {t(STATUS[run.status])}
+          <ul className="runs">
+            {runs.map((run, i) => {
+              const s = run.summary;
+              const done = run.status === "done";
+              const figures = s
+                ? [
+                    { label: t("served"), value: `${number(s.served)} / ${number(s.confirmed)}` },
+                    { label: t("colOffers"), value: `${number(s.offers_taken)} / ${number(s.offered)}` },
+                    { label: t("emptyShare"), value: s.empty_share != null ? `${Math.round(s.empty_share * 100)}%` : "—" },
+                    { label: t("contribution"), value: s.revenue_minor !== null && s.cost_minor !== null ? money(s.revenue_minor - s.cost_minor) : "—" },
+                    { label: t("colChanged"), value: s.changed != null ? number(s.changed) : "—" },
+                  ]
+                : [];
+              return (
+                <li key={run.id} className={`run-row${picked.includes(run.id) ? " picked" : ""}`}>
+                  <input type="checkbox" aria-label={`${t("compareThese")}: ${date(run.created_at)}`} disabled={!done} checked={picked.includes(run.id)} onChange={() => pick(run.id)} />
+                  <div className="run-when">
+                    <b>
+                      {date(run.created_at)}
+                      {i === 0 && done && <span className="tag">{t("latestPlan")}</span>}
+                    </b>
+                    <span className="muted small">
+                      {run.created_by ?? "—"} · {number(run.settings.seconds)} {t("secondsShort")}
+                    </span>
+                  </div>
+                  {done && s?.valid !== false ? (
+                    <div className="run-figures">
+                      {figures.map((f) => (
+                        <span key={f.label} className="run-figure">
+                          <b>{f.value}</b>
+                          <small>{f.label}</small>
                         </span>
-                        {run.status === "failed" && run.error && (
-                          <div className="muted small wrap" title={run.error}>
-                            {run.error}
-                          </div>
-                        )}
-                      </td>
-                      <td className="num">
-                        {number(run.settings.seconds)} {t("secondsShort")}
-                      </td>
-                      <td className="num">{s ? `${number(s.served)} / ${number(s.confirmed)}` : "—"}</td>
-                      <td className="num">{s ? `${number(s.offers_taken)} / ${number(s.offered)}` : "—"}</td>
-                      <td className="num">{s?.empty_share != null ? `${Math.round(s.empty_share * 100)}%` : "—"}</td>
-                      <td className="num">{s && s.revenue_minor !== null && s.cost_minor !== null ? money(s.revenue_minor - s.cost_minor) : "—"}</td>
-                      <td className="num">{s?.changed != null ? number(s.changed) : "—"}</td>
-                      <td>
-                        {done && (
-                          <span className="row-actions">
-                            <Link to={`/board?run=${run.id}`}>{t("open")}</Link>
-                            <a href={`/api/plans/${run.id}/export.xlsx?lang=${lang}`} download aria-label={t("exportExcel")}>
-                              <Download size={15} aria-hidden />
-                            </a>
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="run-status">
+                      <span className={`badge ${run.status === "failed" || done ? "badge-red" : "badge-amber"}`}>{done ? t("findingsLabel") : t(STATUS[run.status])}</span>
+                      {run.error && (
+                        <span className="muted small" title={run.error}>
+                          {run.error}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <div className="row-actions">
+                    {done && (
+                      <>
+                        <Link className="text-btn" to={`/board?run=${run.id}`}>
+                          {t("open")} <span className="arrow flip-rtl" aria-hidden="true">→</span>
+                        </Link>
+                        <a className="text-btn quiet" href={`/api/plans/${run.id}/export.xlsx?lang=${lang}`} download aria-label={t("exportExcel")}>
+                          {t("exportShort")} <span className="arrow" aria-hidden="true">↓</span>
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
     </>

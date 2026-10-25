@@ -1,5 +1,4 @@
 // Settings: your password, the company's users (admins) and the activity trail.
-import { History as HistoryIcon, KeyRound, UserPlus, Users } from "lucide-react";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { api, type AuditRow, type Role, type UserRow } from "../api";
 import { useAuth } from "../auth";
@@ -48,9 +47,7 @@ function Account() {
 
   return (
     <section className="panel">
-      <h2>
-        <KeyRound size={18} aria-hidden /> {t("accountTitle")}
-      </h2>
+      <h2>{t("accountTitle")}</h2>
       <form onSubmit={submit} className="stack">
         <label className="field">
           <span>{t("currentPassword")}</span>
@@ -60,7 +57,7 @@ function Account() {
           <span>{t("newPassword")}</span>
           <input className="input" type="password" autoComplete="new-password" minLength={10} value={next} onChange={(e) => setNext(e.target.value)} required />
         </label>
-        <button className="btn btn-primary" disabled={!current || next.length < 10}>
+        <button className="btn btn-primary fit" disabled={!current || next.length < 10}>
           {t("changePassword")}
         </button>
         {state && <div className={`alert ${state.ok ? "alert-ok" : "alert-error"}`}>{state.text}</div>}
@@ -104,9 +101,7 @@ function UsersPanel({ onChanged }: { onChanged: () => void }) {
 
   return (
     <section className="panel settings-wide">
-      <h2>
-        <Users size={18} aria-hidden /> {t("usersTitle")}
-      </h2>
+      <h2>{t("usersTitle")}</h2>
       <p className="muted">{t("usersLead")}</p>
       {error && <div className="alert alert-error">{error}</div>}
       <div className="table-wrap">
@@ -144,13 +139,13 @@ function UsersPanel({ onChanged }: { onChanged: () => void }) {
                   <td>
                     {!self &&
                       (u.active ? (
-                        <button className="btn btn-ghost" onClick={() => void act(() => api.patch(`/api/users/${u.id}`, { active: false }))}>
+                        <button className="text-btn quiet" onClick={() => void act(() => api.patch(`/api/users/${u.id}`, { active: false }))}>
                           {t("deactivate")}
                         </button>
                       ) : (
                         <>
                           <span className="badge badge-red">{t("inactive")}</span>{" "}
-                          <button className="btn btn-ghost" onClick={() => void act(() => api.patch(`/api/users/${u.id}`, { active: true }))}>
+                          <button className="text-btn" onClick={() => void act(() => api.patch(`/api/users/${u.id}`, { active: true }))}>
                             {t("reactivate")}
                           </button>
                         </>
@@ -163,9 +158,7 @@ function UsersPanel({ onChanged }: { onChanged: () => void }) {
         </table>
       </div>
       <form className="add-user" onSubmit={add}>
-        <h3>
-          <UserPlus size={16} aria-hidden /> {t("addUser")}
-        </h3>
+        <h3>{t("addUser")}</h3>
         <div className="form-grid">
           <label className="field">
             <span>{t("colName")}</span>
@@ -214,9 +207,7 @@ function Activity({ reload }: { reload: number }) {
       .join(" · ");
   return (
     <section className="panel settings-wide">
-      <h2>
-        <HistoryIcon size={18} aria-hidden /> {t("activityTitle")}
-      </h2>
+      <h2>{t("activityTitle")}</h2>
       <p className="muted">{t("activityLead")}</p>
       {rows && rows.length === 0 && <p className="empty">{t("noActivity")}</p>}
       {rows && rows.length > 0 && (

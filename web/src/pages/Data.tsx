@@ -1,6 +1,5 @@
 // Data in: the planning window, orders and fleet as Excel/CSV, and the site list.
 // Uploads are checked first; nothing changes until the dispatcher applies.
-import { CalendarRange, Download, FileSpreadsheet, MapPin, SunMedium, Truck, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { api, ApiError, type DataOverview, type RollPreview, type RollReport, type SheetKind, type SheetProblem, type UploadResult } from "../api";
@@ -41,10 +40,10 @@ export function Data() {
       {!editable && <div className="alert alert-info">{t("viewerCannotEdit")}</div>}
       {data && (
         <div className="data-grid">
-          <WindowCard key={data.window.start + data.window.end} data={data} editable={editable} onChanged={load} />
           {editable && <NextDay onChanged={load} />}
           <SheetCard kind="jobs" data={data} editable={editable} onChanged={load} />
           <SheetCard kind="fleet" data={data} editable={editable} onChanged={load} />
+          <WindowCard key={data.window.start + data.window.end} data={data} editable={editable} onChanged={load} />
           <SitesCard data={data} />
         </div>
       )}
@@ -73,9 +72,7 @@ function WindowCard({ data, editable, onChanged }: { data: DataOverview; editabl
 
   return (
     <section className="panel data-window">
-      <h2>
-        <CalendarRange size={18} aria-hidden /> {t("windowTitle")}
-      </h2>
+      <h2>{t("windowTitle")}</h2>
       <div className="window-form">
         <label className="field">
           <span>{t("windowStart")}</span>
@@ -161,15 +158,17 @@ function NextDay({ onChanged }: { onChanged: () => void }) {
 
   return (
     <section className="panel next-day">
-      <h2>
-        <SunMedium size={18} aria-hidden /> {t("nextDayTitle")}
-      </h2>
-      <p className="muted small">{t("nextDayLead")}</p>
-      {!review && (
-        <button className="btn" onClick={begin}>
-          {t("nextDayButton")}
-        </button>
-      )}
+      <div className="next-day-head">
+        <div>
+          <h2>{t("nextDayTitle")}</h2>
+          <p className="muted">{t("nextDayLead")}</p>
+        </div>
+        {!review && (
+          <button className="btn btn-primary" onClick={begin}>
+            {t("nextDayButton")}
+          </button>
+        )}
+      </div>
       {review && (
         <div className="review">
           <p>
@@ -198,7 +197,7 @@ function NextDay({ onChanged }: { onChanged: () => void }) {
             <button className="btn btn-primary" onClick={roll} disabled={busy}>
               {busy ? t("rolling") : t("confirmNextDay")}
             </button>
-            <button className="btn" onClick={() => setReview(null)} disabled={busy}>
+            <button className="text-btn quiet" onClick={() => setReview(null)} disabled={busy}>
               {t("cancel")}
             </button>
             {notDone.size > 0 && (
@@ -285,9 +284,7 @@ function SheetCard({ kind, data, editable, onChanged }: { kind: SheetKind; data:
   const busy = phase.step === "checking" || phase.step === "applying";
   return (
     <section className="panel">
-      <h2>
-        {jobs ? <FileSpreadsheet size={18} aria-hidden /> : <Truck size={18} aria-hidden />} {t(jobs ? "ordersTitle" : "fleetTitle")}
-      </h2>
+      <h2>{t(jobs ? "ordersTitle" : "fleetTitle")}</h2>
       <p className="muted">{t(jobs ? "ordersLead" : "fleetLead")}</p>
       <div className="counts">
         {jobs ? (
@@ -305,11 +302,11 @@ function SheetCard({ kind, data, editable, onChanged }: { kind: SheetKind; data:
         )}
       </div>
       <div className="downloads">
-        <a className="btn" href={`/api/data/${kind}.xlsx`} download>
-          <Download size={16} aria-hidden /> {t("downloadCurrent")}
+        <a className="text-btn" href={`/api/data/${kind}.xlsx`} download>
+          {t("downloadCurrent")} <span className="arrow" aria-hidden="true">↓</span>
         </a>
-        <a className="btn btn-ghost" href={`/api/data/${kind}.xlsx?template=true`} download>
-          {t("downloadTemplate")}
+        <a className="text-btn quiet" href={`/api/data/${kind}.xlsx?template=true`} download>
+          {t("downloadTemplate")} <span className="arrow" aria-hidden="true">↓</span>
         </a>
       </div>
       {editable && (
@@ -323,7 +320,7 @@ function SheetCard({ kind, data, editable, onChanged }: { kind: SheetKind; data:
           onDrop={drop}
         >
           <button className="btn btn-primary" onClick={() => input.current?.click()} disabled={busy}>
-            <Upload size={16} aria-hidden /> {t("chooseFile")}
+            {t("chooseFile")}
           </button>
           <span className="muted">{t("dropHint")}</span>
           <input ref={input} type="file" accept=".xlsx,.csv" hidden onChange={(e) => pick(e.target.files)} />
@@ -419,7 +416,7 @@ function Result({
         <button className="btn btn-primary" onClick={() => onApply(file, result)} disabled={phase.step === "applying"}>
           {phase.step === "applying" ? t("applying") : t("apply")}
         </button>
-        <button className="btn" onClick={onCancel} disabled={phase.step === "applying"}>
+        <button className="text-btn quiet" onClick={onCancel} disabled={phase.step === "applying"}>
           {t("cancel")}
         </button>
       </div>
@@ -463,12 +460,13 @@ function Problems({ problems }: { problems: SheetProblem[] }) {
 }
 
 function SitesCard({ data }: { data: DataOverview }) {
-  const { t } = useI18n();
+  const { t, count } = useI18n();
   return (
-    <section className="panel data-sites">
-      <h2>
-        <MapPin size={18} aria-hidden /> {t("sitesTitle")}
-      </h2>
+    <details className="panel data-sites">
+      <summary>
+        <h2>{t("sitesTitle")}</h2>
+        <span className="muted small">{count("sites", data.sites.length)}</span>
+      </summary>
       <p className="muted">{t("sitesLead")}</p>
       <div className="table-wrap sites-table">
         <table>
@@ -492,6 +490,6 @@ function SitesCard({ data }: { data: DataOverview }) {
           </tbody>
         </table>
       </div>
-    </section>
+    </details>
   );
 }

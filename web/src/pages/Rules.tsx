@@ -1,41 +1,15 @@
-// Steering: rules by form or by an Arabic/English sentence, and frozen jobs.
+// Steering: rules by a sentence (Ask Madar) or by form, and frozen orders.
 // A sentence only ever produces a proposal; the dispatcher adds it explicitly.
-import { Lock, MessageSquareText, Plus, Snowflake, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { api, type Interpretation, type Rule, type RuleKind, type Steering } from "../api";
+import { api, type RuleKind, type Steering } from "../api";
 import { useAuth } from "../auth";
+import { AskBar } from "../components/AskBar";
+import { useRuleText, type NewRule } from "../components/ruleText";
 import { useI18n, type StringKey } from "../i18n";
 import { addHours, fromRiyadhInput, toRiyadhInput } from "../time";
 
-type NewRule = Omit<Rule, "id" | "source_text"> & { source_text?: string };
-
-export function useRuleText(steering: Steering | null) {
-  const { fill, date, money, lang } = useI18n();
-  return (rule: Rule | NewRule) => {
-    if (!steering) return "";
-    const team = steering.teams.find((t) => t.id === rule.team_id || t.tractor_id === rule.resource_id);
-    const truck = team?.name ?? rule.resource_id ?? rule.team_id ?? "?";
-    const job = steering.jobs.find((j) => j.id === rule.job_id)?.reference ?? rule.job_id ?? "?";
-    const site = steering.sites.find((s) => s.id === rule.site_id);
-    const siteName = site ? (lang === "ar" && site.name_ar ? site.name_ar : site.name) : (rule.site_id ?? "?");
-    const when = (iso?: string) => (iso ? date(iso) : "?");
-    switch (rule.kind) {
-      case "resource_unavailable":
-        return fill("descUnavailable", { truck, from: when(rule.window?.start), until: when(rule.window?.end) });
-      case "required_end":
-        return fill("descRequiredEnd", { truck, site: siteName, by: when(rule.window?.end) });
-      case "customer_eligibility":
-        return fill("descCustomer", { truck, customer: rule.customer ?? "?" });
-      case "preferred_assignment":
-        return rule.strength === "soft"
-          ? fill("descAssignSoft", { job, truck, penalty: money(rule.penalty_minor) })
-          : fill("descAssignHard", { job, truck });
-    }
-  };
-}
-
 export function Rules() {
-  const { t } = useI18n();
+  const { t, fill } = useI18n();
   const { canPlan } = useAuth();
   const [steering, setSteering] = useState<Steering | null>(null);
   const [error, setError] = useState("");
@@ -71,79 +45,21 @@ export function Rules() {
       </div>
       {error && <div className="alert alert-error">{error}</div>}
       {!editable && <div className="alert alert-info">{t("viewerSteer")}</div>}
+      {steering && editable && (
+        <AskBar
+          runId={steering.latest_plan}
+          suggestions={steering.teams.length ? [fill("askRuleChip", { truck: steering.teams[0].name })] : []}
+          onRuleAdded={load}
+        />
+      )}
       {steering && (
         <div className="rules-grid">
-          {editable && <Ask steering={steering} onAdd={(rule) => act(() => api.post("/api/rules", rule))} />}
-          {editable && <RuleForm steering={steering} onAdd={(rule) => act(() => api.post("/api/rules", rule))} />}
           <ActiveRules steering={steering} editable={editable} onRemove={(id) => act(() => api.del(`/api/rules/${id}`))} />
+          {editable && <RuleForm steering={steering} onAdd={(rule) => act(() => api.post("/api/rules", rule))} />}
           <Frozen steering={steering} editable={editable} act={act} />
         </div>
       )}
     </>
-  );
-}
-
-function Ask({ steering, onAdd }: { steering: Steering; onAdd: (rule: NewRule) => Promise<boolean> }) {
-  const { t, lang } = useI18n();
-  const describe = useRuleText(steering);
-  const [text, setText] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [answer, setAnswer] = useState<Interpretation | null>(null);
-
-  async function interpret() {
-    setBusy(true);
-    setAnswer(null);
-    try {
-      setAnswer(await api.post<Interpretation>("/api/rules/interpret", { text, lang }));
-    } catch (caught) {
-      setAnswer({ status: "error", explanation: (caught as Error).message, rule: null });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function add(rule: Rule) {
-    const { id: _, ...rest } = rule;
-    if (await onAdd(rest)) {
-      setAnswer(null);
-      setText("");
-    }
-  }
-
-  return (
-    <section className="panel rules-wide">
-      <h2>
-        <MessageSquareText size={18} aria-hidden /> {t("askTitle")}
-      </h2>
-      {!steering.ai && <p className="muted">{t("aiOff")}</p>}
-      <div className="ask">
-        <textarea className="input" rows={2} dir="auto" placeholder={t("askPlaceholder")} value={text} onChange={(e) => setText(e.target.value)} disabled={!steering.ai} />
-        <button className="btn btn-primary" onClick={interpret} disabled={!steering.ai || busy || text.trim().length < 2}>
-          {busy ? t("interpreting") : t("askButton")}
-        </button>
-      </div>
-      {answer && answer.status === "proposed" && answer.rule && (
-        <div className="alert alert-ok result">
-          <b>{t("proposal")}:</b> {describe(answer.rule)}
-          <div className="muted" dir="auto">
-            {answer.explanation}
-          </div>
-          <div className="result-actions">
-            <button className="btn btn-primary" onClick={() => add(answer.rule!)}>
-              {t("addThisRule")}
-            </button>
-            <button className="btn" onClick={() => setAnswer(null)}>
-              {t("discard")}
-            </button>
-          </div>
-        </div>
-      )}
-      {answer && answer.status !== "proposed" && (
-        <div className={`alert ${answer.status === "error" ? "alert-error" : "alert-warn"} result`} dir="auto">
-          <b>{answer.status === "error" ? t("aiError") : t("clarify")}</b> {answer.question || answer.explanation}
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -185,9 +101,7 @@ function RuleForm({ steering, onAdd }: { steering: Steering; onAdd: (rule: NewRu
   const ready = team && (kind !== "preferred_assignment" || job) && (kind !== "resource_unavailable" || (from && until && until > from));
   return (
     <section className="panel">
-      <h2>
-        <Plus size={18} aria-hidden /> {t("formTitle")}
-      </h2>
+      <h2>{t("formTitle")}</h2>
       <div className="form-grid">
         <label className="field">
           <span>{t("ruleKind")}</span>
@@ -306,8 +220,8 @@ function ActiveRules({ steering, editable, onRemove }: { steering: Steering; edi
                 )}
               </div>
               {editable && (
-                <button className="btn btn-ghost" onClick={() => onRemove(rule.id)} aria-label={t("remove")}>
-                  <Trash2 size={16} aria-hidden />
+                <button className="text-btn quiet" onClick={() => onRemove(rule.id)}>
+                  {t("remove")}
                 </button>
               )}
             </li>
@@ -337,11 +251,11 @@ function Frozen({ steering, editable, act }: { steering: Steering; editable: boo
   }
 
   return (
-    <section className="panel">
-      <h2>
-        <Snowflake size={18} aria-hidden /> {t("frozenTitle")}
-        {locks.length > 0 && <span className="badge">{number(locks.length)}</span>}
-      </h2>
+    <section className="panel rules-wide">
+      <div className="panel-head">
+        <h2>{t("frozenTitle")}</h2>
+        {locks.length > 0 && <span className="muted small">{number(locks.length)}</span>}
+      </div>
       <p className="muted">{t("frozenLead")}</p>
       {editable && (
         <div className="freeze-row">
@@ -369,10 +283,11 @@ function Frozen({ steering, editable, act }: { steering: Steering; editable: boo
             {locks.map((lock) => (
               <li key={lock.job_id}>
                 <span>
-                  <Lock size={13} aria-hidden /> <b>{refs.get(lock.job_id)?.reference ?? lock.job_id}</b> <span className="muted">{refs.get(lock.job_id)?.customer}</span> → {names.get(lock.team_id) ?? lock.team_id}
+                  <b>{refs.get(lock.job_id)?.reference ?? lock.job_id}</b> <span className="muted">{refs.get(lock.job_id)?.customer}</span> →{" "}
+                  {names.get(lock.team_id) ?? lock.team_id}
                 </span>
                 {editable && (
-                  <button className="btn btn-ghost" onClick={() => void act(() => api.del(`/api/locks/${lock.job_id}`))}>
+                  <button className="text-btn quiet" onClick={() => void act(() => api.del(`/api/locks/${lock.job_id}`))}>
                     {t("unfreeze")}
                   </button>
                 )}
@@ -380,7 +295,7 @@ function Frozen({ steering, editable, act }: { steering: Steering; editable: boo
             ))}
           </ul>
           {editable && (
-            <button className="btn" onClick={() => void act(() => api.del("/api/locks"))}>
+            <button className="text-btn quiet" onClick={() => void act(() => api.del("/api/locks"))}>
               {t("unfreezeAll")}
             </button>
           )}
