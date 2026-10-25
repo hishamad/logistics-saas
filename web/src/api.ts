@@ -153,6 +153,7 @@ export type Board = {
   emptyReasons: Record<string, number>;
   frozen: string[];
   geo: Record<string, [number, number, string, string]>; // latitude, longitude, city, city in Arabic
+  roads: Record<string, string>; // "from|to" -> the road as an encoded polyline
 };
 
 export type SheetKind = "jobs" | "fleet";
@@ -316,4 +317,5 @@ export type OverviewData = {
 export type Network = {
   sites: { id: string; name: string; name_ar: string; city: string; city_ar: string; lat: number; lon: number; trucks: number }[];
   lanes: { from: string; to: string; loaded: boolean; trips: number }[];
+  roads: Record<string, string>; // "from|to" -> the road as an encoded polyline
 };

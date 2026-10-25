@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Network, OverviewData } from "../api";
 import { fakeApi, ME, show } from "../test/setup";
@@ -19,6 +19,7 @@ const network: Network = {
     { id: "dm", name: "Dammam port", name_ar: "ميناء الدمام", city: "Dammam", city_ar: "الدمام", lat: 26.5, lon: 50.2, trucks: 0 },
   ],
   lanes: [{ from: "ry1", to: "dm", loaded: true, trips: 2 }],
+  roads: {},
 };
 const NETWORK = { "/api/network": { body: network } };
 
@@ -64,5 +65,20 @@ describe("overview", () => {
     await waitFor(() => expect(container.querySelector(".network-map")).toBeTruthy());
     expect(container.querySelector(".network-map")!.getAttribute("dir")).toBe("ltr");
     expect([...container.querySelectorAll(".network-map text")].map((n) => n.textContent)).toContain("الدمام");
+  });
+
+  it("follows the real road where the network has one, and zooms on request", async () => {
+    const withRoad = { ...network, roads: { "ry1|dm": "_p~iF~ps|U_ulLnnqC_mqNvxq`@" } };
+    fakeApi({ "/api/me": ME(), "/api/overview": { body: data }, "/api/network": { body: withRoad } });
+    const { container } = show(<Overview />);
+    await waitFor(() => expect(container.querySelector(".network-map .lane")).toBeTruthy());
+    expect(container.querySelector(".network-map .lane")!.getAttribute("d")).toMatch(/^M[^Q]*L/);
+    const svg = container.querySelector(".network-map svg")!;
+    expect(svg.getAttribute("viewBox")).toBe("0 0 620 490");
+    expect((screen.getByRole("button", { name: "Zoom out" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Zoom in" }));
+    expect(svg.getAttribute("viewBox")).not.toBe("0 0 620 490");
+    fireEvent.click(screen.getByRole("button", { name: "Show the whole country" }));
+    expect(svg.getAttribute("viewBox")).toBe("0 0 620 490");
   });
 });

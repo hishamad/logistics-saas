@@ -32,6 +32,7 @@ const board: Board = {
   emptyReasons: {},
   frozen: ["j1"],
   geo: {},
+  roads: {},
 };
 
 function show(language: "en" | "ar", onSelect = vi.fn()) {

@@ -212,7 +212,7 @@ export function Timeline({
           <div className="tl-ticks" style={{ width: laneWidth }}>
             {ticks.map(({ m, day }) => (
               <div key={m} className={`tl-tick${day ? " day" : ""}`} style={{ insetInlineStart: x(m) }}>
-                {day ? date(at(m), dayLabel) : ""}
+                {day && laneWidth - x(m) > 44 ? date(at(m), dayLabel) : ""}
                 {stepHours < 24 && <span className="hour">{date(at(m), { ...PLAIN, hour: "2-digit", minute: "2-digit", hourCycle: "h23" })}</span>}
               </div>
             ))}

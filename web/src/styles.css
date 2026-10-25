@@ -30,6 +30,8 @@
   --shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
   --backdrop: rgba(2, 8, 6, 0.62);
   --key: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  --land: rgba(255, 255, 255, 0.02);
+  --land-home: rgba(255, 255, 255, 0.045);
 }
 [data-theme="day"] {
   color-scheme: light;
@@ -59,6 +61,8 @@
   --shadow: 0 30px 80px rgba(14, 27, 24, 0.14);
   --backdrop: rgba(14, 27, 24, 0.22);
   --key: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+  --land: #f1f4f2;
+  --land-home: #e6ece8;
 }
 
 * { box-sizing: border-box; }
@@ -452,7 +456,7 @@ td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 /* Overview */
 .attention ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .attention-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); }
-.attention-item span { flex: 1; min-width: 0; }
+.attention-item > span:not(.attention-dot) { flex: 1; min-width: 0; }
 .attention-item.warn svg { color: var(--warm); }
 .attention-item.info svg { color: var(--accent); }
 .all-clear { display: flex; align-items: center; gap: 8px; color: var(--accent-text); margin: 0; }
@@ -503,7 +507,16 @@ td .wrap { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
 .panel-head h2 { margin-bottom: 2px; }
 .map-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
 .map-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.network-map svg { width: 100%; max-height: 470px; display: block; }
+.network-map { position: relative; }
+.network-map svg { width: 100%; max-height: 470px; display: block; touch-action: pan-x pan-y; user-select: none; }
+.network-map svg.zoomed { touch-action: none; cursor: grab; }
+.network-map svg.zoomed:active { cursor: grabbing; }
+.land-home { fill: var(--land-home); stroke: var(--line-strong); stroke-width: 1; }
+.land-other { fill: var(--land); stroke: var(--line); stroke-width: 0.8; }
+.map-label { stroke: var(--raised); paint-order: stroke; stroke-linejoin: round; }
+.map-zoom { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 2px; padding: 3px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); }
+.map-zoom button { width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 7px; background: transparent; color: var(--muted); transition: background-color 0.2s, color 0.2s; }
+.map-zoom button:hover:not(:disabled) { background: var(--hover); color: var(--text); }
 .lane { stroke-dasharray: 3 11; animation: flow 2.4s linear infinite; }
 .lane-empty { stroke-dasharray: 1 9; animation: flow 3.6s linear infinite; }
 .ping { transform-box: fill-box; transform-origin: center; animation: ping 3.2s ease-out infinite; }

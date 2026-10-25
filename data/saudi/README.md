@@ -8,8 +8,11 @@ Researched 12 October 2026. Real where sourced; every assumption is labelled. No
 | --- | --- | --- |
 | `sites.csv` | 28 freight nodes: ports, industrial cities, border crossings, major cities (EN/AR names, approximate coordinates) | Coordinates approximate (±few km); `snapped_road_m` is the OSRM snap distance (all < 3 km) |
 | `lanes.csv` | 756 directed lanes (from, to, distance, duration, source) | Distance: [OSRM](https://project-osrm.org/) on OpenStreetMap roads (car profile). Truck duration = car duration × 1.3 (**assumption**) |
+| `routes.csv` | 378 road paths, one per site pair (encoded polyline, precision 5); the other direction is the same road reversed | OSRM simplified route overview on OpenStreetMap roads. **For drawing maps only**; distances and times come from `lanes.csv` |
 
-Regenerate with `scripts/build_saudi_lanes.py` (see its docstring). Spot checks: Dammam port→Riyadh 431 km, Riyadh→Jeddah 945 km, Jeddah→Jazan 698 km, Riyadh→Tabuk 1,350 km.
+The app's map outline (`web/public/geo/region.json`, ≈ 24 KB) is Saudi Arabia and its neighbours from [Natural Earth](https://www.naturalearthdata.com/) 1:50m admin-0 countries (public domain), clipped and simplified by `scripts/build_region_map.py`.
+
+Regenerate with `scripts/build_saudi_lanes.py` and `scripts/build_saudi_routes.py` (see their docstrings). Spot checks: Dammam port→Riyadh 431 km, Riyadh→Jeddah 945 km, Jeddah→Jazan 698 km, Riyadh→Tabuk 1,350 km.
 
 The OSRM demo server is car-only and has no weight or height restrictions. Before a pilot, self-host OSRM or GraphHopper with a truck profile on the [Geofabrik](https://download.geofabrik.de/asia/gcc-states.html) GCC extract.
 

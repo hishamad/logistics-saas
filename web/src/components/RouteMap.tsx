@@ -1,11 +1,12 @@
 // One truck's route on the real map: numbered stops in the order it reaches them,
-// loaded legs in the accent, empty legs dashed. Framed to the route, never mirrored.
+// each leg along its road, loaded in the accent, empty dashed. Framed to the route,
+// never mirrored.
 // Sites in one city (a port and an industrial city) share a stop; the short hops
 // between them are too small to draw.
 import { useMemo } from "react";
 import type { Board, BoardTeam } from "../api";
+import { decode, outline, project, roadPath, useRegion } from "../geo";
 import { useI18n } from "../i18n";
-import { project } from "./NetworkMap";
 
 const ASPECT = 16 / 10;
 type Box = [number, number, number, number]; // left, top, right, bottom
@@ -20,6 +21,8 @@ function bend([ax, ay]: [number, number], [bx, by]: [number, number]): string {
 
 export function RouteMap({ board, team }: { board: Board; team: BoardTeam }) {
   const { t, lang } = useI18n();
+  const region = useRegion();
+  const land = useMemo(() => region?.countries.map((c) => ({ code: c.code, home: c.home, d: outline(c.rings) })) ?? [], [region]);
   const drawn = useMemo(() => {
     const geo = board.geo ?? {};
     const city = (id: string) => geo[id]?.[2];
@@ -33,13 +36,19 @@ export function RouteMap({ board, team }: { board: Board; team: BoardTeam }) {
       stops.push({ id, city: city(id)!, n: stops.length + 1, x, y });
     }
     const stop = (id: string) => stops.find((s) => s.city === city(id))!;
+    const along: [number, number][] = []; // every point the route passes, for framing
     const legs = drives
-      .map((a, i) => ({ key: i, from: stop(a[4]), to: stop(a[5]), loaded: a[8] === "loaded" }))
+      .map((a) => ({ from: stop(a[4]), to: stop(a[5]), loaded: a[8] === "loaded", road: board.roads?.[`${a[4]}|${a[5]}`] }))
       .filter((leg) => leg.from !== leg.to)
-      .map((leg, i) => ({ ...leg, key: i, d: bend([leg.from.x, leg.from.y], [leg.to.x, leg.to.y]) }));
+      .map((leg, i) => {
+        if (!leg.road) return { ...leg, key: i, d: bend([leg.from.x, leg.from.y], [leg.to.x, leg.to.y]) };
+        const points = decode(leg.road);
+        along.push(...points.map(([lat, lon]) => project(lat, lon)));
+        return { ...leg, key: i, d: roadPath(points) };
+      });
     // Frame the route with some room around it, at a fixed aspect ratio.
-    const xs = stops.map((s) => s.x);
-    const ys = stops.map((s) => s.y);
+    const xs = [...stops.map((s) => s.x), ...along.map((p) => p[0])];
+    const ys = [...stops.map((s) => s.y), ...along.map((p) => p[1])];
     const pad = Math.max(36, 0.16 * Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)));
     let [x0, x1, y0, y1] = [Math.min(...xs) - pad, Math.max(...xs) + pad, Math.min(...ys) - pad, Math.max(...ys) + pad];
     let w = Math.max(x1 - x0, 170);
@@ -85,12 +94,17 @@ export function RouteMap({ board, team }: { board: Board; team: BoardTeam }) {
   return (
     <div dir="ltr" className="route-map">
       <svg viewBox={drawn.box} role="img" aria-label={t("routeMap")}>
+        <g className="land">
+          {land.map((c) => (
+            <path key={c.code} d={c.d} className={c.home ? "land-home" : "land-other"} vectorEffect="non-scaling-stroke" />
+          ))}
+        </g>
         {drawn.others.map(({ id, p: [x, y] }) => (
           <circle key={id} cx={x} cy={y} r={2.2 * unit} fill="var(--faint)" opacity="0.5" />
         ))}
         {drawn.legs.map((leg) => (
           <g key={leg.key}>
-            {leg.loaded && <path d={leg.d} fill="none" stroke="var(--accent)" strokeWidth={9 * unit} strokeLinecap="round" opacity="0.12" />}
+            {leg.loaded && <path d={leg.d} fill="none" stroke="var(--accent)" strokeWidth={9 * unit} strokeLinecap="round" strokeLinejoin="round" opacity="0.12" />}
             <path
               className={leg.loaded ? "route-leg" : "route-leg empty"}
               d={leg.d}
@@ -99,6 +113,7 @@ export function RouteMap({ board, team }: { board: Board; team: BoardTeam }) {
               stroke={leg.loaded ? "var(--accent)" : "var(--warm)"}
               strokeWidth={(leg.loaded ? 2.6 : 1.8) * unit}
               strokeLinecap="round"
+              strokeLinejoin="round"
               style={{ animationDelay: `${leg.key * 160}ms` }}
             />
           </g>

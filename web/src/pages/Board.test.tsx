@@ -52,6 +52,7 @@ const board: BoardData = {
   kpis: { confirmed: 2, served: 1, offered: 0, accepted: 0, loaded_km: 400, empty_km: 20, cost: 100000, revenue: 480000, trucks: 2, days: 2, runtime_s: 1 },
   emptyReasons: {},
   frozen: [],
+  roads: {},
 };
 
 const run: PlanRun = {

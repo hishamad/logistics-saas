@@ -545,5 +545,9 @@ def test_the_network_map_has_real_sites_and_the_lanes_the_plan_drives(app):
     ids = {s["id"] for s in after["sites"]}
     assert all(lane["from"] in ids and lane["to"] in ids for lane in after["lanes"])
     assert sum(s["trucks"] for s in after["sites"]) > 0
+    # Each lane comes with the road it follows, in its own direction.
+    assert set(after["roads"]) == {
+        f"{lane['from']}|{lane['to']}" for lane in after["lanes"] if lane["from"] != lane["to"]
+    }
     west = login(app, "dispatcher@west.test").get("/api/network").json()
     assert west["sites"] == []  # the other company's demo sites have no map position

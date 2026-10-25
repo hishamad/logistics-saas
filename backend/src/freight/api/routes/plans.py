@@ -33,6 +33,7 @@ from freight.explain import WhatIfRefused, narrate, why
 from freight.handover import export_workbook, plan_changes
 from freight.onboarding import site_geography
 from freight.planning.engine import routes_of
+from freight.roads import roads
 from freight.rolling import planning_view
 
 router = APIRouter(prefix="/api")
@@ -133,6 +134,14 @@ def get_board(run_id: str, user: Me, session: Db) -> dict[str, object]:
     # none yet): latitude, longitude, city, city in Arabic.
     where = site_geography()
     data["geo"] = {s.id: where[s.id] for s in snapshot.sites if s.id in where}
+    # The road each drive follows, for the selected truck's route map.
+    data["roads"] = roads(
+        {
+            (a.from_site_id, a.to_site_id)
+            for a in plan.activities
+            if a.kind in ("loaded", "empty") and a.from_site_id in where and a.to_site_id in where
+        }
+    )
     return data
 
 
@@ -329,4 +338,4 @@ def network(user: Me, session: Db) -> dict[str, Any]:
             for (a, b, loaded), n in trips.most_common(40)
             if a in where and b in where
         ]
-    return {"sites": sites, "lanes": lanes}
+    return {"sites": sites, "lanes": lanes, "roads": roads({(x["from"], x["to"]) for x in lanes})}
